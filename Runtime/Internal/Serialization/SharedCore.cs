@@ -1489,9 +1489,25 @@ namespace Cognitive3D.Serialization
                             {
                                 JsonUtil.SetString(kvp.Key, kvp.Value.ToString(), gazebuilder);
                             }
+                            else if (kvp.Value.GetType() == typeof(float))
+                            {
+                                JsonUtil.SetFloat(kvp.Key, (float)kvp.Value, eventBuilder);
+                            }
+                            else if (kvp.Value.GetType() == typeof(int))
+                            {
+                                JsonUtil.SetInt(kvp.Key, (int)kvp.Value, eventBuilder);
+                            }
+                            else if (kvp.Value.GetType() == typeof(double))
+                            {
+                                JsonUtil.SetDouble(kvp.Key, (double)kvp.Value, eventBuilder);
+                            }
                             else if (kvp.Value.GetType() == typeof(long))
                             {
                                 JsonUtil.SetLong(kvp.Key, (long)kvp.Value, gazebuilder);
+                            }
+                            else if (kvp.Value.GetType() == null)
+                            {
+                                JsonUtil.SetNull(kvp.Key, eventBuilder);
                             }
                             else
                             {
