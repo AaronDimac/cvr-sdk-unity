@@ -1485,29 +1485,26 @@ namespace Cognitive3D.Serialization
                         List<KeyValuePair<string, object>> thisSubscription = metaSubscriptionDetails[i];
                         foreach (var kvp in thisSubscription)
                         {
+                            if (kvp.Value == null) { Util.logDevelopment("Subscription " + kvp.Key + " is NULL "); continue; }
                             if (kvp.Value.GetType() == typeof(string))
                             {
                                 JsonUtil.SetString(kvp.Key, kvp.Value.ToString(), gazebuilder);
                             }
                             else if (kvp.Value.GetType() == typeof(float))
                             {
-                                JsonUtil.SetFloat(kvp.Key, (float)kvp.Value, eventBuilder);
+                                JsonUtil.SetFloat(kvp.Key, (float)kvp.Value, gazebuilder);
                             }
                             else if (kvp.Value.GetType() == typeof(int))
                             {
-                                JsonUtil.SetInt(kvp.Key, (int)kvp.Value, eventBuilder);
+                                JsonUtil.SetInt(kvp.Key, (int)kvp.Value, gazebuilder);
                             }
                             else if (kvp.Value.GetType() == typeof(double))
                             {
-                                JsonUtil.SetDouble(kvp.Key, (double)kvp.Value, eventBuilder);
+                                JsonUtil.SetDouble(kvp.Key, (double)kvp.Value, gazebuilder);
                             }
                             else if (kvp.Value.GetType() == typeof(long))
                             {
                                 JsonUtil.SetLong(kvp.Key, (long)kvp.Value, gazebuilder);
-                            }
-                            else if (kvp.Value.GetType() == null)
-                            {
-                                JsonUtil.SetNull(kvp.Key, eventBuilder);
                             }
                             else
                             {
@@ -1544,19 +1541,15 @@ namespace Cognitive3D.Serialization
                     }
                     else if (kvp.Value.GetType() == typeof(double))
                     {
-                        JsonUtil.SetDouble(kvp.Key, (double)kvp.Value, eventBuilder);
+                        JsonUtil.SetDouble(kvp.Key, (double)kvp.Value, gazebuilder);
                     }
                     else if (kvp.Value.GetType() == typeof(int))
                     {
-                        JsonUtil.SetInt(kvp.Key, (int)kvp.Value, eventBuilder);
+                        JsonUtil.SetInt(kvp.Key, (int)kvp.Value, gazebuilder);
                     }
                     else if (kvp.Value.GetType() == typeof(long))
                     {
-                        JsonUtil.SetLong(kvp.Key, (long)kvp.Value, eventBuilder);
-                    }
-                    else if (kvp.Value.GetType() == null)
-                    {
-                        JsonUtil.SetNull(kvp.Key, eventBuilder);
+                        JsonUtil.SetLong(kvp.Key, (long)kvp.Value, gazebuilder);
                     }
                     else
                     {
@@ -1573,6 +1566,7 @@ namespace Cognitive3D.Serialization
                 gazebuilder.Append("\"properties\":{");
                 foreach (var kvp in GetNewSessionProperties(true))
                 {
+                    if (kvp.Value == null) { Util.logDevelopment("Session Property " + kvp.Key + " is NULL "); continue; }
                     if (kvp.Value.GetType() == typeof(string))
                     {
                         JsonUtil.SetString(kvp.Key, (string)kvp.Value, gazebuilder);
@@ -1583,19 +1577,15 @@ namespace Cognitive3D.Serialization
                     }
                     else if (kvp.Value.GetType() == typeof(double))
                     {
-                        JsonUtil.SetDouble(kvp.Key, (double)kvp.Value, eventBuilder);
+                        JsonUtil.SetDouble(kvp.Key, (double)kvp.Value, gazebuilder);
                     }
                     else if (kvp.Value.GetType() == typeof(int))
                     {
-                        JsonUtil.SetInt(kvp.Key, (int)kvp.Value, eventBuilder);
+                        JsonUtil.SetInt(kvp.Key, (int)kvp.Value, gazebuilder);
                     }
                     else if (kvp.Value.GetType() == typeof(long))
                     {
-                        JsonUtil.SetLong(kvp.Key, (long)kvp.Value, eventBuilder);
-                    }
-                    else if (kvp.Value.GetType() == null)
-                    {
-                        JsonUtil.SetNull(kvp.Key, eventBuilder);
+                        JsonUtil.SetLong(kvp.Key, (long)kvp.Value, gazebuilder);
                     }
                     else
                     {
