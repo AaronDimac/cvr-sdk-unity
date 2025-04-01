@@ -161,6 +161,7 @@ namespace Cognitive3D.Components
                 if (RecordOculusUserData)
                 {
                     Cognitive3D_Manager.SetParticipantId(id);
+                    Cognitive3D_Manager.SetParticipantFullName(oculusID);
                 }
             }
            Users.GetAccessToken().OnComplete(GetSubscriptionContext);
@@ -223,10 +224,6 @@ namespace Cognitive3D.Components
 #endif
             {
                 Cognitive3D_Manager.SetParticipantProperty("oculusDisplayName", displayName);
-                if (RecordOculusUserData)
-                {
-                    Cognitive3D_Manager.SetParticipantFullName(displayName);
-                }
             }
         }
 
