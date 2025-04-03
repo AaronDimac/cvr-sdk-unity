@@ -113,7 +113,7 @@ namespace Cognitive3D.Components
 
         public override string GetDescription()
         {
-            return "Record Frames per Second (FPS) as a sensor, including average, 1% lows and 5% lows";
+            return "Record Frames per Second (FPS) as a sensor, including average, 1% lows";
         }
 
         private void Cognitive3D_Manager_OnPreSessionEnd()
