@@ -350,7 +350,7 @@ namespace Cognitive3D.Serialization
                     }
                     else
                     {
-                        JsonUtil.SetString(properties[i].Key, properties[i].Value.ToString(), eventBuilder);
+                        JsonUtil.SetObject(properties[i].Key, properties[i].Value, eventBuilder);
                     }
                 }
                 eventBuilder.Append("}"); //close properties object
