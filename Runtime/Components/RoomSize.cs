@@ -119,12 +119,11 @@ namespace Cognitive3D.Components
         /// </summary>
         void SendEventIfUserExitsBoundary()
         {
-            Transform trackingSpace = Cognitive3D_Manager.Instance.trackingSpace;
-            if (trackingSpace)
+            if (BoundaryUtil.TryGetTrackingSpaceTransform(out var trackingSpaceTransform))
             {
                 if (previousBoundaryPoints != null && previousBoundaryPoints.Length != 0) // we want to avoid "fake exit" events if boundary points is empty array; this happens sometimes when you pause
                 {
-                    if (!BoundaryUtil.IsPointInPolygon4(previousBoundaryPoints, trackingSpace.transform.InverseTransformPoint(GameplayReferences.HMD.position)))
+                    if (!BoundaryUtil.IsPointInPolygon4(previousBoundaryPoints, Quaternion.Inverse(trackingSpaceTransform.rot) * (GameplayReferences.HMD.transform.position - trackingSpaceTransform.pos)))
                     {
                         SendExitEvent();
                     }

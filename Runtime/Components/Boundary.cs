@@ -22,11 +22,6 @@ namespace Cognitive3D.Components
         Vector3[] currentBoundaryPoints = new Vector3[0];
 
         /// <summary>
-        /// A reference to the tracking space of the player's rig
-        /// </summary>
-        static Transform trackingSpace = null;
-
-        /// <summary>
         /// The previous position of the tracking space; used for comparison to detect "moved enough"
         /// </summary>
         Vector3 lastRecordedTrackingSpacePosition = new Vector3();
@@ -81,13 +76,11 @@ namespace Cognitive3D.Components
             }
 
             // Record initial tracking space position and rotation
-            trackingSpace = Cognitive3D_Manager.Instance.trackingSpace;
-            if (trackingSpace)
+            if (BoundaryUtil.TryGetTrackingSpaceTransform(out var customTransform))
             {
-                CustomTransform customTransform = new CustomTransform(trackingSpace.position, trackingSpace.rotation);
                 CoreInterface.RecordTrackingSpaceTransform(customTransform, Util.Timestamp(Time.frameCount));
-                lastRecordedTrackingSpacePosition = trackingSpace.position;
-                previousTrackingSpaceRotation = trackingSpace.rotation;
+                lastRecordedTrackingSpacePosition = customTransform.pos;
+                previousTrackingSpaceRotation = customTransform.rot;
             }
         }
 
@@ -101,18 +94,14 @@ namespace Cognitive3D.Components
             //      of component being disabled since this function is bound to C3D_Manager.Update on SessionBegin()  
             if (isActiveAndEnabled)
             {
-                trackingSpace = Cognitive3D_Manager.Instance?.trackingSpace;
-
-                if (trackingSpace != null)
+                if (BoundaryUtil.TryGetTrackingSpaceTransform(out var customTransform))
                 {
-                    if (Vector3.SqrMagnitude(trackingSpace.position - lastRecordedTrackingSpacePosition) > TRACKING_SPACE_POSITION_THRESHOLD_IN_METRES * TRACKING_SPACE_POSITION_THRESHOLD_IN_METRES
-                        || Math.Abs(Vector3.Angle(previousTrackingSpaceRotation.eulerAngles, trackingSpace.rotation.eulerAngles)) > TRACKING_SPACE_ROTATION_THRESHOLD_IN_DEGREES) // if tracking space moved enough
-                    {                     
-                        CustomTransform customTransform = new CustomTransform(trackingSpace.position, trackingSpace.rotation);
+                    if (Vector3.SqrMagnitude(customTransform.pos - lastRecordedTrackingSpacePosition) > TRACKING_SPACE_POSITION_THRESHOLD_IN_METRES * TRACKING_SPACE_POSITION_THRESHOLD_IN_METRES ||
+                        Math.Abs(Vector3.Angle(previousTrackingSpaceRotation.eulerAngles, customTransform.rot.eulerAngles)) > TRACKING_SPACE_ROTATION_THRESHOLD_IN_DEGREES)
+                    {
                         CoreInterface.RecordTrackingSpaceTransform(customTransform, Util.Timestamp(Time.frameCount));
-                        
-                        lastRecordedTrackingSpacePosition = trackingSpace.position;
-                        previousTrackingSpaceRotation = trackingSpace.rotation;
+                        lastRecordedTrackingSpacePosition = customTransform.pos;
+                        previousTrackingSpaceRotation = customTransform.rot;
                     }
                 }
 
@@ -121,8 +110,7 @@ namespace Cognitive3D.Components
                 if (currentBoundaryPoints != null)
                 {
                     if (BoundaryUtil.HasBoundaryChanged(previousBoundaryPoints, currentBoundaryPoints))
-                    {
-                        
+                    {         
                         previousBoundaryPoints = currentBoundaryPoints;
                         CoreInterface.RecordBoundaryShape(currentBoundaryPoints, Util.Timestamp(Time.frameCount));
                     }
@@ -135,9 +123,10 @@ namespace Cognitive3D.Components
             //TODO
             // FIX TRACKING AND BOUNDARIES AGAIN
             // If recenter, tracking space gets xz pos of camera, and y rotation of camera
+            BoundaryUtil.TryGetTrackingSpaceTransform(out var trackingSpaceTransform);
             CustomTransform recenteredTransform = new CustomTransform(
-                new Vector3(GameplayReferences.HMD.position.x, trackingSpace.position.y, GameplayReferences.HMD.position.z),
-                Quaternion.Euler(trackingSpace.rotation.x, GameplayReferences.HMD.rotation.y, trackingSpace.rotation.z));
+                new Vector3(GameplayReferences.HMD.position.x, trackingSpaceTransform.pos.y, GameplayReferences.HMD.position.z),
+                Quaternion.Euler(trackingSpaceTransform.rot.x, GameplayReferences.HMD.rotation.y, trackingSpaceTransform.rot.z));
             CoreInterface.RecordTrackingSpaceTransform(recenteredTransform, Util.Timestamp(Time.frameCount));
             CoreInterface.RecordBoundaryShape(BoundaryUtil.GetCurrentBoundaryPoints(), Util.Timestamp(Time.frameCount));
         }
