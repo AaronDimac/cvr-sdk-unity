@@ -128,6 +128,54 @@ namespace Cognitive3D.Components
             }
             return result;
         }
+
+        internal static bool TryGetTrackingSpaceTransform(out CustomTransform customTransform)
+        {
+#if C3D_OCULUS
+            OVRPose trackingSpacePose = OVRPlugin.GetTrackingTransformRelativePose(OVRPlugin.TrackingOrigin.FloorLevel).ToOVRPose();
+            var trackingSpacePosition = GameplayReferences.HMD.transform.parent.TransformPoint(trackingSpacePose.position);
+            var trackingSpaceRotation = GameplayReferences.HMD.transform.parent.rotation * trackingSpacePose.orientation;
+
+            customTransform = new CustomTransform(trackingSpacePosition, trackingSpaceRotation);
+#elif C3D_VIVEWAVE
+            Wave.Essence.WaveRig waveRig = GameplayReferences.WaveRig;
+            if (waveRig!= null)
+            {
+                customTransform = new CustomTransform(waveRig.transform.position, waveRig.transform.rotation);
+            }       
+#endif
+            if (customTransform == null)
+            {
+                customTransform = GetDefaultTrackingSpaceTransform();
+            }
+
+            return customTransform != null;
+        }
+
+        internal static CustomTransform GetDefaultTrackingSpaceTransform()
+        {
+#if COGNITIVE3D_INCLUDE_COREUTILITIES
+            Unity.XR.CoreUtils.XROrigin xrRig = GameplayReferences.XRRig;
+            if (xrRig!= null)
+            {
+                return new CustomTransform(xrRig.transform.position, xrRig.transform.rotation);
+            }
+#endif
+
+#if COGNITIVE3D_INCLUDE_LEGACYINPUTHELPERS
+            UnityEditor.XR.LegacyInputHelpers.CameraOffset cameraOffset = GameplayReferences.CameraOffset;
+            if (cameraOffset != null)
+            {
+                return new CustomTransform(cameraOffset.transform.position, cameraOffset.transform.rotation);
+            }
+#endif
+            if (GameplayReferences.RoomTrackingSpaceTransform != null)
+            {
+                return new CustomTransform(GameplayReferences.RoomTrackingSpaceTransform.position, GameplayReferences.RoomTrackingSpaceTransform.rotation);
+            }
+
+            return null;
+        }  
     }
 
     /// <summary>
