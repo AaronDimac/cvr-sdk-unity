@@ -131,6 +131,7 @@ namespace Cognitive3D.Components
 
         internal static bool TryGetTrackingSpaceTransform(out CustomTransform customTransform)
         {
+            customTransform = null;
 #if C3D_OCULUS
             OVRPose trackingSpacePose = OVRPlugin.GetTrackingTransformRelativePose(OVRPlugin.TrackingOrigin.FloorLevel).ToOVRPose();
             var trackingSpacePosition = GameplayReferences.HMD.transform.parent.TransformPoint(trackingSpacePose.position);
