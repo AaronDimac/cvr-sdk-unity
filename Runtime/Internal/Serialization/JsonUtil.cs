@@ -125,9 +125,11 @@ namespace Cognitive3D.Serialization
             builder.Append(name);
             builder.Append("\":");
 
+            builder.Append("\":\"");
             string objectValueString = objectValue.ToString();
             objectValueString = EscapeString(objectValueString);
             builder.Append(objectValueString);
+            builder.Append("\"");
 
             return builder;
         }

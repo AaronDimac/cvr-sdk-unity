@@ -1512,7 +1512,7 @@ namespace Cognitive3D.Serialization
                             }
                             else if (kvp.Value.GetType() == typeof(bool))
                             {
-                                JsonUtil.SetBool(kvp.Key, (bool)kvp.Value, eventBuilder);
+                                JsonUtil.SetBool(kvp.Key, (bool)kvp.Value, gazebuilder);
                             }
                             else
                             {
@@ -1561,7 +1561,7 @@ namespace Cognitive3D.Serialization
                     }
                     else if (kvp.Value.GetType() == typeof(bool))
                     {
-                        JsonUtil.SetBool(kvp.Key, (bool)kvp.Value, eventBuilder);
+                        JsonUtil.SetBool(kvp.Key, (bool)kvp.Value, gazebuilder);
                     }
                     else
                     {
@@ -1601,7 +1601,7 @@ namespace Cognitive3D.Serialization
                     }
                     else if (kvp.Value.GetType() == typeof(bool))
                     {
-                        JsonUtil.SetBool(kvp.Key, (bool)kvp.Value, eventBuilder);
+                        JsonUtil.SetBool(kvp.Key, (bool)kvp.Value, gazebuilder);
                     }
                     else
                     {
