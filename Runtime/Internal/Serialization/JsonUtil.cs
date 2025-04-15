@@ -107,7 +107,7 @@ namespace Cognitive3D.Serialization
             name = EscapeString(name);
             builder.Append(name);
             builder.Append("\":");
-            builder.Append(boolValue);
+            builder.Append(boolValue.ToString().ToLower());
             return builder;
         }
 
