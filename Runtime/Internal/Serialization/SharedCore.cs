@@ -344,13 +344,17 @@ namespace Cognitive3D.Serialization
                     {
                         JsonUtil.SetLong(properties[i].Key, (long)properties[i].Value, eventBuilder);
                     }
+                    else if (properties[i].Value.GetType() == typeof(bool))
+                    {
+                        JsonUtil.SetBool(properties[i].Key, (bool)properties[i].Value, eventBuilder);
+                    }
                     else if (properties[i].Value.GetType() == null)
                     {
                         JsonUtil.SetNull(properties[i].Key, eventBuilder);
                     }
                     else
                     {
-                        JsonUtil.SetString(properties[i].Key, properties[i].Value.ToString(), eventBuilder);
+                        JsonUtil.SetObject(properties[i].Key, properties[i].Value, eventBuilder);
                     }
                 }
                 eventBuilder.Append("}"); //close properties object
@@ -1506,6 +1510,10 @@ namespace Cognitive3D.Serialization
                             {
                                 JsonUtil.SetLong(kvp.Key, (long)kvp.Value, gazebuilder);
                             }
+                            else if (kvp.Value.GetType() == typeof(bool))
+                            {
+                                JsonUtil.SetBool(kvp.Key, (bool)kvp.Value, gazebuilder);
+                            }
                             else
                             {
                                 JsonUtil.SetObject(kvp.Key, kvp.Value, gazebuilder);
@@ -1551,6 +1559,10 @@ namespace Cognitive3D.Serialization
                     {
                         JsonUtil.SetLong(kvp.Key, (long)kvp.Value, gazebuilder);
                     }
+                    else if (kvp.Value.GetType() == typeof(bool))
+                    {
+                        JsonUtil.SetBool(kvp.Key, (bool)kvp.Value, gazebuilder);
+                    }
                     else
                     {
                         JsonUtil.SetObject(kvp.Key, kvp.Value, gazebuilder);
@@ -1586,6 +1598,10 @@ namespace Cognitive3D.Serialization
                     else if (kvp.Value.GetType() == typeof(long))
                     {
                         JsonUtil.SetLong(kvp.Key, (long)kvp.Value, gazebuilder);
+                    }
+                    else if (kvp.Value.GetType() == typeof(bool))
+                    {
+                        JsonUtil.SetBool(kvp.Key, (bool)kvp.Value, gazebuilder);
                     }
                     else
                     {
