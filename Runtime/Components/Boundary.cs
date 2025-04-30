@@ -141,7 +141,7 @@ namespace Cognitive3D.Components
 #region Inspector Utils
         public override bool GetWarning()
         {
-#if C3D_OCULUS || C3D_DEFAULT
+#if C3D_OCULUS || C3D_DEFAULT || C3D_PICOXR
             return false;
 #else
             return true;
@@ -150,10 +150,10 @@ namespace Cognitive3D.Components
 
         public override string GetDescription()
         {
-#if C3D_OCULUS || C3D_DEFAULT
+#if C3D_OCULUS || C3D_DEFAULT || C3D_PICOXR
             return "Records player boundary";
 #else
-            return "Current platform does not support this component. This component is only supported for Meta and OpenXR.";
+            return "Current platform does not support this component. This component is only supported for Meta, PicoXR, and OpenXR.";
 #endif
         }
 #endregion
