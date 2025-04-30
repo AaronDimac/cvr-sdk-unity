@@ -583,58 +583,16 @@ namespace Cognitive3D
             bool trackingSpaceIsValid = trackingSpace?.GetComponent<RoomTrackingSpace>() != null;
 
             PlayerSetupStart();
-            GUI.Label(new Rect(30, 30, 440, 440), "You can use your existing Player Prefab. For most implementations, this is just a quick check to ensure cameras and controllers are configued correctly.", "normallabel");
-            GUI.Label(new Rect(30, 100, 440, 440), "The display for the HMD should be tagged as <b>MainCamera</b>", "normallabel");
-            GUI.Label(new Rect(30, 150, 440, 440), "The <b>TrackingSpace</b> is the root transform for the HMD and controllers", "normallabel");
-
-            //hmd
-            DrawObjectPicker(ref mainCameraObject, "HMD", 200, 5689466);
-            HandleDragAndDrop(new Rect(180, 200, 440, 30), ref mainCameraObject);
-
-            Rect hmdAlertRect = new Rect(400, 200, 30, 30);
-            if (mainCameraObject == null)
-            {
-                GUI.Label(hmdAlertRect, new GUIContent(EditorCore.Alert, "Camera GameObject not set"), "image_centered");
-            }
-            else if (mainCameraObject.CompareTag("MainCamera") == false)
-            {
-                GUI.Label(hmdAlertRect, new GUIContent(EditorCore.Alert, "Selected Camera is not tagged 'MainCamera'"), "image_centered");
-            }
-            else
-            {
-                //warning icon if multiple objects tagged with mainCamera in scene
-                int mainCameraCount = 0;
-                for (int i = 0; i < Camera.allCamerasCount; i++)
-                {
-                    if (Camera.allCameras[i].CompareTag("MainCamera"))
-                    {
-                        mainCameraCount++;
-                    }
-                }
-                if (mainCameraCount > 1)
-                {
-                    GUI.Label(hmdAlertRect, new GUIContent(EditorCore.Alert, "Multiple cameras are tagged 'MainCamera'. This may cause runtime issues"), "image_centered");
-                }
-            }
-
-
-            // tracking space
-            DrawObjectPicker(ref trackingSpace, "Tracking Space", 235, 5689467);
-            HandleDragAndDrop(new Rect(180, 235, 440, 30), ref trackingSpace);
-
-            if (trackingSpace == null)
-            {
-                GUI.Label(new Rect(400, 235, 30, 30), new GUIContent(EditorCore.Alert, "Tracking Space not set"), "image_centered");
-            }
+            GUI.Label(new Rect(30, 30, 450, 440), "You can use your existing Player Prefab. For most implementations, this is just a quick check to ensure cameras and controllers are configued correctly.", "normallabel");
 
             //controllers
-            GUI.Label(new Rect(150, 285, 440, 440), "Auto controllers/hands setup", "normallabel");
-            Rect checkboxRect = new Rect(120, 280, 30, 30);
+            GUI.Label(new Rect(200, 105, 440, 440), "Auto Player Setup", "normallabel");
+            Rect checkboxRect = new Rect(170, 100, 30, 30);
             if (Cognitive3D_Manager.autoInitializePlayerSetup)
             {
                 if (GUI.Button(checkboxRect, EditorCore.BoxCheckmark, "image_centered"))
                 {
-                    SegmentAnalytics.TrackEvent("DisabledAutoInputSetup_PlayerSetupPage", "SceneSetupPlayerSetupPage");
+                    SegmentAnalytics.TrackEvent("DisabledAutoPlayerSetup_PlayerSetupPage", "SceneSetupPlayerSetupPage");
                     Cognitive3D_Manager.autoInitializePlayerSetup = false;
                 }
             }
@@ -642,7 +600,7 @@ namespace Cognitive3D
             {
                 if (GUI.Button(checkboxRect, EditorCore.BoxEmpty, "image_centered"))
                 {
-                    SegmentAnalytics.TrackEvent("EnabledAutoInputSetup_PlayerSetupPage", "SceneSetupPlayerSetupPage");
+                    SegmentAnalytics.TrackEvent("EnabledAutoPlayerSetup_PlayerSetupPage", "SceneSetupPlayerSetupPage");
 
                     // Remove the controllers/hands DynamicObject components (if they exist)
                     var dynamics = FindObjectsOfType<DynamicObject>();
@@ -658,62 +616,107 @@ namespace Cognitive3D
                 }
             }
 
-            if (!Cognitive3D_Manager.autoInitializePlayerSetup)
+            if (Cognitive3D_Manager.autoInitializePlayerSetup)
             {
-#if C3D_STEAMVR2
-                GUI.Label(new Rect(30, 320, 440, 440), "The Controllers should have <b>SteamVR Behaviour Pose</b> components", "normallabel");
-#else
-                GUI.Label(new Rect(30, 320, 440, 440), "The Controllers may have <b>Tracked Pose Driver</b> components", "normallabel");
-#endif
-
-                //left hand label
-                DrawObjectPicker(ref leftcontroller, "Left Controller", 365, 5689465);
-                HandleDragAndDrop(new Rect(180, 365, 440, 30), ref leftcontroller);
-
-                if (!leftControllerIsValid)
-                {
-                    GUI.Label(new Rect(400, 365, 30, 30), new GUIContent(EditorCore.Alert, "Left Controller not set"), "image_centered");
-                }
-
-                //right hand label
-                DrawObjectPicker(ref rightcontroller, "Right Controller", 400, 5689469);
-                HandleDragAndDrop(new Rect(180, 400, 440, 30), ref rightcontroller); 
-
-                if (!rightControllerIsValid)
-                {
-                    GUI.Label(new Rect(400, 400, 30, 30), new GUIContent(EditorCore.Alert, "Right Controller not set"), "image_centered");
-                }
-            }
-
-            AllSetupComplete = (Cognitive3D_Manager.autoInitializePlayerSetup || (leftControllerIsValid && rightControllerIsValid)) 
-                                && cameraIsValid && trackingSpaceIsValid;
-
-            if (GUI.Button(new Rect(160, 450, 200, 30), new GUIContent("Set up GameObjects","Set up the player rig tracking space, attach Dynamic Object components to the controllers, and configures controllers to record button inputs")))
-            {
-                if (mainCameraObject != null)
-                {
-                    mainCameraObject.tag = "MainCamera";
-                }
-
-                SetupPlayer();
-
-                UnityEditor.SceneManagement.EditorSceneManager.MarkAllScenesDirty();
-                Event.current.Use();
-            }
-
-            if (AllSetupComplete)
-            {
-                GUI.Label(new Rect(130, 450, 30, 30), EditorCore.CircleCheckmark, "image_centered");
+                GUI.Label(new Rect(30, 140, 440, 440), "When \"Auto Player Setup\" is enabled, all player-related objects are automatically detected and tracked. If you'd prefer to assign these objects manually, simply disable this option.", "normallabel");
             }
             else
             {
-                GUI.Label(new Rect(128, 450, 32, 32), EditorCore.Alert, "image_centered");
+                GUI.Label(new Rect(30, 140, 440, 440), "The display for the HMD should be tagged as <b>MainCamera</b>", "normallabel");
+                GUI.Label(new Rect(30, 180, 440, 440), "The <b>TrackingSpace</b> is the root transform for the HMD and controllers", "normallabel");
+                //hmd
+                DrawObjectPicker(ref mainCameraObject, "HMD", 230, 5689466);
+                HandleDragAndDrop(new Rect(180, 230, 440, 30), ref mainCameraObject);
+
+                Rect hmdAlertRect = new Rect(400, 230, 30, 30);
+                if (mainCameraObject == null)
+                {
+                    GUI.Label(hmdAlertRect, new GUIContent(EditorCore.Alert, "Camera GameObject not set"), "image_centered");
+                }
+                else if (mainCameraObject.CompareTag("MainCamera") == false)
+                {
+                    GUI.Label(hmdAlertRect, new GUIContent(EditorCore.Alert, "Selected Camera is not tagged 'MainCamera'"), "image_centered");
+                }
+                else
+                {
+                    //warning icon if multiple objects tagged with mainCamera in scene
+                    int mainCameraCount = 0;
+                    for (int i = 0; i < Camera.allCamerasCount; i++)
+                    {
+                        if (Camera.allCameras[i].CompareTag("MainCamera"))
+                        {
+                            mainCameraCount++;
+                        }
+                    }
+                    if (mainCameraCount > 1)
+                    {
+                        GUI.Label(hmdAlertRect, new GUIContent(EditorCore.Alert, "Multiple cameras are tagged 'MainCamera'. This may cause runtime issues"), "image_centered");
+                    }
+                }
+
+                // tracking space
+                DrawObjectPicker(ref trackingSpace, "Tracking Space", 265, 5689467);
+                HandleDragAndDrop(new Rect(180, 265, 440, 30), ref trackingSpace);
+
+                if (trackingSpace == null)
+                {
+                    GUI.Label(new Rect(400, 265, 30, 30), new GUIContent(EditorCore.Alert, "Tracking Space not set"), "image_centered");
+                }
+
+#if C3D_STEAMVR2
+                GUI.Label(new Rect(30, 310, 440, 440), "The Controllers should have <b>SteamVR Behaviour Pose</b> components", "normallabel");
+#else
+                GUI.Label(new Rect(30, 310, 440, 440), "The Controllers may have <b>Tracked Pose Driver</b> components", "normallabel");
+#endif
+
+                //left hand label
+                DrawObjectPicker(ref leftcontroller, "Left Controller", 355, 5689465);
+                HandleDragAndDrop(new Rect(180, 355, 440, 30), ref leftcontroller);
+
+                if (!leftControllerIsValid)
+                {
+                    GUI.Label(new Rect(400, 355, 30, 30), new GUIContent(EditorCore.Alert, "Left Controller not set"), "image_centered");
+                }
+
+                //right hand label
+                DrawObjectPicker(ref rightcontroller, "Right Controller", 390, 5689469);
+                HandleDragAndDrop(new Rect(180, 390, 440, 30), ref rightcontroller); 
+
+                if (!rightControllerIsValid)
+                {
+                    GUI.Label(new Rect(400, 390, 30, 30), new GUIContent(EditorCore.Alert, "Right Controller not set"), "image_centered");
+                }
+
+                AllSetupComplete = (Cognitive3D_Manager.autoInitializePlayerSetup || (leftControllerIsValid && rightControllerIsValid)) 
+                                && cameraIsValid && trackingSpaceIsValid;
+
+                if (GUI.Button(new Rect(160, 440, 200, 30), new GUIContent("Set up GameObjects","Set up the player rig tracking space, attach Dynamic Object components to the controllers, and configures controllers to record button inputs")))
+                {
+                    if (mainCameraObject != null)
+                    {
+                        mainCameraObject.tag = "MainCamera";
+                    }
+
+                    SetupPlayer();
+
+                    UnityEditor.SceneManagement.EditorSceneManager.MarkAllScenesDirty();
+                    Event.current.Use();
+                }
+
+                if (AllSetupComplete)
+                {
+                    GUI.Label(new Rect(130, 440, 30, 30), EditorCore.CircleCheckmark, "image_centered");
+                }
+                else
+                {
+                    GUI.Label(new Rect(128, 440, 32, 32), EditorCore.Alert, "image_centered");
+                }
             }
 #if C3D_STEAMVR2
 
             //generate default input file if it doesn't already exist
             bool hasInputActionFile = SteamVR_Input.DoesActionsFileExist();
-            if (GUI.Button(new Rect(160, 455, 200, 30), "Append Input Bindings"))
+            if (GUI.Button(new Rect(160, 445, 200, 30), "Append Input Bindings"))
             {
                 if (SteamVR_Input.actionFile == null)
                 {
@@ -737,11 +740,11 @@ namespace Cognitive3D
             }
             if (DoesC3DInputActionSetExist())
             {
-                GUI.Label(new Rect(130, 455, 30, 30), EditorCore.CircleCheckmark, "image_centered");
+                GUI.Label(new Rect(130, 445, 30, 30), EditorCore.CircleCheckmark, "image_centered");
             }
             else
             {
-                GUI.Label(new Rect(128, 455, 32, 32), EditorCore.Alert, "image_centered");
+                GUI.Label(new Rect(128, 445, 32, 32), EditorCore.Alert, "image_centered");
             }
 #endif
         }
@@ -826,13 +829,13 @@ namespace Cognitive3D
 
         public static void SetupPlayer()
         {
-            if (trackingSpace != null && trackingSpace.GetComponent<RoomTrackingSpace>() == null)
-            {
-                trackingSpace.AddComponent<RoomTrackingSpace>();
-            }
-
             if (!Cognitive3D_Manager.autoInitializePlayerSetup)
             {
+                if (trackingSpace != null && trackingSpace.GetComponent<RoomTrackingSpace>() == null)
+                {
+                    trackingSpace.AddComponent<RoomTrackingSpace>();
+                }
+                
                 if (leftcontroller != null && leftcontroller.GetComponent<DynamicObject>() == null)
                 {
                     leftcontroller.AddComponent<DynamicObject>();
@@ -1675,13 +1678,10 @@ namespace Cognitive3D
                     }
 
 #else
-                    appearDisabled = !AllSetupComplete;
-                    if (!AllSetupComplete)
+                    appearDisabled = !AllSetupComplete && !Cognitive3D_Manager.autoInitializePlayerSetup;
+                    if (appearDisabled)
                     {
-                        if (appearDisabled)
-                        {
-                            onclick += () => { if (EditorUtility.DisplayDialog("Continue", "Are you sure you want to continue without configuring the player prefab?", "Yes", "No")) { currentPage++; } };
-                        }
+                        onclick += () => { if (EditorUtility.DisplayDialog("Continue", "Are you sure you want to continue without configuring the player prefab?", "Yes", "No")) { currentPage++; } };
                     }
 #endif
                     onclick += () => { numberOfLightsInScene = FindObjectsOfType<Light>().Length; };
