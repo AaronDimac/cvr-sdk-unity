@@ -630,12 +630,12 @@ namespace Cognitive3D
             //controllers
             GUI.Label(new Rect(150, 285, 440, 440), "Auto controllers/hands setup", "normallabel");
             Rect checkboxRect = new Rect(120, 280, 30, 30);
-            if (Cognitive3D_Manager.autoInitializeInput)
+            if (Cognitive3D_Manager.autoInitializePlayerSetup)
             {
                 if (GUI.Button(checkboxRect, EditorCore.BoxCheckmark, "image_centered"))
                 {
                     SegmentAnalytics.TrackEvent("DisabledAutoInputSetup_PlayerSetupPage", "SceneSetupPlayerSetupPage");
-                    Cognitive3D_Manager.autoInitializeInput = false;
+                    Cognitive3D_Manager.autoInitializePlayerSetup = false;
                 }
             }
             else
@@ -654,11 +654,11 @@ namespace Cognitive3D
                         }
                     }
 
-                    Cognitive3D_Manager.autoInitializeInput = true;
+                    Cognitive3D_Manager.autoInitializePlayerSetup = true;
                 }
             }
 
-            if (!Cognitive3D_Manager.autoInitializeInput)
+            if (!Cognitive3D_Manager.autoInitializePlayerSetup)
             {
 #if C3D_STEAMVR2
                 GUI.Label(new Rect(30, 320, 440, 440), "The Controllers should have <b>SteamVR Behaviour Pose</b> components", "normallabel");
@@ -685,7 +685,7 @@ namespace Cognitive3D
                 }
             }
 
-            AllSetupComplete = (Cognitive3D_Manager.autoInitializeInput || (leftControllerIsValid && rightControllerIsValid)) 
+            AllSetupComplete = (Cognitive3D_Manager.autoInitializePlayerSetup || (leftControllerIsValid && rightControllerIsValid)) 
                                 && cameraIsValid && trackingSpaceIsValid;
 
             if (GUI.Button(new Rect(160, 450, 200, 30), new GUIContent("Set up GameObjects","Set up the player rig tracking space, attach Dynamic Object components to the controllers, and configures controllers to record button inputs")))
@@ -831,7 +831,7 @@ namespace Cognitive3D
                 trackingSpace.AddComponent<RoomTrackingSpace>();
             }
 
-            if (!Cognitive3D_Manager.autoInitializeInput)
+            if (!Cognitive3D_Manager.autoInitializePlayerSetup)
             {
                 if (leftcontroller != null && leftcontroller.GetComponent<DynamicObject>() == null)
                 {
