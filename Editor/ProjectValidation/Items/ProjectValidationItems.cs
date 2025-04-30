@@ -170,6 +170,9 @@ namespace Cognitive3D
                 fixmessage: "Tracking space is configured",
                 checkAction: () =>
                 {
+                    if (Cognitive3D_Manager.autoInitializePlayerSetup)
+                        return true;
+
                     return ProjectValidation.FindComponentInActiveScene<RoomTrackingSpace>();
                 },
                 fixAction: () =>
