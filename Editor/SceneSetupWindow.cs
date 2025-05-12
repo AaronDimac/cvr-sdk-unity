@@ -604,11 +604,23 @@ namespace Cognitive3D
 
                     // Remove the controllers/hands DynamicObject components (if they exist)
                     var dynamics = FindObjectsOfType<DynamicObject>();
-                    foreach (var dynamic in dynamics)
+                    if (dynamics.Length > 0)
                     {
-                        if (dynamic.IsController)
+                        foreach (var dynamic in dynamics)
                         {
-                            DestroyImmediate(dynamic);
+                            if (dynamic.IsController)
+                            {
+                                DestroyImmediate(dynamic);
+                            }
+                        }
+                    }
+                    
+                    var trackingSpaces = FindObjectsOfType<RoomTrackingSpace>();
+                    if (trackingSpaces.Length > 0)
+                    {
+                        foreach (var trackingSpace in trackingSpaces)
+                        {
+                            DestroyImmediate(trackingSpace);
                         }
                     }
 
@@ -618,7 +630,7 @@ namespace Cognitive3D
 
             if (Cognitive3D_Manager.autoInitializePlayerSetup)
             {
-                GUI.Label(new Rect(30, 140, 440, 440), "When \"Auto Player Setup\" is enabled, all player-related objects are automatically detected and tracked. If you'd prefer to assign these objects manually, simply disable this option.", "normallabel");
+                GUI.Label(new Rect(30, 140, 440, 440), "When \"Auto Player Setup\" is enabled, all player-related objects are automatically detected and tracked. If you'd prefer to assign these objects manually, disable this option.", "normallabel");
             }
             else
             {
