@@ -580,7 +580,7 @@ namespace Cognitive3D
             bool leftControllerIsValid = leftcontroller && leftcontroller?.GetComponent<DynamicObject>() != null;
             bool rightControllerIsValid = rightcontroller && rightcontroller?.GetComponent<DynamicObject>() != null;
             bool cameraIsValid = Camera.main != null && mainCameraObject == Camera.main.gameObject;
-            bool trackingSpaceIsValid = trackingSpace?.GetComponent<RoomTrackingSpace>() != null;
+            bool trackingSpaceIsValid = trackingSpace != null ? trackingSpace.GetComponent<RoomTrackingSpace>() != null : false;
 
             PlayerSetupStart();
             GUI.Label(new Rect(30, 30, 440, 440), "You can use your existing Player Prefab. For most implementations, this is just a quick check to ensure cameras and controllers are configued correctly.", "normallabel");
