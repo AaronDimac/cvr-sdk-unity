@@ -163,6 +163,51 @@ namespace Cognitive3D
             }
 
             ProjectValidation.AddItem(
+                level: ProjectValidation.ItemLevel.Required,
+                category: CATEGORY,
+                actionType: ProjectValidation.ItemAction.Fix,
+                message: "Room Tracking Space and Controller Dynamic objects should not be present when auto player setup is enabled.",
+                fixmessage: "Player setup is complete. Auto setup is enabled.",
+                checkAction: () =>
+                {
+                    // Check if auto player setup is enabled and validate the absence of tracking space and controllers
+                    if (Cognitive3D_Manager.autoInitializePlayerSetup)
+                    {
+                        return !ProjectValidation.FindComponentInActiveScene<RoomTrackingSpace>() 
+                            && !ProjectValidation.TryGetControllers(out var controllerNamesList);
+                    }
+                    return true;
+                },
+                fixAction: () =>
+                {
+                    // Remove RoomTrackingSpace components if present
+                    ProjectValidation.FindComponentInActiveScene<RoomTrackingSpace>(out var trackingSpaces);
+                    foreach (var space in trackingSpaces)
+                    {
+                        var trackingSpaceComponent = space.GetComponent<RoomTrackingSpace>();
+                        if (trackingSpaceComponent != null)
+                        {
+                            Object.DestroyImmediate(trackingSpaceComponent as Object, true);
+                        }
+                    }
+
+                    // Remove DynamicObject components for controllers if present
+                    ProjectValidation.FindComponentInActiveScene<DynamicObject>(out var controllers);
+                    foreach (var controller in controllers)
+                    {
+                        if (controller.IsController)
+                        {
+                            var dynamicObjectComponent = controller.GetComponent<DynamicObject>();
+                            if (dynamicObjectComponent != null)
+                            {
+                                Object.DestroyImmediate(dynamicObjectComponent as Object, true);
+                            }
+                        }
+                    }
+                }
+            );
+
+            ProjectValidation.AddItem(
                 level: ProjectValidation.ItemLevel.Required, 
                 category: CATEGORY,
                 actionType: ProjectValidation.ItemAction.Edit,
@@ -179,7 +224,7 @@ namespace Cognitive3D
                 {
                     SceneSetupWindow.Init(SceneSetupWindow.Page.PlayerSetup);
                 }
-                );
+            );
             
             ProjectValidation.AddItem(
                 level: ProjectValidation.ItemLevel.Required, 
