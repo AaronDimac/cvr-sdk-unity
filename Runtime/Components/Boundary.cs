@@ -9,7 +9,7 @@ namespace Cognitive3D.Components
     [AddComponentMenu("Cognitive3D/Components/Boundary")]
     public class Boundary : AnalyticsComponentBase
     {
-#if (C3D_OCULUS || C3D_DEFAULT) && UNITY_ANDROID && !UNITY_EDITOR
+#if (C3D_OCULUS || C3D_DEFAULT || C3D_VIVEWAVE) && UNITY_ANDROID && !UNITY_EDITOR
         /// <summary>
         /// The previous list of coordinates (local to tracking space) describing the boundary <br/>
         /// Used for comparison to determine if the boundary changed
@@ -141,7 +141,7 @@ namespace Cognitive3D.Components
 #region Inspector Utils
         public override bool GetWarning()
         {
-#if C3D_OCULUS || C3D_DEFAULT
+#if C3D_OCULUS || C3D_DEFAULT || C3D_VIVEWAVE
             return false;
 #else
             return true;
@@ -150,10 +150,10 @@ namespace Cognitive3D.Components
 
         public override string GetDescription()
         {
-#if C3D_OCULUS || C3D_DEFAULT
+#if C3D_OCULUS || C3D_DEFAULT || C3D_VIVEWAVE
             return "Records player boundary";
 #else
-            return "Current platform does not support this component. This component is only supported for Meta and OpenXR.";
+            return "Current platform does not support this component. This component is only supported for Meta, HTC Wave, and OpenXR.";
 #endif
         }
 #endregion
