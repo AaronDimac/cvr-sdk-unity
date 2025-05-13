@@ -351,6 +351,7 @@ namespace Cognitive3D
                 return DataId;
             if (!string.IsNullOrEmpty(CustomId))
                 return CustomId;
+            Util.logDebug("Dynamic Object ID " + DataId + " not found");
             return string.Empty;
         }
 
@@ -517,10 +518,11 @@ namespace Cognitive3D
 
             PhysicsGaze.OnGazeTick -= SyncWithGazeTick;
 
-            DynamicManager.SetTransform(DataId, transform);
-
-            Cognitive3D.DynamicManager.RemoveDynamicObject(DataId);
-            
+            if (DynamicManager.IsDataActive(GetId()))
+            {
+                DynamicManager.SetTransform(DataId, transform);
+                DynamicManager.RemoveDynamicObject(DataId);
+            }
             hasInitialized = false;
         }
 

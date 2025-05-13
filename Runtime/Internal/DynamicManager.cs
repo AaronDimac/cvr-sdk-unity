@@ -832,7 +832,7 @@ namespace Cognitive3D
                     break;
                 }
             }
-            if (!found) { Util.logDebug("Dynamic Object ID " + id + " not found"); return false; }
+            if (!found) { return false; }
             return ActiveDynamicObjectsArray[i].active && !ActiveDynamicObjectsArray[i].remove;
         }
 
