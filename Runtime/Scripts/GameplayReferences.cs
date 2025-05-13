@@ -108,7 +108,8 @@ namespace Cognitive3D
             {
                 if (_roomTrackingSpaceTransform == null)
                 {
-                    _roomTrackingSpaceTransform = GameObject.FindObjectOfType<RoomTrackingSpace>().transform;
+                    var roomTrackingSpace = GameObject.FindObjectOfType<RoomTrackingSpace>();
+                    _roomTrackingSpaceTransform = roomTrackingSpace != null ? roomTrackingSpace.transform : null;
                 }
                 return _roomTrackingSpaceTransform;
             }

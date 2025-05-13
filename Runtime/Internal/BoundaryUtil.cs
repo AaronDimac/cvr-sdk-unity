@@ -77,6 +77,21 @@ namespace Cognitive3D.Components
             {
                 return null;
             }
+#elif C3D_VIVEWAVE
+            float width = Wave.Native.Interop.WVR_GetArena().area.rectangle.width;
+            float length = Wave.Native.Interop.WVR_GetArena().area.rectangle.length;
+
+            // Half dimensions
+            float halfWidth = width / 2f;
+            float halfLength = length / 2f;
+
+            // 4 corner points (clockwise or counter-clockwise)
+            Vector3[] boundaryCorners = new Vector3[4];
+            boundaryCorners[0] = new Vector3(-halfWidth, 0, -halfLength); // Bottom left
+            boundaryCorners[1] = new Vector3(halfWidth, 0, -halfLength);  // Bottom right
+            boundaryCorners[2] = new Vector3(halfWidth, 0, halfLength);   // Top right
+            boundaryCorners[3] = new Vector3(-halfWidth, 0, halfLength);  // Top left
+            return boundaryCorners;
 #else
             // Using Unity's XRInputSubsystem as fallback
             List<XRInputSubsystem> subsystems = new List<XRInputSubsystem>();
@@ -86,7 +101,7 @@ namespace Cognitive3D.Components
             SubsystemManager.GetInstances<XRInputSubsystem>(subsystems);
 #endif
 
-            // Handling case of multiple subsystems to find the first one that "works"
+            // Handling case of multiple subsystems to find the first one that retrieves boundary points
             foreach (XRInputSubsystem subsystem in subsystems)
             {
                 if (!subsystem.running)
@@ -99,8 +114,6 @@ namespace Cognitive3D.Components
                     return retrievedPoints.ToArray();
                 }
             }
-            // Unable to find boundary points - should we send an event?
-            // Probably will return empty list; need to append with warning or somethings
             Util.LogOnce("Unable to find boundary points using XRInputSubsystem", LogType.Warning);
             return null;
 #endif
@@ -132,6 +145,11 @@ namespace Cognitive3D.Components
             return result;
         }
 
+        /// <summary>
+        /// Retrieves tracking space data
+        /// </summary>
+        /// <param name="customTransform"></param>
+        /// <returns></returns>
         internal static bool TryGetTrackingSpaceTransform(out CustomTransform customTransform)
         {
             customTransform = null;
