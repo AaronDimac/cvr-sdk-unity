@@ -74,6 +74,11 @@
             "name": "com.unity.xr.hands",
             "expression": "",
             "define": "COGNITIVE3D_INCLUDE_XR_HANDS"
+        },
+        {
+            "name": "com.unity.xr.oculus",
+            "expression": "",
+            "define": "COGNITIVE3D_XR_OCULUS"
         }
     ],
     "noEngineReferences": false
