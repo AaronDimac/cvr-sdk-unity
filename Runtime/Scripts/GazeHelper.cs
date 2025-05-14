@@ -11,6 +11,8 @@ namespace Cognitive3D
     {
         public static Ray GetCurrentWorldGazeRay()
         {
+            if (!GameplayReferences.HMD) return new Ray();
+            
             return new Ray(GameplayReferences.HMD.position, GetLookDirection());
         }
 #if C3D_SRANIPAL
@@ -150,6 +152,7 @@ namespace Cognitive3D
         static Vector3 GetLookDirection()
         {
             Wave.Essence.Eye.EyeManager.Instance.GetCombindedEyeDirectionNormalized(out lastDirection);
+            lastDirection = GameplayReferences.HMD.transform.parent.TransformDirection(lastDirection);
             return lastDirection;
         }
 #elif C3D_OCULUS

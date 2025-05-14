@@ -58,46 +58,6 @@ namespace Cognitive3D
 #endif
 #endregion
 
-#region Hand Tracking
-        /// <summary>
-        /// Represents participant is using hands, controller, or neither
-        /// </summary>
-        public enum TrackingType
-        {
-            None = 0,
-            Controller = 1,
-            Hand = 2
-        }
-
-        /// <summary>
-        /// Oculus SeGets the current tracked device i.e. hand or controller
-        /// </summary>
-        /// <returns> Enum representing whether user is using hand or controller or neither </returns>
-        public static TrackingType GetCurrentTrackedDevice()
-        {
-#if C3D_OCULUS
-            var currentTrackedDevice = OVRInput.GetConnectedControllers();
-            if (currentTrackedDevice == OVRInput.Controller.None)
-            {
-                return TrackingType.None;
-            }
-            else if (currentTrackedDevice == OVRInput.Controller.Hands
-                || currentTrackedDevice == OVRInput.Controller.LHand
-                || currentTrackedDevice == OVRInput.Controller.RHand)
-            {
-                return TrackingType.Hand;
-            }
-            else
-            {
-                return TrackingType.Controller;
-            }
-#else
-            return TrackingType.Controller;
-#endif
-        }
-
-        #endregion
-
 #region Eye Tracking
         public static bool SDKSupportsEyeTracking
         {
@@ -377,15 +337,15 @@ namespace Cognitive3D
         /// <summary>
         ///  A refrence to the controller pointer (if) instantiated for exitpoll
         /// </summary>
-        private static GameObject controllerPointer;
+        private static GameObject pointerController;
 
         /// <summary>
         /// 
         /// </summary>
-        public static GameObject ControllerPointer
+        public static GameObject PointerController
         {
-            get { return controllerPointer; }
-            set { controllerPointer = value; }
+            get { return pointerController; }
+            set { pointerController = value; }
         }
 
         public static bool SDKSupportsControllers
@@ -547,7 +507,6 @@ namespace Cognitive3D
                 return transform != null;
             }
         }
-
 #endregion
 
 #region Location

@@ -20,11 +20,28 @@ namespace Cognitive3D.Components
     [AddComponentMenu("Cognitive3D/Components/Room Size")]
     public class RoomSize : AnalyticsComponentBase
     {
+        /// <summary>
+        /// The previous list of coordinates (local to tracking space) describing the boundary <br/>
+        /// Used for comparison to determine if the boundary changed
+        /// </summary>
         Vector3[] previousBoundaryPoints = new Vector3[0];
-        readonly float BoundaryTrackingInterval = 1;
-        Vector3 lastRoomSize = new Vector3();
+
+        /// <summary>
+        /// The last recorded roomsize; used for comparison and roomsize change
+        /// </summary>
+        Vector3 previousRoomSize = new Vector3();
+
+        /// <summary>
+        /// The current roomsize 
+        /// </summary>
         Vector3 roomSize = new Vector3();
+        
+        /// <summary>
+        /// Set to true if the player is outside the guardian
+        /// </summary>
         bool isHMDOutsideBoundary;
+
+        readonly float BoundaryTrackingInterval = 1;
 
         //counts up the deltatime to determine when the interval ends
         float currentTime;
@@ -38,16 +55,20 @@ namespace Cognitive3D.Components
             base.OnSessionBegin();
             Cognitive3D_Manager.OnPreSessionEnd += Cognitive3D_Manager_OnPreSessionEnd;
             Cognitive3D_Manager.OnUpdate += Cognitive3D_Manager_OnUpdate;
-            previousBoundaryPoints = GetCurrentBoundaryPoints();
+            previousBoundaryPoints = BoundaryUtil.GetCurrentBoundaryPoints();
+
             CalculateAndRecordRoomsize(false, false);
-            GetRoomSize(ref lastRoomSize);
-            WriteRoomSizeAsSessionProperty(lastRoomSize);
+            GetRoomSize(ref previousRoomSize);
+            WriteRoomSizeAsSessionProperty(previousRoomSize);
 
 #if C3D_VIVEWAVE
             SystemEvent.Listen(WVR_EventType.WVR_EventType_ArenaChanged, ArenaChanged);
 #endif
         }
 
+        /// <summary>
+        /// Called 1 time per second; 1Hz
+        /// </summary>
         private void Cognitive3D_Manager_OnUpdate(float deltaTime)
         {
             // We don't want these lines to execute if component disabled
@@ -59,9 +80,7 @@ namespace Cognitive3D.Components
                 if (currentTime > BoundaryTrackingInterval)
                 {
                     currentTime = 0;
-
 #if C3D_VIVEWAVE
-
                     // reset these variables every BoundaryTrackingInterval
                     didViveArenaChange = false;
 
@@ -74,11 +93,16 @@ namespace Cognitive3D.Components
                         isHMDOutsideBoundary = false;
                     }
 #else
-                    var currentBoundaryPoints = GetCurrentBoundaryPoints();
-                    if (HasBoundaryChanged(previousBoundaryPoints, currentBoundaryPoints))
+                    var currentBoundaryPoints = BoundaryUtil.GetCurrentBoundaryPoints();
+
+                    if (currentBoundaryPoints != null)
                     {
-                        previousBoundaryPoints = currentBoundaryPoints;
-                        CalculateAndRecordRoomsize(true, true);
+                        if (BoundaryUtil.HasBoundaryChanged(previousBoundaryPoints, currentBoundaryPoints))
+                        {
+                            
+                            previousBoundaryPoints = currentBoundaryPoints;
+                            CalculateAndRecordRoomsize(true, true);
+                        }
                     }
                     SendEventIfUserExitsBoundary();
 #endif
@@ -91,41 +115,6 @@ namespace Cognitive3D.Components
         }
 
         /// <summary>
-        /// Compares two lists of points to determine if the boundary changed
-        /// </summary>
-        /// <param name="currentBoundary">The newly retrieved set of boundary points</param>
-        /// <param name="previousBoundary">The cached set of boundary points</param>
-        /// <returns>True if boundary changed, false otherwise</returns>
-        private bool HasBoundaryChanged(Vector3[] previousBoundary, Vector3[] currentBoundary)
-        {
-            if ((previousBoundary == null && currentBoundary != null) || (previousBoundary != null && currentBoundary == null)) { return true; }
-            if (previousBoundary == null && currentBoundary == null) { return false; }
-
-
-            // OCULUS SPECIFIC HACK 
-            // Going far beyond boundary sometimes causes a pause
-            // which causes GetBoundaryPoints() to return empty array and hence fires "fake recenter" events
-            // Better to have false negative than a false positive
-            if ((previousBoundary.Length > 0) && (currentBoundary.Length == 0)) { return false; }
-
-
-            if (previousBoundary.Length != currentBoundary.Length) { return true; }
-
-            for (int i = 0; i < previousBoundary.Length; i++)
-            {
-                // Check whether x or z coordinate changed significantly
-                // Ignore y because y is "up" and boundary is infinitely high
-                // We only care about ground plane
-                if (Mathf.Abs(previousBoundary[i].x - currentBoundary[i].x) >= 0.1f
-                    || Mathf.Abs(previousBoundary[i].z - currentBoundary[i].z) >= 0.1f)
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        /// <summary>
         /// Sends a custom event when the user's HMD exits the boundary
         /// </summary>
         void SendEventIfUserExitsBoundary()
@@ -135,7 +124,7 @@ namespace Cognitive3D.Components
             {
                 if (previousBoundaryPoints != null && previousBoundaryPoints.Length != 0) // we want to avoid "fake exit" events if boundary points is empty array; this happens sometimes when you pause
                 {
-                    if (!IsPointInPolygon4(previousBoundaryPoints, trackingSpace.transform.InverseTransformPoint(GameplayReferences.HMD.position)))
+                    if (!BoundaryUtil.IsPointInPolygon4(previousBoundaryPoints, trackingSpace.transform.InverseTransformPoint(GameplayReferences.HMD.position)))
                     {
                         SendExitEvent();
                     }
@@ -259,12 +248,12 @@ namespace Cognitive3D.Components
         /// </summary>
         /// <param name="roomSizeRef">A Vector3 representing new roomsize</param>
         private void SendBoundaryChangeEvent(Vector3 roomSizeRef)
-        {     
+        {
             // Chain SetProperty() instead of one SetProperties() to avoid creating dictionary and garbage
             new CustomEvent("c3d.User changed boundary")
-            .SetProperty("Previous Room Size", lastRoomSize.x * lastRoomSize.z)
-            .SetProperty("New Room Size", roomSizeRef.x * roomSizeRef.z)
-            .Send();
+                .SetProperty("Previous Room Size", previousRoomSize.x * previousRoomSize.z)
+                .SetProperty("New Room Size", roomSizeRef.x * roomSizeRef.z)
+                .Send();
         }
 
         /// <summary>
@@ -278,7 +267,6 @@ namespace Cognitive3D.Components
                 isHMDOutsideBoundary = true;
             }
         }
-
 
         /// <summary>
         /// Called at session beginning and when boundary changes.
@@ -295,9 +283,9 @@ namespace Cognitive3D.Components
 #endif
                 {
                     float currentArea = roomSize.x * roomSize.z;
-                    float lastArea = lastRoomSize.x * lastRoomSize.z;
+                    float lastArea = previousRoomSize.x * previousRoomSize.z;
 
-                    // We have determined that a recenter causes change in boundary points without chaning the roomsize
+                    // We have determined that a recenter causes change in boundary points without changing the roomsize
                     if (Mathf.Approximately(currentArea, lastArea))
                     {
                         if (recordRecenterAsEvent)
@@ -313,7 +301,7 @@ namespace Cognitive3D.Components
                         {
                             SendBoundaryChangeEvent(roomSize);
                         }
-                        lastRoomSize = roomSize;
+                        previousRoomSize = roomSize;
                     }
                 }
             }
@@ -421,7 +409,7 @@ namespace Cognitive3D.Components
             return new Vector3(maxX - minX, 0, maxZ - minZ);
         }
 
-        #region SteamVR Specific Utils
+#region SteamVR Specific Utils
 
 #if C3D_STEAMVR2
         /// <summary>
@@ -452,9 +440,11 @@ namespace Cognitive3D.Components
         }
 #endif
 
-        #endregion
+#endregion
 
 #if C3D_VIVEWAVE
+        Vector3 lastRoomSize = new Vector3();
+        
         /// <summary>
         /// Vive Wave Specific: The function to execute when user changes their boundary
         /// </summary>
@@ -491,7 +481,17 @@ namespace Cognitive3D.Components
 #endif
         }
 
-    #region Inspector Utils
+        private void OnDestroy()
+        {
+            Cognitive3D_Manager.OnUpdate -= Cognitive3D_Manager_OnUpdate;
+            Cognitive3D_Manager.OnPreSessionEnd -= Cognitive3D_Manager_OnPreSessionEnd;
+
+#if C3D_VIVEWAVE
+            SystemEvent.Remove(WVR_EventType.WVR_EventType_ArenaChanged, ArenaChanged);
+#endif
+        }
+
+#region Inspector Utils
         public override bool GetWarning()
         {
             return !GameplayReferences.SDKSupportsRoomSize;
@@ -509,6 +509,5 @@ namespace Cognitive3D.Components
             }
         }
 #endregion
-
     }
 }

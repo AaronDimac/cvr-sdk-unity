@@ -89,7 +89,7 @@ namespace Cognitive3D.Serialization
             return builder;
         }
 
-        /// <returns>"name":"doubleValue"</returns>
+        /// <returns>"name":"longValue"</returns>
         public static StringBuilder SetLong(string name, long longValue, StringBuilder builder)
         {
             builder.Append("\"");
@@ -97,6 +97,17 @@ namespace Cognitive3D.Serialization
             builder.Append(name);
             builder.Append("\":");
             builder.Concat(longValue);
+            return builder;
+        }
+
+        /// <returns>"name":"boolValue"</returns>
+        public static StringBuilder SetBool(string name, bool boolValue, StringBuilder builder)
+        {
+            builder.Append("\"");
+            name = EscapeString(name);
+            builder.Append(name);
+            builder.Append("\":");
+            builder.Append(boolValue.ToString().ToLower());
             return builder;
         }
 
@@ -112,16 +123,12 @@ namespace Cognitive3D.Serialization
         {
             builder.Append("\"");
             builder.Append(name);
-            builder.Append("\":");
 
-            if (objectValue.GetType() == typeof(bool))
-                builder.Append(objectValue.ToString().ToLower());
-            else
-            {
-                string objectValueString = objectValue.ToString();
-                objectValueString = EscapeString(objectValueString);
-                builder.Append(objectValueString);
-            }
+            builder.Append("\":\"");
+            string objectValueString = objectValue.ToString();
+            objectValueString = EscapeString(objectValueString);
+            builder.Append(objectValueString);
+            builder.Append("\"");
 
             return builder;
         }
@@ -178,7 +185,7 @@ namespace Cognitive3D.Serialization
             return builder;
         }
 
-        /// <returns>"name":[0.1,0.2</returns>
+        /// <returns>"name":[0.1,0.2]</returns>
         public static StringBuilder SetVector2(string name, float[] pos, StringBuilder builder)
         {
             builder.Append("\"");
@@ -236,11 +243,36 @@ namespace Cognitive3D.Serialization
             return builder;
         }
 
+        /// <summary>
+        /// Writes an array of floats in the stringbuilder
+        /// </summary>
+        /// <param name="array">The array to write</param>
+        /// <param name="builder">A reference to the strinbuilder to write to</param>
+        /// <returns>The string builder that was written to</returns>
+        public static StringBuilder SetArrayOfFloat(float[] array, StringBuilder builder)
+        {
+            if (array == null || builder == null) return builder;
+
+            builder.Append("[");
+            for (int i = 0; i < array.Length; i++)
+            {
+                builder.Append(array[i]);
+                builder.Append(",");
+            }
+            if (builder[builder.Length - 1] == ',')
+            {
+                builder.Remove(builder.Length - 1, 1); // remove comma
+            }
+            builder.Append("]");
+            return builder;
+        }
+
         //escapes linebreaks in strings
         static string EscapeString(string input)
         {
             if (!input.Contains("\n")) { return input; }
             return input.Replace("\n", "\\n");
+
         }
     }
 }

@@ -5,7 +5,6 @@ using UnityEngine; //for fixation calculations - don't want to break this right 
 using System.Threading; //for dynamic objects
 using System;
 
-
 //this is on the far side of the interface - what actually serializes and returns data
 //might be written in c++ eventually. might be multithreaded
 
@@ -29,6 +28,8 @@ namespace Cognitive3D.Serialization
             SerializeGaze(copyToCache);
             SerializeSensors(copyToCache);
             SerializeFixations(copyToCache);
+            SerializeBoundaryShapes(copyToCache);
+            SerializeDynamicImmediate(copyToCache);
         }
 
         internal static void Flush(bool copyToCache)
@@ -39,6 +40,7 @@ namespace Cognitive3D.Serialization
             SerializeGaze(copyToCache);
             SerializeSensors(copyToCache);
             SerializeFixations(copyToCache);
+            SerializeBoundaryShapes(copyToCache);
 
             InterruptThread = true;
             while (queuedSnapshots.Count > 0 || queuedManifest.Count > 0)
@@ -56,6 +58,7 @@ namespace Cognitive3D.Serialization
         static string ParticipantId;
         static int EventThreshold;
         static int GazeThreshold;
+        static int BoundaryThreshold;
         static int DynamicThreshold;
         static int SensorThreshold;
         static int FixationThreshold;
@@ -69,7 +72,7 @@ namespace Cognitive3D.Serialization
         static bool readyToSerializeSubscriptionDetails = false;
 
         //TODO replace with a struct
-        internal static void InitializeSettings(string sessionId, int eventThreshold, int gazeThreshold, int dynamicTreshold, int sensorThreshold, int fixationThreshold, double sessionTimestamp, string deviceId, System.Action<string, string, bool> webPost, System.Action<string> logAction, string hmdName)
+        internal static void InitializeSettings(string sessionId, int eventThreshold, int gazeThreshold, int boundaryThreshold, int dynamicThreshold, int sensorThreshold, int fixationThreshold, double sessionTimestamp, string deviceId, System.Action<string, string, bool> webPost, System.Action<string> logAction, string hmdName)
         {
             DeviceId = deviceId;
             SessionTimestamp = sessionTimestamp;
@@ -78,7 +81,8 @@ namespace Cognitive3D.Serialization
 
             EventThreshold = eventThreshold;
             GazeThreshold = gazeThreshold;
-            DynamicThreshold = dynamicTreshold;
+            BoundaryThreshold = boundaryThreshold;
+            DynamicThreshold = dynamicThreshold;
             SensorThreshold = sensorThreshold;
             FixationThreshold = fixationThreshold;
 
@@ -89,9 +93,9 @@ namespace Cognitive3D.Serialization
             LogAction = logAction;
 
             IsInitialized = true;
-            
+
             //apply pre session properties
-            foreach(var kvp in preSessionProperties)
+            foreach (var kvp in preSessionProperties)
             {
                 SetSessionProperty(kvp.Key, kvp.Value);
             }
@@ -116,6 +120,7 @@ namespace Cognitive3D.Serialization
 
             ResetCustomEvents();
             ResetGaze();
+            ResetBoundary();
             ResetDynamics();
             ResetSensors();
             ResetFixations();
@@ -130,6 +135,12 @@ namespace Cognitive3D.Serialization
 
         //all session properties, including new properties not yet sent
         static List<KeyValuePair<string, object>> knownSessionProperties = new List<KeyValuePair<string, object>>(32);
+
+        /// <summary>
+        /// Store the boundary points in an array until ready to serialize
+        /// That will prevent us writing to the file too often
+        /// </summary>
+        static Vector3[] boundaryPointsToSerialize;
 
         static void SetPreSessionProperty(string key, object value)
         {
@@ -333,13 +344,17 @@ namespace Cognitive3D.Serialization
                     {
                         JsonUtil.SetLong(properties[i].Key, (long)properties[i].Value, eventBuilder);
                     }
+                    else if (properties[i].Value.GetType() == typeof(bool))
+                    {
+                        JsonUtil.SetBool(properties[i].Key, (bool)properties[i].Value, eventBuilder);
+                    }
                     else if (properties[i].Value.GetType() == null)
                     {
                         JsonUtil.SetNull(properties[i].Key, eventBuilder);
                     }
                     else
                     {
-                        JsonUtil.SetString(properties[i].Key, properties[i].Value.ToString(), eventBuilder);
+                        JsonUtil.SetObject(properties[i].Key, properties[i].Value, eventBuilder);
                     }
                 }
                 eventBuilder.Append("}"); //close properties object
@@ -872,7 +887,7 @@ namespace Cognitive3D.Serialization
             int samples = 0;
             fixationHitDynamicIds.Clear();
             localFixationUsedCaptures.Clear();
-            long firstOnTransformTime = 0;            
+            long firstOnTransformTime = 0;
 
             for (int i = 0; i < CachedEyeCaptures; i++)
             {
@@ -1251,6 +1266,7 @@ namespace Cognitive3D.Serialization
 
         static void InitializeGaze()
         {
+            // Approximately 70 characters per snapshot, 1200 characters extra room
             gazebuilder = new StringBuilder(70 * Cognitive3D_Preferences.Instance.GazeSnapshotCount + 1200);
             gazebuilder.Append("{\"data\":[");
         }
@@ -1473,13 +1489,30 @@ namespace Cognitive3D.Serialization
                         List<KeyValuePair<string, object>> thisSubscription = metaSubscriptionDetails[i];
                         foreach (var kvp in thisSubscription)
                         {
+                            if (kvp.Value == null) { Util.logDevelopment("Subscription " + kvp.Key + " is NULL "); continue; }
                             if (kvp.Value.GetType() == typeof(string))
                             {
                                 JsonUtil.SetString(kvp.Key, kvp.Value.ToString(), gazebuilder);
                             }
+                            else if (kvp.Value.GetType() == typeof(float))
+                            {
+                                JsonUtil.SetFloat(kvp.Key, (float)kvp.Value, gazebuilder);
+                            }
+                            else if (kvp.Value.GetType() == typeof(int))
+                            {
+                                JsonUtil.SetInt(kvp.Key, (int)kvp.Value, gazebuilder);
+                            }
+                            else if (kvp.Value.GetType() == typeof(double))
+                            {
+                                JsonUtil.SetDouble(kvp.Key, (double)kvp.Value, gazebuilder);
+                            }
                             else if (kvp.Value.GetType() == typeof(long))
                             {
                                 JsonUtil.SetLong(kvp.Key, (long)kvp.Value, gazebuilder);
+                            }
+                            else if (kvp.Value.GetType() == typeof(bool))
+                            {
+                                JsonUtil.SetBool(kvp.Key, (bool)kvp.Value, gazebuilder);
                             }
                             else
                             {
@@ -1514,6 +1547,22 @@ namespace Cognitive3D.Serialization
                     {
                         JsonUtil.SetFloat(kvp.Key, (float)kvp.Value, gazebuilder);
                     }
+                    else if (kvp.Value.GetType() == typeof(double))
+                    {
+                        JsonUtil.SetDouble(kvp.Key, (double)kvp.Value, gazebuilder);
+                    }
+                    else if (kvp.Value.GetType() == typeof(int))
+                    {
+                        JsonUtil.SetInt(kvp.Key, (int)kvp.Value, gazebuilder);
+                    }
+                    else if (kvp.Value.GetType() == typeof(long))
+                    {
+                        JsonUtil.SetLong(kvp.Key, (long)kvp.Value, gazebuilder);
+                    }
+                    else if (kvp.Value.GetType() == typeof(bool))
+                    {
+                        JsonUtil.SetBool(kvp.Key, (bool)kvp.Value, gazebuilder);
+                    }
                     else
                     {
                         JsonUtil.SetObject(kvp.Key, kvp.Value, gazebuilder);
@@ -1529,6 +1578,7 @@ namespace Cognitive3D.Serialization
                 gazebuilder.Append("\"properties\":{");
                 foreach (var kvp in GetNewSessionProperties(true))
                 {
+                    if (kvp.Value == null) { Util.logDevelopment("Session Property " + kvp.Key + " is NULL "); continue; }
                     if (kvp.Value.GetType() == typeof(string))
                     {
                         JsonUtil.SetString(kvp.Key, (string)kvp.Value, gazebuilder);
@@ -1536,6 +1586,22 @@ namespace Cognitive3D.Serialization
                     else if (kvp.Value.GetType() == typeof(float))
                     {
                         JsonUtil.SetFloat(kvp.Key, (float)kvp.Value, gazebuilder);
+                    }
+                    else if (kvp.Value.GetType() == typeof(double))
+                    {
+                        JsonUtil.SetDouble(kvp.Key, (double)kvp.Value, gazebuilder);
+                    }
+                    else if (kvp.Value.GetType() == typeof(int))
+                    {
+                        JsonUtil.SetInt(kvp.Key, (int)kvp.Value, gazebuilder);
+                    }
+                    else if (kvp.Value.GetType() == typeof(long))
+                    {
+                        JsonUtil.SetLong(kvp.Key, (long)kvp.Value, gazebuilder);
+                    }
+                    else if (kvp.Value.GetType() == typeof(bool))
+                    {
+                        JsonUtil.SetBool(kvp.Key, (bool)kvp.Value, gazebuilder);
                     }
                     else
                     {
@@ -1550,6 +1616,181 @@ namespace Cognitive3D.Serialization
             gazebuilder.Append("}");
             WebPost("gaze", gazebuilder.ToString(), writeToCache);
             gazebuilder.Length = 9;
+        }
+
+        #endregion
+
+        #region Boundary
+        /// <summary>
+        /// The stringbuilder for the boundary stream json
+        /// </summary>
+        static StringBuilder boundarybuilder;
+        
+        /// <summary>
+        /// The part number for the boundary json
+        /// 
+        /// </summary>
+        static int boundaryJsonPart = 1;
+
+        /// <summary>
+        /// A dictionary to store the boundary shapes instead of immediately serializing and sending them
+        /// </summary>
+        static List<KeyValuePair<double, object>> boundaryShapes = new List<KeyValuePair<double, object>>();
+
+        /// <summary>
+        /// We will store the transforms of the tracking spaces and then serialize the pos and rot separately
+        /// We won't use scale
+        /// </summary>
+        static List<KeyValuePair<double, Cognitive3D.Components.CustomTransform>> trackingSpaces = new List<KeyValuePair<double, Cognitive3D.Components.CustomTransform>>();
+
+        /// <summary>
+        /// Threshold for tracking space count
+        /// Not in preferences; don't want users changing this
+        /// </summary>
+        static int BOUNDARY_SHAPE_COUNT_THRESHOLD = 5;
+
+        /// <summary>
+        /// Initializes a json to hold the boundary points data
+        /// This will be added to the gaze stream
+        /// </summary>
+        internal static void InitializeBoundary(int numBoundaryPoints)
+        {
+            // Approximately 70 characters per snapshot, 1200 characters extra room
+            boundarybuilder = new StringBuilder(70 * numBoundaryPoints * Cognitive3D_Preferences.Instance.BoundarySnapshotCount + 1200);
+            boundarybuilder.Append("{\"data\":[");
+        }
+
+        /// <summary>
+        /// Adds the transform of the tracking space and associated timestamp to an internal list <br/>
+        /// We will later serialize contents and populate the json
+        /// </summary>
+        /// <param name="transform">The transform of the tracking space</param>
+        /// <param name="timestamp">The time at which the transform was recorded</param>
+        internal static void RecordTrackingSpaceTransform(Cognitive3D.Components.CustomTransform transform, double timestamp)
+        {
+            if (!IsInitialized || transform == null) { return; }
+            trackingSpaces.Add(new KeyValuePair<double, Cognitive3D.Components.CustomTransform>(timestamp, transform));
+            
+            // Once we have more than threshold, serialize and send request
+            if (trackingSpaces.Count > BoundaryThreshold)
+            {
+                SerializeBoundaryShapes(false);
+            }
+        }
+
+        /// <summary>
+        /// Adds the array of boundary points and associated timestamp to an internal list
+        /// We will later serialize contents and populate the json
+        /// </summary>
+        /// <param name="points"></param>
+        /// <param name="timestamp"></param>
+        internal static void RecordBoundaryShape(Vector3[] points, double timestamp)
+        {
+            if (!IsInitialized) { return; }
+            if (points == null) { return; }
+            if (points.Length == 0) { return; }
+            boundaryShapes.Add(new KeyValuePair<double, object>(timestamp, points));
+            
+            // Once we have threshold of boundary shapes count, serialize and send request
+            if (boundaryShapes.Count > BOUNDARY_SHAPE_COUNT_THRESHOLD)
+            {
+                SerializeBoundaryShapes(false);
+            }
+        }
+
+        /// <summary>
+        /// Constructs boundary json from internal lists and sends a web request
+        /// </summary>
+        static void SerializeBoundaryShapes(bool writeToCache)
+        {
+            if (boundarybuilder == null) { return; }
+
+            /// Tracking spaces
+            foreach (var kvp in trackingSpaces)
+            {
+                double timestamp = kvp.Key;
+                boundarybuilder.Append("{");
+                JsonUtil.SetDouble("time", timestamp, boundarybuilder);
+                boundarybuilder.Append(",");
+                JsonUtil.SetVector("p",
+                    new float[] { kvp.Value.pos.x, kvp.Value.pos.y, kvp.Value.pos.z },
+                    boundarybuilder);
+                boundarybuilder.Append(",");
+                JsonUtil.SetQuat("r",
+                        new float[] { kvp.Value.rot.x, kvp.Value.rot.y, kvp.Value.rot.z, kvp.Value.rot.w },
+                        boundarybuilder);
+                boundarybuilder.Append("}");
+                boundarybuilder.Append(",");
+            }
+            if (boundarybuilder[boundarybuilder.Length - 1] == ',')
+            {
+                boundarybuilder.Remove(boundarybuilder.Length - 1, 1); //remove comma
+            }
+            boundarybuilder.Append("]");
+            boundarybuilder.Append(",");
+
+            /// Boundaries
+            boundarybuilder.Append("\"shapes\":[");
+            foreach (KeyValuePair<double, object> kvp in boundaryShapes)
+            {
+                boundarybuilder.Append("{");
+                double timestamp = kvp.Key;
+                JsonUtil.SetDouble("time", timestamp, boundarybuilder);
+                boundarybuilder.Append(",");
+
+                Vector3[] points = (Vector3[])kvp.Value;
+                // Format as an array of points
+                boundarybuilder.Append("\"points\":");
+                boundarybuilder.Append("[");
+                for (int i = 0; i < points.Length; i++)
+                {
+                    JsonUtil.SetArrayOfFloat(new float[] { points[i].x, points[i].y, points[i].z }, boundarybuilder);
+                    boundarybuilder.Append(",");
+                }
+                if (boundarybuilder[boundarybuilder.Length - 1] == ',')
+                {
+                    boundarybuilder.Remove(boundarybuilder.Length - 1, 1); //remove comma
+                }
+                boundarybuilder.Append("]");
+                boundarybuilder.Append("}");
+                boundarybuilder.Append(",");
+            }
+            if (boundarybuilder[boundarybuilder.Length - 1] == ',')
+            {
+                boundarybuilder.Remove(boundarybuilder.Length - 1, 1); //remove comma
+            }
+            boundarybuilder.Append("]");
+            boundarybuilder.Append(",");
+
+            /// Headers
+            JsonUtil.SetString("userid", DeviceId, boundarybuilder);
+            boundarybuilder.Append(",");
+            JsonUtil.SetDouble("time", (int) SessionTimestamp, boundarybuilder);
+            boundarybuilder.Append(",");
+            JsonUtil.SetString("sessionid", SessionId, boundarybuilder);
+            boundarybuilder.Append(",");
+            JsonUtil.SetInt("part", boundaryJsonPart, boundarybuilder);
+
+            boundaryJsonPart++;
+
+            if (boundarybuilder[boundarybuilder.Length - 1] == ',')
+            {
+                boundarybuilder.Remove(boundarybuilder.Length - 1, 1); //remove comma
+            }
+            boundarybuilder.Append("}");
+
+            WebPost("boundary", boundarybuilder.ToString(), writeToCache);
+
+            // Clear and prepare for next batch
+            trackingSpaces.Clear();
+            boundarybuilder.Clear();
+            boundarybuilder.Append("{\"data\":[");
+        }
+
+        static void ResetBoundary()
+        {
+            boundarybuilder = null;
+            boundaryJsonPart = 1;
         }
 
         #endregion
@@ -1761,15 +2002,21 @@ namespace Cognitive3D.Serialization
             if (!IsInitialized) { return; }
             DynamicObjectManifestEntry dome = new DynamicObjectManifestEntry(data.Id, data.Name, data.MeshName);
 
-            dome.controllerType = data.ControllerType;
-            dome.isController = true;
+            dome.inputType = data.InputType;
+
+            if (data.IsController)
+            {
+                dome.controllerType = data.ControllerType;
+                dome.isController = true;
+            }
+
             if (data.IsRightHand)
             {
-                dome.Properties = "{\"controller\": \"right\"}";
+                dome.Properties = "\"controller\": \"right\"";
             }
             else
             {
-                dome.Properties = "{\"controller\": \"left\"}";
+                dome.Properties = "\"controller\": \"left\"";
             }
             dome.HasProperties = true;
 
@@ -2150,9 +2397,9 @@ namespace Cognitive3D.Serialization
             //properties should already be formatted, just need to append them here
             if (!string.IsNullOrEmpty(entry.Properties))
             {
-                builder.Append(",\"properties\":[");
+                builder.Append(",\"properties\":{");
                 builder.Append(entry.Properties);
-                builder.Append("]");
+                builder.Append("}");
             }
 
             builder.Append("}"); //close manifest entry
@@ -2197,7 +2444,7 @@ namespace Cognitive3D.Serialization
 
         #region Exitpoll
         //TODO list of some generic class that can be serialized instead of Cognitive3D.ExitPollSet.ResponseContext
-        internal static string FormatExitpoll(List<Cognitive3D.ExitPollSet.ResponseContext> responseProperties, string QuestionSetId, string hook, string sceneId, int versionNumber, int versionId)
+        internal static string FormatExitpoll(List<Cognitive3D.ExitPollManager.ResponseContext> responseProperties, string QuestionSetId, string hook, string sceneId, int versionNumber, int versionId)
         {
             StringBuilder builder = new StringBuilder();
             builder.Append("{");

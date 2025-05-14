@@ -606,6 +606,9 @@ namespace Cognitive3D
             
             if (Wave.Essence.Eye.EyeManager.Instance.GetCombindedEyeDirectionNormalized(out lastDirection) && Wave.Essence.Eye.EyeManager.Instance.GetCombinedEyeOrigin(out originPoint))
             {
+                originPoint = GameplayReferences.HMD.transform.parent.TransformPoint(originPoint);
+                lastDirection = GameplayReferences.HMD.transform.parent.TransformDirection(lastDirection);
+
                 ray = new Ray(originPoint, lastDirection);
                 return true;
             }
