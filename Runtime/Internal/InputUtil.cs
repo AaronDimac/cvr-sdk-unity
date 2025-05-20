@@ -21,16 +21,16 @@ namespace Cognitive3D
         //developer facing high level controller type selection
         public enum ControllerType
         {
-            Quest2 = 1,
-            QuestPro = 2,
-            Quest3 = 9,
+            Quest2 = 0,
+            QuestPro = 1,
+            Quest3 = 2,
             ViveWand = 3,
             WindowsMRController = 4,
             SteamIndex = 5,
             PicoNeo3 = 6,
             PicoNeo4 = 7,
             ViveFocus = 8,
-            Hand = 10, //might suggest that this includes skeletal hand tracking, which needs some more design
+            Hand = 9, //might suggest that this includes skeletal hand tracking, which needs some more design
             //Generic = 0, //basically a non-branded oculus touch controller
         }
         
