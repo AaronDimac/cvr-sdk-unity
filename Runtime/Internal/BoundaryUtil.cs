@@ -103,6 +103,39 @@ namespace Cognitive3D.Components
 #endif
         }
 
+#region SteamVR Specific Utils
+
+#if C3D_STEAMVR2
+        /// <summary>
+        /// Converts Valve's HmdQuad_t array to a List of Vector3. 
+        /// Used for the very specific use-case of boundary points.
+        /// </summary>
+        /// <param name="steamArray"> An array of HmdQuad_t structs</param>
+        /// <returns> A list of 4 Vector3 elements </returns>
+        private static Vector3[] ConvertSteamVRToUnityBounds(Valve.VR.HmdQuad_t[] steamArray)
+        {
+            Vector3[] returnArray = new Vector3[steamArray.Length];
+            for (int i = 0; i < steamArray.Length; i++)
+            {
+                returnArray[i] = SteamHMDVector3tToVector(steamArray[i].vCorners0);
+            }
+            return returnArray;
+        }
+            
+        /// <summary>
+        /// Converts a Valve.VR HmdVector3_t struct to a Unity Vector3
+        /// </summary>
+        /// <param name="point">A struct of type Valve.VR.HmdVector3_t</param>
+        /// <returns>A Vector3 representation of the Valve.VR point</returns>
+        private static Vector3 SteamHMDVector3tToVector(Valve.VR.HmdVector3_t point)
+        {
+            Vector3 myPoint = new Vector3(point.v0, point.v1, point.v2);
+            return myPoint;
+        }
+#endif
+
+#endregion
+
         /// <summary>
         /// Determines if a point is within a polygon
         /// </summary>
