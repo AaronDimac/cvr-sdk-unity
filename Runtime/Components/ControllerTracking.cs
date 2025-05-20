@@ -13,7 +13,7 @@ namespace Cognitive3D.Components
     [AddComponentMenu("Cognitive3D/Components/Controller Tracking")]
     public class ControllerTracking : AnalyticsComponentBase
     {
-        public InputUtil.ControllerType FallbackControllerType = (InputUtil.ControllerType)3;
+        public InputUtil.ControllerType FallbackControllerType;
 
         private readonly float ControllerTrackingInterval = 1;
 
