@@ -434,6 +434,11 @@ namespace Cognitive3D
             return position != Vector3.zero;
         }
 
+#if C3D_STEAMVR2
+        static Valve.VR.TrackedDevicePose_t[] poses = new Valve.VR.TrackedDevicePose_t[Valve.VR.OpenVR.k_unMaxTrackedDeviceCount];
+        static Valve.VR.TrackedDevicePose_t[] gamePoses = new Valve.VR.TrackedDevicePose_t[0];
+#endif
+
 
         /// <summary>
         /// Retrieves the position of a specified XR node (e.g., hand or controller) based on the current tracking type.
@@ -494,6 +499,28 @@ namespace Cognitive3D
                     }
                     break;
             }
+#elif C3D_STEAMVR2
+            var rotation = Quaternion.identity;
+            var system = Valve.VR.OpenVR.System;
+            if (system == null)
+                return rotation;
+
+            var role = node == XRNode.RightHand ? Valve.VR.ETrackedControllerRole.RightHand : Valve.VR.ETrackedControllerRole.LeftHand;
+            var deviceIndex = system.GetTrackedDeviceIndexForControllerRole(role);
+            if (deviceIndex == Valve.VR.OpenVR.k_unTrackedDeviceIndexInvalid)
+                return rotation;
+            
+            if (!Valve.VR.SteamVR.active || Valve.VR.OpenVR.Compositor == null)
+            {
+                return rotation;
+            }
+
+            Valve.VR.OpenVR.Compositor.GetLastPoses(poses, gamePoses);
+            var pose = poses[deviceIndex];
+            if (!pose.bPoseIsValid)
+                return rotation;
+
+            rotation = pose.mDeviceToAbsoluteTracking.GetRotation();
 #elif C3D_DEFAULT
             switch (currentTracking)
             {
@@ -631,6 +658,28 @@ namespace Cognitive3D
                     }
                     break;
             }
+#elif C3D_STEAMVR2
+            var position = Vector3.zero;
+            var system = Valve.VR.OpenVR.System;
+            if (system == null)
+                return position;
+
+            var role = node == XRNode.RightHand ? Valve.VR.ETrackedControllerRole.RightHand : Valve.VR.ETrackedControllerRole.LeftHand;
+            var deviceIndex = system.GetTrackedDeviceIndexForControllerRole(role);
+            if (deviceIndex == Valve.VR.OpenVR.k_unTrackedDeviceIndexInvalid)
+                return position;
+            
+            if (!Valve.VR.SteamVR.active || Valve.VR.OpenVR.Compositor == null)
+            {
+                return position;
+            }
+
+            Valve.VR.OpenVR.Compositor.GetLastPoses(poses, gamePoses);
+            var pose = poses[deviceIndex];
+            if (!pose.bPoseIsValid)
+                return position;
+
+            position = pose.mDeviceToAbsoluteTracking.GetPosition();
 #elif C3D_DEFAULT
             switch (currentTracking)
             {
