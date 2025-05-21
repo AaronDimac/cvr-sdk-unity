@@ -176,7 +176,13 @@ namespace Cognitive3D.Components
             if (waveRig!= null)
             {
                 customTransform = new CustomTransform(waveRig.transform.position, waveRig.transform.rotation);
-            }       
+            }   
+#elif C3D_STEAMVR2
+            var playerRig = GameplayReferences.PlayerRig;
+            if (playerRig!= null)
+            {
+                customTransform = new CustomTransform(playerRig.transform.position, playerRig.transform.rotation);
+            }
 #endif
             if (customTransform == null)
             {
