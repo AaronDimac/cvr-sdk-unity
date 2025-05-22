@@ -295,7 +295,7 @@ namespace Cognitive3D.Components
         private static Vector3[] GetLargestInscribedRectangle(Vector3[] convexHull)
         {
             float maxRectangleWidth = 0, maxRectangleHeight = 0;
-            Vector3 rectangleCenter = Vector3.zero;
+            Vector3 rectangleCenter;
             Vector3 bottomLeftCorner = Vector3.zero, bottomRightCorner = Vector3.zero;
             Vector3 topLeftCorner = Vector3.zero, topRightCorner = Vector3.zero;
 
@@ -324,7 +324,7 @@ namespace Cognitive3D.Components
                 }
             }
 
-            return new Vector3[] { topLeftCorner, bottomLeftCorner, bottomRightCorner, topRightCorner };
+            return new[] { topLeftCorner, bottomLeftCorner, bottomRightCorner, topRightCorner };
         }
 
     }

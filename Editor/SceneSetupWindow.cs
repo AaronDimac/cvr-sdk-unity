@@ -588,6 +588,7 @@ namespace Cognitive3D
             //controllers
             GUI.Label(new Rect(200, 105, 440, 440), "Auto Player Setup", "normallabel");
             Rect checkboxRect = new Rect(170, 100, 30, 30);
+
             if (Cognitive3D_Manager.autoInitializePlayerSetup)
             {
                 if (GUI.Button(checkboxRect, EditorCore.BoxCheckmark, "image_centered"))
@@ -595,6 +596,8 @@ namespace Cognitive3D
                     SegmentAnalytics.TrackEvent("DisabledAutoPlayerSetup_PlayerSetupPage", "SceneSetupPlayerSetupPage");
                     Cognitive3D_Manager.autoInitializePlayerSetup = false;
                 }
+
+                GUI.Label(new Rect(30, 140, 440, 440), "When \"Auto Player Setup\" is enabled, all player-related objects are automatically detected and tracked. If you'd prefer to assign these objects manually, disable this option.", "normallabel");
             }
             else
             {
@@ -618,22 +621,15 @@ namespace Cognitive3D
                     var trackingSpaces = FindObjectsOfType<RoomTrackingSpace>();
                     if (trackingSpaces.Length > 0)
                     {
-                        foreach (var trackingSpace in trackingSpaces)
+                        foreach (var _trackingSpace in trackingSpaces)
                         {
-                            DestroyImmediate(trackingSpace);
+                            DestroyImmediate(_trackingSpace);
                         }
                     }
 
                     Cognitive3D_Manager.autoInitializePlayerSetup = true;
                 }
-            }
 
-            if (Cognitive3D_Manager.autoInitializePlayerSetup)
-            {
-                GUI.Label(new Rect(30, 140, 440, 440), "When \"Auto Player Setup\" is enabled, all player-related objects are automatically detected and tracked. If you'd prefer to assign these objects manually, disable this option.", "normallabel");
-            }
-            else
-            {
                 GUI.Label(new Rect(30, 140, 440, 440), "The display for the HMD should be tagged as <b>MainCamera</b>", "normallabel");
                 GUI.Label(new Rect(30, 180, 440, 440), "The <b>TrackingSpace</b> is the root transform for the HMD and controllers", "normallabel");
                 //hmd
