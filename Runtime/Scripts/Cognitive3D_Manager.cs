@@ -1139,5 +1139,15 @@ namespace Cognitive3D
                 return 0;
             return DataCache.GetCacheFillAmount();
         }
+        
+        /// <summary>
+        /// Upload all data from local storage. will call completed after everything has been uploaded, failed if not connected to internet or local storage not enabled
+        /// </summary>
+        /// <param name="completedCallback"></param>
+        /// <param name="failedCallback"></param>
+        public static void UploadAllLocalData(System.Action completedCallback, System.Action failedCallback)
+        {
+            NetworkManager.UploadAllLocalData(completedCallback, failedCallback);
+        }
     }
 }
