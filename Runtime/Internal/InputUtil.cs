@@ -559,7 +559,7 @@ namespace Cognitive3D
         public static bool TryGetControllerPosition(XRNode node, out Vector3 position)
         {
             position = GetNodePosition(node);
-            if (GameplayReferences.HMD)
+            if (GameplayReferences.HMD && GameplayReferences.HMD.transform.parent)
             {
                 position = GameplayReferences.HMD.transform.parent.TransformPoint(position);
             }
@@ -659,7 +659,7 @@ namespace Cognitive3D
                 case InputType.Controller:
                     return GetDefaultNodePosition(node);
 
-    #if COGNITIVE3D_INCLUDE_XR_HANDS
+#if COGNITIVE3D_INCLUDE_XR_HANDS
                 case InputType.Hand:
                     var subsystems = new List<UnityEngine.XR.Hands.XRHandSubsystem>();
                     SubsystemManager.GetSubsystems(subsystems);
@@ -679,7 +679,7 @@ namespace Cognitive3D
                         }
                     }
                     break;
-    #endif
+#endif
             }
 #endif
             // Default fallback for retrieving controller positions
@@ -724,7 +724,7 @@ namespace Cognitive3D
                 return false;
             }
             
-            if (GameplayReferences.HMD)
+            if (GameplayReferences.HMD && GameplayReferences.HMD.transform.parent)
             {
                 rotation = GameplayReferences.HMD.transform.parent.rotation * rotation;
             }
