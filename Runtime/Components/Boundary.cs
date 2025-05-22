@@ -141,7 +141,7 @@ namespace Cognitive3D.Components
 #region Inspector Utils
         public override bool GetWarning()
         {
-#if C3D_OCULUS || C3D_DEFAULT || C3D_VIVEWAVE || C3D_PICOXR
+#if C3D_OCULUS || C3D_DEFAULT || C3D_VIVEWAVE || C3D_PICOXR || C3D_STEAMVR2
             return false;
 #else
             return true;
@@ -150,10 +150,10 @@ namespace Cognitive3D.Components
 
         public override string GetDescription()
         {
-#if C3D_OCULUS || C3D_DEFAULT || C3D_VIVEWAVE || C3D_PICOXR
+#if C3D_OCULUS || C3D_DEFAULT || C3D_VIVEWAVE || C3D_PICOXR || C3D_STEAMVR2
             return "Records player boundary";
 #else
-            return "Current platform does not support this component. This component is only supported for Meta, HTC Wave, PicoXR, and OpenXR.";
+            return "Current platform does not support this component. This component is only supported for Meta, HTC Wave, PicoXR, SteamVR and OpenXR.";
 #endif
         }
 #endregion
