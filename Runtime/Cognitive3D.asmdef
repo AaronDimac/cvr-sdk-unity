@@ -74,6 +74,11 @@
             "name": "com.unity.xr.hands",
             "expression": "",
             "define": "COGNITIVE3D_INCLUDE_XR_HANDS"
+        },
+        {
+            "name": "com.meta.xr.sdk.platform",
+            "expression": "",
+            "define": "COGNITIVE3D_META_PLATFORM"
         }
     ],
     "noEngineReferences": false
