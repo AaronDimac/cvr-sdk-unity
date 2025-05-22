@@ -303,6 +303,33 @@ namespace Cognitive3D
         }
 #endif
 
+#if C3D_STEAMVR2
+        static GameObject _playerRig;
+        public static GameObject PlayerRig
+        {
+            get
+            {
+                if (_playerRig == null)
+                {
+                    var player = GameObject.FindObjectOfType<Valve.VR.InteractionSystem.Player>();
+                    if (player != null)
+                    {
+                        _playerRig = player.gameObject;
+                    }
+                    else
+                    {
+                        var playArea = GameObject.FindObjectOfType<Valve.VR.SteamVR_PlayArea>();
+                        if (playArea != null)
+                        {
+                            _playerRig = playArea.gameObject;
+                        }
+                    }
+                }
+                return _playerRig;
+            }
+        }
+#endif
+
 #if COGNITIVE3D_INCLUDE_COREUTILITIES
         private static Unity.XR.CoreUtils.XROrigin _xrOrigin;
 
