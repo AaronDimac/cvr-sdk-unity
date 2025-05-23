@@ -507,39 +507,6 @@ namespace Cognitive3D
                     OVRProjectConfig.CommitProjectConfig(projectConfig);
                 }
             );
-
-            ProjectValidation.AddItem(
-                level: ProjectValidation.ItemLevel.Recommended, 
-                category: CATEGORY,
-                actionType: ProjectValidation.ItemAction.Apply,
-                message: "Recording Oculus user data like username, id, and display name is disabled. Enable recording Oculus User Data?",
-                fixmessage: "Recording Oculus user data like username, id, and display name is enabled",
-                checkAction: () =>
-                {
-                    ProjectValidation.FindComponentInActiveScene<OculusSocial>(out var oculusSocial);
-                    if (oculusSocial != null && oculusSocial.Count != 0)
-                    {
-                        return oculusSocial[0].GetRecordOculusUserData();
-                    }
-                    return false;
-                },
-                fixAction: () =>
-                {
-                    ProjectValidation.FindComponentInActiveScene<OculusSocial>(out var oculusSocial);
-                    if (oculusSocial != null && oculusSocial.Count != 0)
-                    {
-                        oculusSocial[0].SetRecordOculusUserData(true);
-                        return;
-                    }
-
-                    Cognitive3D_Manager.Instance.gameObject.AddComponent<OculusSocial>();
-                    ProjectValidation.FindComponentInActiveScene<OculusSocial>(out oculusSocial);
-                    if (oculusSocial != null && oculusSocial.Count != 0)
-                    {
-                        oculusSocial[0].SetRecordOculusUserData(true);
-                    }
-                }
-            );
 #elif C3D_PICOXR
             ProjectValidation.AddItem(
                 level: ProjectValidation.ItemLevel.Required, 
@@ -890,6 +857,41 @@ namespace Cognitive3D
             }
     #endif
 
+#endif
+
+#if COGNITIVE3D_META_PLATFORM
+            ProjectValidation.AddItem(
+                level: ProjectValidation.ItemLevel.Recommended,
+                category: CATEGORY,
+                actionType: ProjectValidation.ItemAction.Apply,
+                message: "Recording Oculus user data like username, id, and display name is disabled. Enable recording Oculus User Data?",
+                fixmessage: "Recording Oculus user data like username, id, and display name is enabled",
+                checkAction: () =>
+                {
+                    ProjectValidation.FindComponentInActiveScene<OculusSocial>(out var oculusSocial);
+                    if (oculusSocial != null && oculusSocial.Count != 0)
+                    {
+                        return oculusSocial[0].GetRecordOculusUserData();
+                    }
+                    return false;
+                },
+                fixAction: () =>
+                {
+                    ProjectValidation.FindComponentInActiveScene<OculusSocial>(out var oculusSocial);
+                    if (oculusSocial != null && oculusSocial.Count != 0)
+                    {
+                        oculusSocial[0].SetRecordOculusUserData(true);
+                        return;
+                    }
+
+                    Cognitive3D_Manager.Instance.gameObject.AddComponent<OculusSocial>();
+                    ProjectValidation.FindComponentInActiveScene<OculusSocial>(out oculusSocial);
+                    if (oculusSocial != null && oculusSocial.Count != 0)
+                    {
+                        oculusSocial[0].SetRecordOculusUserData(true);
+                    }
+                }
+            );  
 #endif
 
 #region Multiplayer Support
