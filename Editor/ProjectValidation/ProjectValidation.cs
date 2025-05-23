@@ -43,6 +43,13 @@ namespace Cognitive3D
 
         internal static readonly ProjectValidationItemRegistry registry = new ProjectValidationItemRegistry();
 
+        internal delegate void onProjectValidationUpdate();
+        /// <summary>
+        /// Event used to signal that project validation items have been updated.
+        /// </summary>
+        internal static event onProjectValidationUpdate OnProjectValidationUpdate;
+        internal static void InvokeProjectValidationUpdateEvent() { if (OnProjectValidationUpdate != null) { OnProjectValidationUpdate.Invoke(); } }
+
         /// <summary>
         /// Add an <see cref="ProjectValidationItem"/> to project validation checklist items
         /// </summary>
