@@ -26,6 +26,13 @@ namespace Cognitive3D
         static ProjectValidationItemsStatus()
         {
             EditorSceneManager.sceneOpened += OnSceneOpened;
+            EditorApplication.quitting += Cleanup;
+        }
+
+        private static void Cleanup()
+        {
+            EditorSceneManager.sceneOpened -= OnSceneOpened;
+            EditorApplication.quitting -= Cleanup;
         }
 
         internal static string GetCurrentSceneName()
