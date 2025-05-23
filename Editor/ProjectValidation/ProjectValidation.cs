@@ -271,7 +271,7 @@ namespace Cognitive3D
         {
             controllerNamesList = new List<string>();
             ProjectValidation.FindComponentInActiveScene<DynamicObject>(out var controllers);
-            if (controllers == null)
+            if (controllers.Count <= 0)
             {
                 return false;
             }
@@ -283,7 +283,7 @@ namespace Cognitive3D
                     controllerNamesList.Add(controller.name);
                 }
             }
-            return true;
+            return controllerNamesList.Count > 0;
         }
 
         /// <summary>
