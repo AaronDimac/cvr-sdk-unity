@@ -259,7 +259,7 @@ namespace Cognitive3D
         /// </summary>
         /// <param name="completedCallback"></param>
         /// <param name="failedCallback"></param>
-        public static void UploadAllLocalData(System.Action completedCallback, System.Action failedCallback)
+        internal static void UploadAllLocalData(System.Action completedCallback, System.Action failedCallback)
         {
             if (!isuploadingfromcache)
             {

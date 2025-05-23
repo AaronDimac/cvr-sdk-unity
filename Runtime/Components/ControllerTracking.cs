@@ -129,7 +129,7 @@ namespace Cognitive3D.Components
 
         void RegisterControllers()
         {
-            if (!Cognitive3D_Manager.autoInitializeInput) return;
+            if (!Cognitive3D_Manager.autoInitializePlayerSetup) return;
 
             // Check if the left controller is valid and not yet registered
             if (!leftControllerRegistered && InputUtil.TryGetInputDevice(XRNode.LeftHand, out InputDevice leftController))
