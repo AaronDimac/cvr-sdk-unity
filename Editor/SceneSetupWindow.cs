@@ -617,7 +617,7 @@ namespace Cognitive3D
                             }
                         }
                     }
-                    
+
                     var trackingSpaces = FindObjectsOfType<RoomTrackingSpace>();
                     if (trackingSpaces.Length > 0)
                     {
@@ -688,17 +688,21 @@ namespace Cognitive3D
 
                 //right hand label
                 DrawObjectPicker(ref rightcontroller, "Right Controller", 390, 5689469);
-                HandleDragAndDrop(new Rect(180, 390, 440, 30), ref rightcontroller); 
+                HandleDragAndDrop(new Rect(180, 390, 440, 30), ref rightcontroller);
 
                 if (!rightControllerIsValid)
                 {
                     GUI.Label(new Rect(400, 390, 30, 30), new GUIContent(EditorCore.Alert, "Right Controller not set"), "image_centered");
                 }
 
-                AllSetupComplete = (Cognitive3D_Manager.autoInitializePlayerSetup || (leftControllerIsValid && rightControllerIsValid)) 
+                AllSetupComplete = (Cognitive3D_Manager.autoInitializePlayerSetup || (leftControllerIsValid && rightControllerIsValid))
                                 && cameraIsValid && trackingSpaceIsValid;
 
-                if (GUI.Button(new Rect(160, 440, 200, 30), new GUIContent("Set up GameObjects","Set up the player rig tracking space, attach Dynamic Object components to the controllers, and configures controllers to record button inputs")))
+#if C3D_STEAMVR2
+                if (GUI.Button(new Rect(30, 440, 200, 30), new GUIContent("Set up GameObjects", "Set up the player rig tracking space, attach Dynamic Object components to the controllers, and configures controllers to record button inputs")))
+#else
+                if (GUI.Button(new Rect(160, 440, 200, 30), new GUIContent("Set up GameObjects", "Set up the player rig tracking space, attach Dynamic Object components to the controllers, and configures controllers to record button inputs")))
+#endif
                 {
                     if (mainCameraObject != null)
                     {
@@ -713,48 +717,55 @@ namespace Cognitive3D
 
                 if (AllSetupComplete)
                 {
+#if C3D_STEAMVR2
+                    GUI.Label(new Rect(0, 440, 30, 30), EditorCore.CircleCheckmark, "image_centered");
+#else
                     GUI.Label(new Rect(130, 440, 30, 30), EditorCore.CircleCheckmark, "image_centered");
+#endif
                 }
                 else
                 {
-                    GUI.Label(new Rect(128, 440, 32, 32), EditorCore.Alert, "image_centered");
-                }
-            }
 #if C3D_STEAMVR2
-
-            //generate default input file if it doesn't already exist
-            bool hasInputActionFile = SteamVR_Input.DoesActionsFileExist();
-            if (GUI.Button(new Rect(160, 445, 200, 30), "Append Input Bindings"))
-            {
-                if (SteamVR_Input.actionFile == null)
-                {
-                    bool initializeSuccess = SteamVR_Input.InitializeFile(false, false);
-
-                    if (initializeSuccess == false)
-                    {
-                        //copy
-                        SteamVR_CopyExampleInputFiles.CopyFiles(true);
-                        System.Threading.Thread.Sleep(1000);
-                        SteamVR_Input.InitializeFile();
-                    }
-                }
-                if (SteamVR_Input_EditorWindow.IsOpen())
-                {
-                    SteamVR_Input_EditorWindow.GetOpenWindow().Close();
-                }
-                AppendSteamVRActionSet();
-                SetDefaultBindings();
-                Valve.VR.SteamVR_Input_Generator.BeginGeneration();
-            }
-            if (DoesC3DInputActionSetExist())
-            {
-                GUI.Label(new Rect(130, 445, 30, 30), EditorCore.CircleCheckmark, "image_centered");
-            }
-            else
-            {
-                GUI.Label(new Rect(128, 445, 32, 32), EditorCore.Alert, "image_centered");
-            }
+                    GUI.Label(new Rect(0, 440, 32, 32), EditorCore.Alert, "image_centered");
+#else
+                    GUI.Label(new Rect(128, 440, 32, 32), EditorCore.Alert, "image_centered");
 #endif
+                }
+#if C3D_STEAMVR2
+                //generate default input file if it doesn't already exist
+                bool hasInputActionFile = SteamVR_Input.DoesActionsFileExist();
+                if (GUI.Button(new Rect(270, 440, 200, 30), "Append Input Bindings"))
+                {
+                    if (SteamVR_Input.actionFile == null)
+                    {
+                        bool initializeSuccess = SteamVR_Input.InitializeFile(false, false);
+
+                        if (initializeSuccess == false)
+                        {
+                            //copy
+                            SteamVR_CopyExampleInputFiles.CopyFiles(true);
+                            System.Threading.Thread.Sleep(1000);
+                            SteamVR_Input.InitializeFile();
+                        }
+                    }
+                    if (SteamVR_Input_EditorWindow.IsOpen())
+                    {
+                        SteamVR_Input_EditorWindow.GetOpenWindow().Close();
+                    }
+                    AppendSteamVRActionSet();
+                    SetDefaultBindings();
+                    Valve.VR.SteamVR_Input_Generator.BeginGeneration();
+                }
+                if (DoesC3DInputActionSetExist())
+                {
+                    GUI.Label(new Rect(240, 440, 30, 30), EditorCore.CircleCheckmark, "image_centered");
+                }
+                else
+                {
+                    GUI.Label(new Rect(238, 440, 32, 32), EditorCore.Alert, "image_centered");
+                }
+#endif
+            }
         }
 
         private void DrawObjectPicker(ref GameObject obj, string label, int rectHeight, int pickerID)
@@ -1665,26 +1676,38 @@ namespace Cognitive3D
                         onclick += () => SegmentAnalytics.TrackEvent("PlayerGOIncomplete_PlayerSetupPage", "SceneSetupPlayerSetupPage");
                     }
 #if C3D_STEAMVR2
-                    appearDisabled = !AllSetupComplete;
                     if (!AllSetupComplete)
                     {
+                        appearDisabled = !Cognitive3D_Manager.autoInitializePlayerSetup;
+
                         if (appearDisabled)
                         {
-                            onclick += () => { if (EditorUtility.DisplayDialog("Continue", "Are you sure you want to continue without configuring the player prefab?", "Yes", "No")) { currentPage++; } };
+                            onclick += () =>
+                            {
+                                if (EditorUtility.DisplayDialog("Continue", 
+                                    "Are you sure you want to continue without configuring the player prefab?", "Yes", "No"))
+                                {
+                                    currentPage++;
+                                }
+                            };
                         }
                     }
                     else
                     {
                         appearDisabled = !hasFoundSteamVRActionSet;
-                        if (!hasFoundSteamVRActionSet)
+
+                        if (appearDisabled)
                         {
-                            if (appearDisabled)
+                            onclick += () =>
                             {
-                                onclick += () => { if (EditorUtility.DisplayDialog("Continue", "Are you sure you want to continue without creating the necessary SteamVR Input Action Set files?", "Yes", "No")) { currentPage++; } };
-                            }
+                                if (EditorUtility.DisplayDialog("Continue", 
+                                    "Are you sure you want to continue without creating the necessary SteamVR Input Action Set files?", "Yes", "No"))
+                                {
+                                    currentPage++;
+                                }
+                            };
                         }
                     }
-
 #else
                     appearDisabled = !AllSetupComplete && !Cognitive3D_Manager.autoInitializePlayerSetup;
                     if (appearDisabled)
