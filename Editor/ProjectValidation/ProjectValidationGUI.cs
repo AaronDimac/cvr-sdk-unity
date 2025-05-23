@@ -80,15 +80,6 @@ namespace Cognitive3D
                 {
                     GenericMenu menu = new GenericMenu();
                     menu.AddItem(new GUIContent("Verify all build scenes"), false, ProjectValidationItemsStatus.StartSceneVerificationProcess);
-                    menu.AddItem(new GUIContent("Show project verification prompt before build"), ProjectValidationLog.GetBuildProcessPopup(), () =>
-                    {
-                        var showPopup = ProjectValidationLog.GetBuildProcessPopup();
-                        if (showPopup)
-                        {
-                            SegmentAnalytics.TrackEvent("DisabledProjectValidationPopupB4Build", "PVAdvancedSettings_ShowProjectValidationPopup");
-                        }
-                        ProjectValidationLog.SetBuildProcessPopup(!showPopup);
-                    });
                     menu.AddItem(new GUIContent("Reset Ignored Items"), false, () =>
                     {
                         ProjectValidationLog.ClearIgnoreItems();
