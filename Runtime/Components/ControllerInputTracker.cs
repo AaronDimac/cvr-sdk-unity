@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using Cognitive3D;
 using UnityEngine.XR;
+using System;
+using System.Linq;
+
 #if C3D_STEAMVR2
 using Valve.VR;
 #endif
@@ -207,26 +210,23 @@ namespace Cognitive3D.Components
         {
             base.OnEnable();
 #if C3D_STEAMVR2
-            //register actions
-            if (gripAction != null)
+            foreach (var action in C3D_ActionSet.allActions)
             {
-                gripAction.AddOnChangeListener(OnGripActionChange, SteamVR_Input_Sources.LeftHand);
-                gripAction.AddOnChangeListener(OnGripActionChange, SteamVR_Input_Sources.RightHand);
-            }
-            if (touchAction != null)
-            {
-                touchAction.AddOnChangeListener(OnTouchActionChange, SteamVR_Input_Sources.LeftHand);
-                touchAction.AddOnChangeListener(OnTouchActionChange, SteamVR_Input_Sources.RightHand);
-            }
-            if (pressAction != null)
-            {
-                pressAction.AddOnChangeListener(OnPressActionChange, SteamVR_Input_Sources.LeftHand);
-                pressAction.AddOnChangeListener(OnPressActionChange, SteamVR_Input_Sources.RightHand);
-            }
-            if (menuAction != null)
-            {
-                menuAction.AddOnChangeListener(OnMenuActionChange, SteamVR_Input_Sources.LeftHand);
-                menuAction.AddOnChangeListener(OnMenuActionChange, SteamVR_Input_Sources.RightHand);
+                foreach (var inputSource in handSources)
+                {
+                    if (action is SteamVR_Action_Boolean booleanAction)
+                    {
+                        booleanAction.AddOnChangeListener(OnBooleanDown, inputSource);
+                    }
+                    else if (action is SteamVR_Action_Single singleAction)
+                    {
+                        singleAction.AddOnChangeListener(OnSingleChanged, inputSource);
+                    }
+                    else if (action is SteamVR_Action_Vector2 vector2Action)
+                    {
+                        vector2Action.AddOnChangeListener(OnVector2Changed, inputSource);
+                    }
+                }
             }
             if (C3D_ActionSet != null)
             {
@@ -241,25 +241,23 @@ namespace Cognitive3D.Components
             base.OnDisable();
             ControllerTracking.OnControllerRegistered -= Init;
 #if C3D_STEAMVR2
-            if (gripAction != null)
+            foreach (var action in C3D_ActionSet.allActions)
             {
-                gripAction.RemoveOnChangeListener(OnGripActionChange, SteamVR_Input_Sources.LeftHand);
-                gripAction.RemoveOnChangeListener(OnGripActionChange, SteamVR_Input_Sources.RightHand);
-            }
-            if (touchAction != null)
-            {
-                touchAction.RemoveOnChangeListener(OnTouchActionChange, SteamVR_Input_Sources.LeftHand);
-                touchAction.RemoveOnChangeListener(OnTouchActionChange, SteamVR_Input_Sources.RightHand);
-            }
-            if (pressAction != null)
-            {
-                pressAction.RemoveOnChangeListener(OnPressActionChange, SteamVR_Input_Sources.LeftHand);
-                pressAction.RemoveOnChangeListener(OnPressActionChange, SteamVR_Input_Sources.RightHand);
-            }
-            if (menuAction != null)
-            {
-                menuAction.RemoveOnChangeListener(OnMenuActionChange, SteamVR_Input_Sources.LeftHand);
-                menuAction.RemoveOnChangeListener(OnMenuActionChange, SteamVR_Input_Sources.RightHand);
+                foreach (var inputSource in handSources)
+                {
+                    if (action is SteamVR_Action_Boolean booleanAction)
+                    {
+                        booleanAction.RemoveOnChangeListener(OnBooleanDown, inputSource);
+                    }
+                    else if (action is SteamVR_Action_Single singleAction)
+                    {
+                        singleAction.RemoveOnChangeListener(OnSingleChanged, inputSource);
+                    }
+                    else if (action is SteamVR_Action_Vector2 vector2Action)
+                    {
+                        vector2Action.RemoveOnChangeListener(OnVector2Changed, inputSource);
+                    }
+                }
             }
             if (C3D_ActionSet != null)
             {
@@ -271,21 +269,19 @@ namespace Cognitive3D.Components
 
 #if C3D_STEAMVR2
 #region  SteamVR
+        private static readonly SteamVR_Input_Sources[] handSources =
+        {
+            SteamVR_Input_Sources.LeftHand,
+            SteamVR_Input_Sources.RightHand
+        };
+
         List<ButtonState> CurrentLeftButtonStates = new List<ButtonState>();
         List<ButtonState> CurrentRightButtonStates = new List<ButtonState>();
 
-        public SteamVR_Action_Boolean gripAction = SteamVR_Input.GetAction<SteamVR_Action_Boolean>("c3d_input", "grip");
-        public SteamVR_Action_Single triggerAction = SteamVR_Input.GetAction<SteamVR_Action_Single>("c3d_input", "trigger");
-        public SteamVR_Action_Boolean menuAction = SteamVR_Input.GetAction<SteamVR_Action_Boolean>("c3d_input", "menu");
-        public SteamVR_Action_Vector2 touchpadAction = SteamVR_Input.GetAction<SteamVR_Action_Vector2>("c3d_input", "touchpad");
-        public SteamVR_Action_Boolean touchAction = SteamVR_Input.GetAction<SteamVR_Action_Boolean>("c3d_input", "touchpad_touch");
-        public SteamVR_Action_Boolean pressAction = SteamVR_Input.GetAction<SteamVR_Action_Boolean>("c3d_input", "touchpad_press");
         public SteamVR_ActionSet C3D_ActionSet = SteamVR_Input.GetActionSet("C3D_Input");
 
-        int Trigger;
         int TouchForce;
         Vector2 lastAxis;
-        float sqrMag = 0.05f;
 
         private void LateUpdate()
         {
@@ -294,7 +290,6 @@ namespace Cognitive3D.Components
             //assuming controller updates happen before/in update loop?
             if (Time.time > nextUpdateTime)
             {
-                RecordAnalogInputs();
                 nextUpdateTime = Time.time + UpdateRate;
             }
 
@@ -320,229 +315,90 @@ namespace Cognitive3D.Components
             }
         }
 
-        private void OnGripActionChange(SteamVR_Action_Boolean fromAction, SteamVR_Input_Sources fromSource, bool newState)
+        private void OnBooleanDown(SteamVR_Action_Boolean fromAction, SteamVR_Input_Sources fromSource, bool newState)
         {
-            if (fromSource == SteamVR_Input_Sources.RightHand)
+            // Extracting the action name from the full path (e.g., "a" from "/actions/c3d_input/in/a")
+            string actionPath = fromAction.fullPath.ToLower(); // safer for matching
+            string actionName = actionPath.Split(new[] { "/in/" }, StringSplitOptions.None).Last();
+
+            string internalButtonName = actionName switch
             {
-                OnButtonChanged(
-                "vive_grip",
-                newState,
-                CurrentRightButtonStates);
-            }
-            else
-            {
-                OnButtonChanged(
-                "vive_grip",
-                newState,
-                CurrentLeftButtonStates);
-            }
+                "a" => "abtn",
+                "b" => "bbtn",
+                "x" => "xbtn",
+                "y" => "ybtn",
+                "menu" => "menu",
+                "touchpad_press" => "touchpad_press",
+                "touchpad_touch" => "touchpad_touch",
+                _ => actionName // fallback to raw name
+            };
+
+            var targetStateDict = fromSource == SteamVR_Input_Sources.RightHand
+                ? CurrentRightButtonStates
+                : CurrentLeftButtonStates;
+
+            Debug.LogError($"Button name: {internalButtonName}, state: {newState}, target: {targetStateDict}");
+            OnButtonChanged(internalButtonName, newState, targetStateDict);
         }
 
-        private void OnTouchActionChange(SteamVR_Action_Boolean fromAction, SteamVR_Input_Sources fromSource, bool newState)
+        private void OnSingleChanged(SteamVR_Action_Single fromAction, SteamVR_Input_Sources fromSource, float newAxis, float newDelta)
         {
-            ButtonState buttonstate;
-            if (fromSource == SteamVR_Input_Sources.RightHand)
+            // Extract action name from full path
+            string actionName = fromAction.fullPath.ToLower().Split(new[] { "/in/" }, StringSplitOptions.None).Last();
+
+            // Use a consistent internal name
+            string internalButtonName = actionName switch
             {
-                buttonstate = CurrentRightButtonStates.Find(delegate (ButtonState obj) { return obj.ButtonName == "vive_touchpad"; });
-            }
-            else
+                "trigger" => "trigger",
+                "grip" => "grip",
+                _ => actionName
+            };
+
+            // Convert analog value to 0–100 percent
+            int percent = Mathf.RoundToInt(Mathf.Clamp01(newAxis) * 100);
+
+            // Get the right list and axis (or fallback to zero)
+            var targetStateDict = fromSource == SteamVR_Input_Sources.RightHand
+                ? CurrentRightButtonStates
+                : CurrentLeftButtonStates;
+
+            Vector2 axis = Vector2.zero;
+            if (fromAction != null && fromAction.GetType() == typeof(SteamVR_Action_Single))
             {
-                buttonstate = CurrentLeftButtonStates.Find(delegate (ButtonState obj) { return obj.ButtonName == "vive_touchpad"; });
+                axis = lastAxis;
             }
 
-            if (buttonstate != null)
-            {
-                if (newState)
-                    TouchForce = 50;
-                else if (pressAction.state)
-                    TouchForce = 100;
-                else
-                    TouchForce = 0;
-                buttonstate.ButtonPercent = TouchForce;
-                lastAxis.x = buttonstate.X;
-                lastAxis.y = buttonstate.Y;
-            }
-            else
-            {
-                var axis = touchpadAction.GetAxis(fromSource);
-                if (newState)
-                    TouchForce = 50;
-                else if (pressAction.state)
-                    TouchForce = 100;
-                else
-                    TouchForce = 0;
+            Debug.LogError($"Button name: {internalButtonName}, percent: {percent}, axis: {axis}, target: {targetStateDict}");
+            OnSingleChanged(internalButtonName, percent, targetStateDict);
 
-                if (fromSource == SteamVR_Input_Sources.RightHand)
-                {
-                    OnVectorChanged(
-                        "vive_touchpad",
-                        TouchForce,
-                        axis,
-                        CurrentRightButtonStates);
-                }
-                else
-                {
-                    OnVectorChanged(
-                        "vive_touchpad",
-                        TouchForce,
-                        axis,
-                        CurrentLeftButtonStates);
-                }
-
-                lastAxis = axis;
-            }
+            TouchForce = percent;
         }
 
-        private void OnPressActionChange(SteamVR_Action_Boolean fromAction, SteamVR_Input_Sources fromSource, bool newState)
+        private void OnVector2Changed(SteamVR_Action_Vector2 fromAction, SteamVR_Input_Sources fromSource, Vector2 axis, Vector2 delta)
         {
-            ButtonState buttonstate;
-            if (fromSource == SteamVR_Input_Sources.RightHand)
+            // Extract action name from full path (e.g., "joystick" from "/actions/c3d_input/in/joystick")
+            string actionName = fromAction.fullPath.ToLower().Split(new[] { "/in/" }, StringSplitOptions.None).Last();
+
+            // Use a consistent internal name
+            string internalButtonName = actionName switch
             {
-                buttonstate = CurrentRightButtonStates.Find(delegate (ButtonState obj) { return obj.ButtonName == "vive_touchpad"; });
-            }
-            else
-            {
-                buttonstate = CurrentLeftButtonStates.Find(delegate (ButtonState obj) { return obj.ButtonName == "vive_touchpad"; });
-            }
-            if (buttonstate != null)
-            {
-                if (newState)
-                    TouchForce = 100;
-                else if (touchAction.state)
-                    TouchForce = 50;
-                else
-                    TouchForce = 0;
-                buttonstate.ButtonPercent = TouchForce;
-                lastAxis.x = buttonstate.X;
-                lastAxis.y = buttonstate.Y;
-            }
-            else
-            {
-                var axis = touchpadAction.GetAxis(fromSource);
-                if (newState)
-                    TouchForce = 100;
-                else if (touchAction.state)
-                    TouchForce = 50;
-                else
-                    TouchForce = 0;
+                "joystick" => "joystick",
+                "touchpad" => "vive_touchpad",
+                _ => actionName
+            };
 
-                if (fromSource == SteamVR_Input_Sources.RightHand)
-                {
-                    OnVectorChanged(
-                        "vive_touchpad",
-                        TouchForce,
-                        axis,
-                        CurrentRightButtonStates);
-                }
-                else
-                {
-                    OnVectorChanged(
-                        "vive_touchpad",
-                        TouchForce,
-                        axis,
-                        CurrentLeftButtonStates);
-                }
+            // Convert the magnitude of the vector2 input to 0–100 percent
+            int percent = Mathf.RoundToInt(Mathf.Clamp01(axis.magnitude) * 100);
 
-                lastAxis = axis;
-            }
-        }
+            var targetStateDict = fromSource == SteamVR_Input_Sources.RightHand
+                ? CurrentRightButtonStates
+                : CurrentLeftButtonStates;
 
-        private void OnMenuActionChange(SteamVR_Action_Boolean fromAction, SteamVR_Input_Sources fromSource, bool newState)
-        {
-            if (fromSource == SteamVR_Input_Sources.RightHand)
-            {
-                OnButtonChanged(
-                    "vive_menubtn",
-                    newState,
-                    CurrentRightButtonStates);
-            }
-            else
-            {
-                OnButtonChanged(
-                    "vive_menubtn",
-                    newState,
-                    CurrentLeftButtonStates);
-            }
-        }
+            Debug.LogError($"Button name: {internalButtonName}, percent: {percent}, axis: {axis}, target: {targetStateDict}");
+            OnVectorChanged(internalButtonName, percent, axis.x, axis.y, targetStateDict);
 
-        void RecordAnalogInputs()
-        {
-            { //left hand
-                float trigger = triggerAction.GetAxis(SteamVR_Input_Sources.LeftHand);
-                int tempTrigger = (int)(trigger * 100);
-                if (Trigger != tempTrigger)
-                {
-                    var buttonstate = CurrentLeftButtonStates.Find(delegate (ButtonState obj) { return obj.ButtonName == "vive_touchpad"; });
-                    if (buttonstate != null)
-                    {
-                        buttonstate.ButtonPercent = tempTrigger;
-                    }
-                    else
-                    {
-                        OnSingleChanged("vive_trigger", tempTrigger, CurrentLeftButtonStates);
-                    }
-                    Trigger = tempTrigger;
-                }
-
-                if (TouchForce != 0)
-                {
-                    var axis = touchpadAction.GetAxis(SteamVR_Input_Sources.LeftHand);
-
-                    if (Vector3.SqrMagnitude(axis - lastAxis) > sqrMag)
-                    {
-                        var buttonstate = CurrentLeftButtonStates.Find(delegate (ButtonState obj) { return obj.ButtonName == "vive_touchpad"; });
-                        if (buttonstate != null)
-                        {
-                            buttonstate.X = axis.x;
-                            buttonstate.Y = axis.y;
-                        }
-                        else
-                        {
-                            OnVectorChanged("vive_touchpad", TouchForce, axis, CurrentLeftButtonStates);
-                        }
-
-                        lastAxis = axis;
-                    }
-                }
-            }
-            { //right hand
-                float trigger = triggerAction.GetAxis(SteamVR_Input_Sources.RightHand);
-                int tempTrigger = (int)(trigger * 100);
-                if (Trigger != tempTrigger)
-                {
-                    var buttonstate = CurrentRightButtonStates.Find(delegate (ButtonState obj) { return obj.ButtonName == "vive_touchpad"; });
-                    if (buttonstate != null)
-                    {
-                        buttonstate.ButtonPercent = tempTrigger;
-                    }
-                    else
-                    {
-                        OnSingleChanged("vive_trigger", tempTrigger, CurrentRightButtonStates);
-                    }
-                    Trigger = tempTrigger;
-                }
-
-                if (TouchForce != 0)
-                {
-                    var axis = touchpadAction.GetAxis(SteamVR_Input_Sources.LeftHand);
-
-                    if (Vector3.SqrMagnitude(axis - lastAxis) > sqrMag)
-                    {
-                        var buttonstate = CurrentRightButtonStates.Find(delegate (ButtonState obj) { return obj.ButtonName == "vive_touchpad"; });
-                        if (buttonstate != null)
-                        {
-                            buttonstate.X = axis.x;
-                            buttonstate.Y = axis.y;
-                        }
-                        else
-                        {
-                            OnVectorChanged("vive_touchpad", TouchForce, axis, CurrentRightButtonStates);
-                        }
-
-                        lastAxis = axis;
-                    }
-                }
-            }
+            lastAxis = axis;
+            TouchForce = percent;
         }
 #endregion
 #else
