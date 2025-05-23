@@ -21,16 +21,16 @@ namespace Cognitive3D
         //developer facing high level controller type selection
         public enum ControllerType
         {
-            Quest2 = 1,
-            QuestPro = 2,
-            Quest3 = 9,
+            Quest2 = 0,
+            QuestPro = 1,
+            Quest3 = 2,
             ViveWand = 3,
             WindowsMRController = 4,
             SteamIndex = 5,
             PicoNeo3 = 6,
             PicoNeo4 = 7,
             ViveFocus = 8,
-            Hand = 10, //might suggest that this includes skeletal hand tracking, which needs some more design
+            Hand = 9, //might suggest that this includes skeletal hand tracking, which needs some more design
             //Generic = 0, //basically a non-branded oculus touch controller
         }
         
@@ -317,6 +317,138 @@ namespace Cognitive3D
             controllerDisplayType = ControllerDisplayType.unknown;
             return false;
         }
+        
+        /// <summary>
+        /// Maps the given fallback controller type and handedness (left/right) to corresponding 
+        /// controller display type and dynamic mesh values. This provides a standardized representation 
+        /// of controllers when actual device data is unavailable or unrecognized.
+        /// </summary>
+        /// <param name="fallbackControllerType">The fallback controller type to use (e.g., Quest3, ViveWand).</param>
+        /// <param name="isRight">True if the controller is the right-hand controller; false for left.</param>
+        /// <param name="controllerDisplayType">Output parameter for the matching controller display type enum.</param>
+        /// <param name="commonDynamicMesh">Output parameter for the associated controller mesh enum.</param>
+        internal static void SetControllerFromFallback(ControllerType fallbackControllerType, bool isRight, out ControllerDisplayType controllerDisplayType, out CommonDynamicMesh commonDynamicMesh)
+        {
+            switch (fallbackControllerType)
+            {
+                case ControllerType.Quest2:
+                    if (isRight)
+                    {
+                        controllerDisplayType = ControllerDisplayType.oculus_quest_touch_right;
+                        commonDynamicMesh = CommonDynamicMesh.OculusQuestTouchRight;
+                    }
+                    else
+                    {
+                        controllerDisplayType = ControllerDisplayType.oculus_quest_touch_left;
+                        commonDynamicMesh = CommonDynamicMesh.OculusQuestTouchLeft;
+                    }
+                    break;
+                case ControllerType.QuestPro:
+                    if (isRight)
+                    {
+                        controllerDisplayType = ControllerDisplayType.quest_pro_touch_right;
+                        commonDynamicMesh = CommonDynamicMesh.QuestProTouchRight;
+                    }
+                    else
+                    {
+                        controllerDisplayType = ControllerDisplayType.quest_pro_touch_left;
+                        commonDynamicMesh = CommonDynamicMesh.QuestProTouchLeft;
+                    }
+                    break;
+                case ControllerType.Quest3:
+                    if (isRight)
+                    {
+                        controllerDisplayType = ControllerDisplayType.quest_plus_touch_right;
+                        commonDynamicMesh = CommonDynamicMesh.QuestPlusTouchRight;
+                    }
+                    else
+                    {
+                        controllerDisplayType = ControllerDisplayType.quest_plus_touch_left;
+                        commonDynamicMesh = CommonDynamicMesh.QuestPlusTouchLeft;
+                    }
+                    break;
+                case ControllerType.ViveWand:
+                    controllerDisplayType = ControllerDisplayType.vive_controller;
+                    commonDynamicMesh = CommonDynamicMesh.ViveController;
+                    break;
+                case ControllerType.WindowsMRController:
+                    if (isRight)
+                    {
+                        controllerDisplayType = ControllerDisplayType.windows_mixed_reality_controller_right;
+                        commonDynamicMesh = CommonDynamicMesh.WindowsMixedRealityRight;
+                    }
+                    else
+                    {
+                        controllerDisplayType = ControllerDisplayType.windows_mixed_reality_controller_left;
+                        commonDynamicMesh = CommonDynamicMesh.WindowsMixedRealityLeft;
+                    }
+                    break;
+                case ControllerType.SteamIndex:
+                    if (isRight)
+                    {
+                        controllerDisplayType = ControllerDisplayType.steam_index_right;
+                        commonDynamicMesh = CommonDynamicMesh.SteamIndexRight;
+                    }
+                    else
+                    {
+                        controllerDisplayType = ControllerDisplayType.steam_index_left;
+                        commonDynamicMesh = CommonDynamicMesh.SteamIndexLeft;
+                    }
+                    break;
+                case ControllerType.PicoNeo3:
+                    if (isRight)
+                    {
+                        controllerDisplayType = ControllerDisplayType.pico_neo_3_eye_controller_right;
+                        commonDynamicMesh = CommonDynamicMesh.PicoNeo3ControllerRight;
+                    }
+                    else
+                    {
+                        controllerDisplayType = ControllerDisplayType.pico_neo_3_eye_controller_left;
+                        commonDynamicMesh = CommonDynamicMesh.PicoNeo3ControllerLeft;
+                    }
+                    break;
+                case ControllerType.PicoNeo4:
+                    if (isRight)
+                    {
+                        controllerDisplayType = ControllerDisplayType.pico_neo_4_eye_controller_right;
+                        commonDynamicMesh = CommonDynamicMesh.PicoNeo4ControllerRight;
+                    }
+                    else
+                    {
+                        controllerDisplayType = ControllerDisplayType.pico_neo_4_eye_controller_left;
+                        commonDynamicMesh = CommonDynamicMesh.PicoNeo4ControllerLeft;
+                    }
+                    break;
+                case ControllerType.ViveFocus:
+                    if (isRight)
+                    {
+                        controllerDisplayType = ControllerDisplayType.vive_focus_controller_right;
+                        commonDynamicMesh = CommonDynamicMesh.ViveFocusControllerRight;
+                    }
+                    else
+                    {
+                        controllerDisplayType = ControllerDisplayType.vive_focus_controller_left;
+                        commonDynamicMesh = CommonDynamicMesh.ViveFocusControllerLeft;
+                    }
+                    break;
+                case ControllerType.Hand:
+                    if (isRight)
+                    {
+                        controllerDisplayType = ControllerDisplayType.hand_right;
+                        commonDynamicMesh = CommonDynamicMesh.handRight;
+                    }
+                    else
+                    {
+                        controllerDisplayType = ControllerDisplayType.hand_left;
+                        commonDynamicMesh = CommonDynamicMesh.handLeft;
+                    }
+                    break;
+                default:
+                    controllerDisplayType = ControllerDisplayType.unknown;
+                    commonDynamicMesh = CommonDynamicMesh.Unknown;
+                    break;
+            }
+        }
 
         /// <summary>
         /// Oculus SeGets the current tracked device i.e. hand or controller
@@ -427,12 +559,17 @@ namespace Cognitive3D
         public static bool TryGetControllerPosition(XRNode node, out Vector3 position)
         {
             position = GetNodePosition(node);
-            if (GameplayReferences.HMD != null && GameplayReferences.HMD.transform.parent != null)
+            if (GameplayReferences.HMD && GameplayReferences.HMD.transform.parent)
             {
                 position = GameplayReferences.HMD.transform.parent.TransformPoint(position);
             }
             return position != Vector3.zero;
         }
+
+#if C3D_STEAMVR2
+        static Valve.VR.TrackedDevicePose_t[] poses = new Valve.VR.TrackedDevicePose_t[Valve.VR.OpenVR.k_unMaxTrackedDeviceCount];
+        static Valve.VR.TrackedDevicePose_t[] gamePoses = new Valve.VR.TrackedDevicePose_t[0];
+#endif
 
 
         /// <summary>
@@ -494,13 +631,35 @@ namespace Cognitive3D
                     }
                     break;
             }
+#elif C3D_STEAMVR2
+            var position = Vector3.zero;
+            var system = Valve.VR.OpenVR.System;
+            if (system == null)
+                return position;
+
+            var role = node == XRNode.RightHand ? Valve.VR.ETrackedControllerRole.RightHand : Valve.VR.ETrackedControllerRole.LeftHand;
+            var deviceIndex = system.GetTrackedDeviceIndexForControllerRole(role);
+            if (deviceIndex == Valve.VR.OpenVR.k_unTrackedDeviceIndexInvalid)
+                return position;
+            
+            if (!Valve.VR.SteamVR.active || Valve.VR.OpenVR.Compositor == null)
+            {
+                return position;
+            }
+
+            Valve.VR.OpenVR.Compositor.GetLastPoses(poses, gamePoses);
+            var pose = poses[deviceIndex];
+            if (!pose.bPoseIsValid)
+                return position;
+
+            position = pose.mDeviceToAbsoluteTracking.GetPosition();
 #elif C3D_DEFAULT
             switch (currentTracking)
             {
                 case InputType.Controller:
                     return GetDefaultNodePosition(node);
 
-    #if COGNITIVE3D_INCLUDE_XR_HANDS
+#if COGNITIVE3D_INCLUDE_XR_HANDS
                 case InputType.Hand:
                     var subsystems = new List<UnityEngine.XR.Hands.XRHandSubsystem>();
                     SubsystemManager.GetSubsystems(subsystems);
@@ -520,7 +679,7 @@ namespace Cognitive3D
                         }
                     }
                     break;
-    #endif
+#endif
             }
 #endif
             // Default fallback for retrieving controller positions
@@ -565,7 +724,7 @@ namespace Cognitive3D
                 return false;
             }
             
-            if (GameplayReferences.HMD)
+            if (GameplayReferences.HMD && GameplayReferences.HMD.transform.parent)
             {
                 rotation = GameplayReferences.HMD.transform.parent.rotation * rotation;
             }
@@ -631,6 +790,28 @@ namespace Cognitive3D
                     }
                     break;
             }
+#elif C3D_STEAMVR2
+            var rotation = Quaternion.identity;
+            var system = Valve.VR.OpenVR.System;
+            if (system == null)
+                return rotation;
+
+            var role = node == XRNode.RightHand ? Valve.VR.ETrackedControllerRole.RightHand : Valve.VR.ETrackedControllerRole.LeftHand;
+            var deviceIndex = system.GetTrackedDeviceIndexForControllerRole(role);
+            if (deviceIndex == Valve.VR.OpenVR.k_unTrackedDeviceIndexInvalid)
+                return rotation;
+            
+            if (!Valve.VR.SteamVR.active || Valve.VR.OpenVR.Compositor == null)
+            {
+                return rotation;
+            }
+
+            Valve.VR.OpenVR.Compositor.GetLastPoses(poses, gamePoses);
+            var pose = poses[deviceIndex];
+            if (!pose.bPoseIsValid)
+                return rotation;
+
+            rotation = pose.mDeviceToAbsoluteTracking.GetRotation();
 #elif C3D_DEFAULT
             switch (currentTracking)
             {
