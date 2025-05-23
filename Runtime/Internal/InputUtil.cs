@@ -427,7 +427,7 @@ namespace Cognitive3D
         public static bool TryGetControllerPosition(XRNode node, out Vector3 position)
         {
             position = GetNodePosition(node);
-            if (GameplayReferences.HMD)
+            if (GameplayReferences.HMD != null && GameplayReferences.HMD.transform.parent != null)
             {
                 position = GameplayReferences.HMD.transform.parent.TransformPoint(position);
             }

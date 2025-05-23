@@ -101,6 +101,25 @@ namespace Cognitive3D
         #endregion
 
 #region Room
+        private static Transform _roomTrackingSpaceTransform;
+        internal static Transform RoomTrackingSpaceTransform
+        {
+            get
+            {
+                if (_roomTrackingSpaceTransform == null)
+                {
+                    var roomTrackingSpace = GameObject.FindObjectOfType<RoomTrackingSpace>();
+                    _roomTrackingSpaceTransform = roomTrackingSpace != null ? roomTrackingSpace.transform : null;
+                }
+                return _roomTrackingSpaceTransform;
+            }
+
+            set
+            {
+                _roomTrackingSpaceTransform = value;
+            }
+        }
+
         public static bool SDKSupportsRoomSize
         {
             //should be everything except AR SDKS
@@ -284,6 +303,78 @@ namespace Cognitive3D
         }
 #endif
 
+#if C3D_STEAMVR2
+        static GameObject _playerRig;
+        public static GameObject PlayerRig
+        {
+            get
+            {
+                if (_playerRig == null)
+                {
+                    var player = GameObject.FindObjectOfType<Valve.VR.InteractionSystem.Player>();
+                    if (player != null)
+                    {
+                        _playerRig = player.gameObject;
+                    }
+                    else
+                    {
+                        var playArea = GameObject.FindObjectOfType<Valve.VR.SteamVR_PlayArea>();
+                        if (playArea != null)
+                        {
+                            _playerRig = playArea.gameObject;
+                        }
+                    }
+                }
+                return _playerRig;
+            }
+        }
+#endif
+
+#if COGNITIVE3D_INCLUDE_COREUTILITIES
+        private static Unity.XR.CoreUtils.XROrigin _xrOrigin;
+
+        internal static Unity.XR.CoreUtils.XROrigin XRRig
+        {
+            get
+            {
+                if (_xrOrigin == null)
+                {
+                    _xrOrigin = GameObject.FindObjectOfType<Unity.XR.CoreUtils.XROrigin>();
+                }
+                return _xrOrigin;
+            }
+        }
+#endif
+
+#if COGNITIVE3D_INCLUDE_LEGACYINPUTHELPERS
+        private static UnityEditor.XR.LegacyInputHelpers.CameraOffset _cameraOffset;
+        internal static UnityEditor.XR.LegacyInputHelpers.CameraOffset CameraOffset
+        {
+            get
+            {
+                if (_cameraOffset == null)
+                {
+                    _cameraOffset = GameObject.FindObjectOfType<UnityEditor.XR.LegacyInputHelpers.CameraOffset>();
+                }
+                return _cameraOffset;
+            }
+        }
+#endif
+
+#if C3D_VIVEWAVE
+        private static Wave.Essence.WaveRig _waveRig;
+        internal static Wave.Essence.WaveRig WaveRig
+        {
+            get
+            {
+                if (_waveRig == null)
+                {
+                    _waveRig = GameObject.FindObjectOfType<Wave.Essence.WaveRig>();
+                }
+                return _waveRig;
+            }
+        }
+#endif
 
 
         private static Transform _hmd;
