@@ -26,12 +26,14 @@ namespace Cognitive3D
         static ProjectValidationItemsStatus()
         {
             EditorSceneManager.sceneOpened += OnSceneOpened;
+            EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
             EditorApplication.quitting += Cleanup;
         }
 
         private static void Cleanup()
         {
             EditorSceneManager.sceneOpened -= OnSceneOpened;
+            EditorApplication.playModeStateChanged -= OnPlayModeStateChanged;
             EditorApplication.quitting -= Cleanup;
         }
 
@@ -44,6 +46,15 @@ namespace Cognitive3D
         private static void OnSceneOpened(Scene scene, OpenSceneMode mode)
         {
             ProjectValidation.RegenerateItems();
+        }
+        
+        // Update project validation items when play mode changes
+        private static void OnPlayModeStateChanged(PlayModeStateChange state)
+        {
+            if (state == PlayModeStateChange.EnteredEditMode)
+            {
+                ProjectValidation.RegenerateItems();
+            }
         }
 
         /// <summary>
@@ -66,7 +77,7 @@ namespace Cognitive3D
                     // Join the scene names with commas
                     string allSceneNames = string.Join(", ", sceneNames);
 
-                    Util.logError("Found unresolved issues in the following scenes: "  + allSceneNames);
+                    Util.logError("Found unresolved issues in the following scenes: " + allSceneNames);
 
                     List<string> sceneRequiredNames = new List<string>();
                     List<string> sceneRecommendedNames = new List<string>();

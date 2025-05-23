@@ -80,8 +80,8 @@ namespace Cognitive3D
                 scaleMode = ScaleMode.ScaleToFit,
                 style =
                 {
-                    width = 20,
-                    height = 20,
+                    width = 16,
+                    height = 16,
                     marginRight = 4
                 }
             };
@@ -100,7 +100,10 @@ namespace Cognitive3D
         {
             // Ensure button exists
             if (!buttonAdded) TryCreateToolbarButton();
-            if (icon == null) return;
+            if (icon == null || validateButton == null) return;
+
+            // Disable the button during Play Mode
+            validateButton.SetEnabled(!EditorApplication.isPlaying);
             
             var levels = ProjectValidation.GetLevelsOfItemsNotFixed()?.ToList();
             Texture2D newIcon;
