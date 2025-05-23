@@ -1650,7 +1650,6 @@ namespace Cognitive3D
                     break;
                 case Page.PlayerSetup:
                     bool isSetupComplete = AllSetupComplete;
-                    bool needsConfirmation = false;
 
                     // Track setup completion
                     onclick += () =>
@@ -1660,6 +1659,7 @@ namespace Cognitive3D
                     };
 
 #if C3D_STEAMVR2
+                    bool needsConfirmation = false;
                     if (!isSetupComplete)
                     {
                         // Automatically append input bindings for SteamVR
@@ -2056,18 +2056,22 @@ namespace Cognitive3D
                 }
 
                 // Vive controller
-                actionfile.actions.Add(new SteamVR_Input_ActionFile_Action() { name = "/actions/C3D_Input/in/Grip", type = "boolean" });
-                actionfile.actions.Add(new SteamVR_Input_ActionFile_Action() { name = "/actions/C3D_Input/in/Trigger", type = "vector1" });
                 actionfile.actions.Add(new SteamVR_Input_ActionFile_Action() { name = "/actions/C3D_Input/in/Touchpad", type = "vector2" });
                 actionfile.actions.Add(new SteamVR_Input_ActionFile_Action() { name = "/actions/C3D_Input/in/Touchpad_Press", type = "boolean" });
                 actionfile.actions.Add(new SteamVR_Input_ActionFile_Action() { name = "/actions/C3D_Input/in/Touchpad_Touch", type = "boolean" });
-                actionfile.actions.Add(new SteamVR_Input_ActionFile_Action() { name = "/actions/C3D_Input/in/Menu", type = "boolean" });
 
                 // Oculus controller
                 actionfile.actions.Add(new SteamVR_Input_ActionFile_Action() { name = "/actions/C3D_Input/in/A", type = "boolean" });
                 actionfile.actions.Add(new SteamVR_Input_ActionFile_Action() { name = "/actions/C3D_Input/in/B", type = "boolean" });
                 actionfile.actions.Add(new SteamVR_Input_ActionFile_Action() { name = "/actions/C3D_Input/in/X", type = "boolean" });
                 actionfile.actions.Add(new SteamVR_Input_ActionFile_Action() { name = "/actions/C3D_Input/in/Y", type = "boolean" });
+                actionfile.actions.Add(new SteamVR_Input_ActionFile_Action() { name = "/actions/C3D_Input/in/Joystick", type = "vector2" });
+
+                // Common
+                actionfile.actions.Add(new SteamVR_Input_ActionFile_Action() { name = "/actions/C3D_Input/in/Menu", type = "boolean" });
+                actionfile.actions.Add(new SteamVR_Input_ActionFile_Action() { name = "/actions/C3D_Input/in/Grip", type = "vector1" });
+                actionfile.actions.Add(new SteamVR_Input_ActionFile_Action() { name = "/actions/C3D_Input/in/Trigger", type = "vector1" });
+
                 actionfile.action_sets.Add(cognitiveActionSet);
 
                 SaveActionFile(actionfile);
@@ -2117,14 +2121,17 @@ namespace Cognitive3D
 
                     if (bindingfile.name.Contains("vive_controller"))
                     {
-                        actionlist.sources.Add(createSource("button", "/user/hand/left/input/grip", "click", "/actions/c3d_input/in/grip"));
-                        actionlist.sources.Add(createSource("button", "/user/hand/right/input/grip", "click", "/actions/c3d_input/in/grip"));
+                        // Grip (vector1)
+                        actionlist.sources.Add(createSource("trigger", "/user/hand/left/input/grip", "pull", "/actions/c3d_input/in/Grip"));
+                        actionlist.sources.Add(createSource("trigger", "/user/hand/right/input/grip", "pull", "/actions/c3d_input/in/Grip"));
 
-                        actionlist.sources.Add(createSource("button", "/user/hand/left/input/menu", "click", "/actions/c3d_input/in/menu"));
-                        actionlist.sources.Add(createSource("button", "/user/hand/right/input/menu", "click", "/actions/c3d_input/in/menu"));
+                        // Trigger (vector1)
+                        actionlist.sources.Add(createSource("trigger", "/user/hand/left/input/trigger", "pull", "/actions/c3d_input/in/Trigger"));
+                        actionlist.sources.Add(createSource("trigger", "/user/hand/right/input/trigger", "pull", "/actions/c3d_input/in/Trigger"));
 
-                        actionlist.sources.Add(createSource("trigger", "/user/hand/left/input/trigger", "pull", "/actions/c3d_input/in/trigger"));
-                        actionlist.sources.Add(createSource("trigger", "/user/hand/right/input/trigger", "pull", "/actions/c3d_input/in/trigger"));
+                        // Menu (boolean)
+                        actionlist.sources.Add(createSource("button", "/user/hand/left/input/menu", "click", "/actions/c3d_input/in/Menu"));
+                        actionlist.sources.Add(createSource("button", "/user/hand/right/input/menu", "click", "/actions/c3d_input/in/Menu"));
 
                         //left touchpad
                         SteamVR_Input_BindingFile_Source bindingSource_left_pad = new SteamVR_Input_BindingFile_Source();
@@ -2166,11 +2173,29 @@ namespace Cognitive3D
                     }
                     else if (bindingfile.name.Contains("oculus_touch"))
                     {
+                        // Primary Buttons
                         actionlist.sources.Add(createSource("button", "/user/hand/left/input/x", "click", "/actions/c3d_input/in/X"));
                         actionlist.sources.Add(createSource("button", "/user/hand/right/input/a", "click", "/actions/c3d_input/in/A"));
 
+                        // Secondary Buttons
                         actionlist.sources.Add(createSource("button", "/user/hand/left/input/y", "click", "/actions/c3d_input/in/Y"));
                         actionlist.sources.Add(createSource("button", "/user/hand/right/input/b", "click", "/actions/c3d_input/in/B"));
+
+                        // Grip (vector1)
+                        actionlist.sources.Add(createSource("trigger", "/user/hand/left/input/grip", "pull", "/actions/c3d_input/in/Grip"));
+                        actionlist.sources.Add(createSource("trigger", "/user/hand/right/input/grip", "pull", "/actions/c3d_input/in/Grip"));
+
+                        // Trigger (vector1)
+                        actionlist.sources.Add(createSource("trigger", "/user/hand/left/input/trigger", "pull", "/actions/c3d_input/in/Trigger"));
+                        actionlist.sources.Add(createSource("trigger", "/user/hand/right/input/trigger", "pull", "/actions/c3d_input/in/Trigger"));
+
+                        // Menu (boolean)
+                        actionlist.sources.Add(createSource("button", "/user/hand/left/input/menu", "click", "/actions/c3d_input/in/Menu"));
+                        actionlist.sources.Add(createSource("button", "/user/hand/right/input/menu", "click", "/actions/c3d_input/in/Menu"));
+
+                        // Joystick (vector2)
+                        actionlist.sources.Add(createJoystickSource("/user/hand/left/input/joystick", "/actions/c3d_input/in/Joystick"));
+                        actionlist.sources.Add(createJoystickSource("/user/hand/right/input/joystick", "/actions/c3d_input/in/Joystick"));
                     }
 
                     bindingfile.bindings.Add("/actions/c3d_input", actionlist);
@@ -2185,17 +2210,40 @@ namespace Cognitive3D
         }
 
         //mode = button, path = "/user/hand/left/input/grip", actiontype = "click", action = "/actions/c3d_input/in/grip"
-        static SteamVR_Input_BindingFile_Source createSource(string mode, string path, string actiontype, string action)
-        {
-            SteamVR_Input_BindingFile_Source bindingSource = new SteamVR_Input_BindingFile_Source();
-            bindingSource.mode = mode;
-            bindingSource.path = path;
 
-            SteamVR_Input_BindingFile_Source_Input_StringDictionary stringDictionary = new SteamVR_Input_BindingFile_Source_Input_StringDictionary();
-            stringDictionary.Add("output", action);
-            bindingSource.inputs.Add(actiontype, stringDictionary);
+        static SteamVR_Input_BindingFile_Source createSource(string mode, string path, string inputType, string action)
+        {
+            var bindingSource = new SteamVR_Input_BindingFile_Source
+            {
+                mode = mode,
+                path = path
+            };
+
+            var inputMap = new SteamVR_Input_BindingFile_Source_Input_StringDictionary
+            {
+                { "output", action }
+            };
+
+            bindingSource.inputs.Add(inputType, inputMap);
 
             return bindingSource;
+        }
+
+        static SteamVR_Input_BindingFile_Source createJoystickSource(string path, string action)
+        {
+            var source = new SteamVR_Input_BindingFile_Source
+            {
+                mode = "joystick",
+                path = path
+            };
+
+            var positionMap = new SteamVR_Input_BindingFile_Source_Input_StringDictionary
+            {
+                { "output", action }
+            };
+
+            source.inputs.Add("position", positionMap);
+            return source;
         }
 
         static bool LoadBindingFile(out SteamVR_Input_BindingFile bindingfile, string bindingFileName)
