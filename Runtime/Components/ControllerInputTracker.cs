@@ -337,7 +337,6 @@ namespace Cognitive3D.Components
                 ? CurrentRightButtonStates
                 : CurrentLeftButtonStates;
 
-            Debug.LogError($"Button name: {internalButtonName}, state: {newState}, target: {targetStateDict}");
             OnButtonChanged(internalButtonName, newState, targetStateDict);
         }
 
@@ -362,13 +361,6 @@ namespace Cognitive3D.Components
                 ? CurrentRightButtonStates
                 : CurrentLeftButtonStates;
 
-            Vector2 axis = Vector2.zero;
-            if (fromAction != null && fromAction.GetType() == typeof(SteamVR_Action_Single))
-            {
-                axis = lastAxis;
-            }
-
-            Debug.LogError($"Button name: {internalButtonName}, percent: {percent}, axis: {axis}, target: {targetStateDict}");
             OnSingleChanged(internalButtonName, percent, targetStateDict);
 
             TouchForce = percent;
@@ -394,7 +386,6 @@ namespace Cognitive3D.Components
                 ? CurrentRightButtonStates
                 : CurrentLeftButtonStates;
 
-            Debug.LogError($"Button name: {internalButtonName}, percent: {percent}, axis: {axis}, target: {targetStateDict}");
             OnVectorChanged(internalButtonName, percent, axis.x, axis.y, targetStateDict);
 
             lastAxis = axis;
