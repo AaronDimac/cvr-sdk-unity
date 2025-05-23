@@ -2108,8 +2108,6 @@ namespace Cognitive3D
             {
                 if (LoadBindingFile(out var bindingfile, binding))
                 {
-                    Debug.LogError("Name is " + bindingfile.name);
-
                     if (bindingfile.bindings.ContainsKey("/actions/c3d_input"))
                     {
                         bindingfile.bindings.Remove("/actions/c3d_input");
@@ -2175,7 +2173,6 @@ namespace Cognitive3D
                         actionlist.sources.Add(createSource("button", "/user/hand/right/input/b", "click", "/actions/c3d_input/in/B"));
                     }
 
-                    Debug.LogError("Or here? " + actionlist.sources.Count);
                     bindingfile.bindings.Add("/actions/c3d_input", actionlist);
                     Util.logDevelopment($"SceneSetup.SetDefaultBindings has saved Cognitive3D input bindings for {binding}");
                     SaveBindingFile(bindingfile, binding);
