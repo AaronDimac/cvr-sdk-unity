@@ -357,7 +357,7 @@ namespace Cognitive3D
 #region Controllers and Hands Manager
         private static DynamicData[] ActiveInputsArray = new DynamicData[24];
 
-        internal static void RegisterController(XRNode controller, bool isRight, string registerId = "")
+        internal static void RegisterController(XRNode controller, bool isRight, InputUtil.ControllerType displayTypeFallback, string registerId = "")
         {
             InputUtil.TryGetInputDevice(controller, out InputDevice controllerDevice);
             InputUtil.TryGetControllerPosition(controller, out Vector3 pos);
@@ -365,6 +365,12 @@ namespace Cognitive3D
 
             var controllerDisplayType = InputUtil.GetControllerPopupName(controllerDevice.name, isRight);
             var commonDynamicMesh = InputUtil.GetControllerMeshName(controllerDevice.name, isRight);
+
+            if (controllerDisplayType == InputUtil.ControllerDisplayType.unknown || commonDynamicMesh == InputUtil.CommonDynamicMesh.Unknown)
+            {
+                InputUtil.SetControllerFromFallback(displayTypeFallback, isRight, out controllerDisplayType, out commonDynamicMesh);
+            }
+
             var registerMeshName = commonDynamicMesh.ToString();
             var data = new DynamicData(controllerDevice.name, registerId, registerMeshName, pos, rot, 0.01f, 0.1f, 0.1f, InputUtil.InputType.Controller.ToString(), controllerDisplayType.ToString(), isRight);
 

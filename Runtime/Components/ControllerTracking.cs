@@ -13,6 +13,8 @@ namespace Cognitive3D.Components
     [AddComponentMenu("Cognitive3D/Components/Controller Tracking")]
     public class ControllerTracking : AnalyticsComponentBase
     {
+        public InputUtil.ControllerType FallbackControllerType;
+
         private readonly float ControllerTrackingInterval = 1;
 
         /// <summary>
@@ -132,14 +134,14 @@ namespace Cognitive3D.Components
             // Check if the left controller is valid and not yet registered
             if (!leftControllerRegistered && InputUtil.TryGetInputDevice(XRNode.LeftHand, out InputDevice leftController))
             {
-                DynamicManager.RegisterController(XRNode.LeftHand, false);
+                DynamicManager.RegisterController(XRNode.LeftHand, false, FallbackControllerType);
                 leftControllerRegistered = true;
             }
 
             // Check if the right controller is valid and not yet registered
             if (!rightControllerRegistered && InputUtil.TryGetInputDevice(XRNode.RightHand, out InputDevice rightController))
             {
-                DynamicManager.RegisterController(XRNode.RightHand, true);
+                DynamicManager.RegisterController(XRNode.RightHand, true, FallbackControllerType);
                 rightControllerRegistered = true;
             }
 
