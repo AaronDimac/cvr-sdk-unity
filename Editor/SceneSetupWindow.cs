@@ -736,25 +736,7 @@ namespace Cognitive3D
                 bool hasInputActionFile = SteamVR_Input.DoesActionsFileExist();
                 if (GUI.Button(new Rect(270, 440, 200, 30), "Append Input Bindings"))
                 {
-                    if (SteamVR_Input.actionFile == null)
-                    {
-                        bool initializeSuccess = SteamVR_Input.InitializeFile(false, false);
-
-                        if (initializeSuccess == false)
-                        {
-                            //copy
-                            SteamVR_CopyExampleInputFiles.CopyFiles(true);
-                            System.Threading.Thread.Sleep(1000);
-                            SteamVR_Input.InitializeFile();
-                        }
-                    }
-                    if (SteamVR_Input_EditorWindow.IsOpen())
-                    {
-                        SteamVR_Input_EditorWindow.GetOpenWindow().Close();
-                    }
-                    AppendSteamVRActionSet();
-                    SetDefaultBindings();
-                    Valve.VR.SteamVR_Input_Generator.BeginGeneration();
+                    AppendSteamVRBindings();
                 }
                 if (DoesC3DInputActionSetExist())
                 {
@@ -1667,54 +1649,59 @@ namespace Cognitive3D
                 case Page.Welcome:
                     break;
                 case Page.PlayerSetup:
-                    if (AllSetupComplete)
-                    {
-                        onclick += () => SegmentAnalytics.TrackEvent("PlayerGOComplete_PlayerSetupPage", "SceneSetupPlayerSetupPage");
-                    }
-                    else
-                    {
-                        onclick += () => SegmentAnalytics.TrackEvent("PlayerGOIncomplete_PlayerSetupPage", "SceneSetupPlayerSetupPage");
-                    }
-#if C3D_STEAMVR2
-                    if (!AllSetupComplete)
-                    {
-                        appearDisabled = !Cognitive3D_Manager.autoInitializePlayerSetup;
+                    bool isSetupComplete = AllSetupComplete;
+                    bool needsConfirmation = false;
 
-                        if (appearDisabled)
-                        {
-                            onclick += () =>
-                            {
-                                if (EditorUtility.DisplayDialog("Continue", 
-                                    "Are you sure you want to continue without configuring the player prefab?", "Yes", "No"))
-                                {
-                                    currentPage++;
-                                }
-                            };
-                        }
+                    // Track setup completion
+                    onclick += () =>
+                    {
+                        var status = isSetupComplete ? "PlayerGOComplete_PlayerSetupPage" : "PlayerGOIncomplete_PlayerSetupPage";
+                        SegmentAnalytics.TrackEvent(status, "SceneSetupPlayerSetupPage");
+                    };
+
+#if C3D_STEAMVR2
+                    if (!isSetupComplete)
+                    {
+                        // Automatically append input bindings for SteamVR
+                        appearDisabled = !Cognitive3D_Manager.autoInitializePlayerSetup;
+                        needsConfirmation = appearDisabled;
+                        onclick += () => AppendSteamVRBindings();
                     }
                     else
                     {
                         appearDisabled = !hasFoundSteamVRActionSet;
-
-                        if (appearDisabled)
-                        {
-                            onclick += () =>
-                            {
-                                if (EditorUtility.DisplayDialog("Continue", 
-                                    "Are you sure you want to continue without creating the necessary SteamVR Input Action Set files?", "Yes", "No"))
-                                {
-                                    currentPage++;
-                                }
-                            };
-                        }
+                        needsConfirmation = appearDisabled;
                     }
-#else
-                    appearDisabled = !AllSetupComplete && !Cognitive3D_Manager.autoInitializePlayerSetup;
+
+                    if (needsConfirmation)
+                    {
+                        onclick += () =>
+                        {
+                            string message = !isSetupComplete
+                                ? "Are you sure you want to continue without configuring the player prefab?"
+                                : "Are you sure you want to continue without creating the necessary SteamVR Input Action Set files?";
+
+                            if (EditorUtility.DisplayDialog("Continue", message, "Yes", "No"))
+                            {
+                                currentPage++;
+                            }
+                        };
+                    }
+                #else
+                    appearDisabled = !isSetupComplete && !Cognitive3D_Manager.autoInitializePlayerSetup;
                     if (appearDisabled)
                     {
-                        onclick += () => { if (EditorUtility.DisplayDialog("Continue", "Are you sure you want to continue without configuring the player prefab?", "Yes", "No")) { currentPage++; } };
+                        onclick += () =>
+                        {
+                            if (EditorUtility.DisplayDialog("Continue", "Are you sure you want to continue without configuring the player prefab?", "Yes", "No"))
+                            {
+                                currentPage++;
+                            }
+                        };
                     }
-#endif
+                #endif
+
+                    // Always update light count
                     onclick += () => { numberOfLightsInScene = FindObjectsOfType<Light>().Length; };
                     break;
                 case Page.QuestProSetup:
@@ -2030,6 +2017,29 @@ namespace Cognitive3D
         }
 
 #if C3D_STEAMVR2
+        internal static void AppendSteamVRBindings()
+        {
+            if (SteamVR_Input.actionFile == null)
+                            {
+                                bool initializeSuccess = SteamVR_Input.InitializeFile(false, false);
+
+                                if (initializeSuccess == false)
+                                {
+                                    //copy
+                                    SteamVR_CopyExampleInputFiles.CopyFiles(true);
+                                    System.Threading.Thread.Sleep(1000);
+                                    SteamVR_Input.InitializeFile();
+                                }
+                            }
+                            if (SteamVR_Input_EditorWindow.IsOpen())
+                            {
+                                SteamVR_Input_EditorWindow.GetOpenWindow().Close();
+                            }
+                            AppendSteamVRActionSet();
+                            SetDefaultBindings();
+                            Valve.VR.SteamVR_Input_Generator.BeginGeneration();
+        }
+
         internal static void AppendSteamVRActionSet()
         {
             SteamVR_Input_ActionFile actionfile;
@@ -2045,12 +2055,19 @@ namespace Cognitive3D
                     return;
                 }
 
+                // Vive controller
                 actionfile.actions.Add(new SteamVR_Input_ActionFile_Action() { name = "/actions/C3D_Input/in/Grip", type = "boolean" });
                 actionfile.actions.Add(new SteamVR_Input_ActionFile_Action() { name = "/actions/C3D_Input/in/Trigger", type = "vector1" });
                 actionfile.actions.Add(new SteamVR_Input_ActionFile_Action() { name = "/actions/C3D_Input/in/Touchpad", type = "vector2" });
                 actionfile.actions.Add(new SteamVR_Input_ActionFile_Action() { name = "/actions/C3D_Input/in/Touchpad_Press", type = "boolean" });
                 actionfile.actions.Add(new SteamVR_Input_ActionFile_Action() { name = "/actions/C3D_Input/in/Touchpad_Touch", type = "boolean" });
                 actionfile.actions.Add(new SteamVR_Input_ActionFile_Action() { name = "/actions/C3D_Input/in/Menu", type = "boolean" });
+
+                // Oculus controller
+                actionfile.actions.Add(new SteamVR_Input_ActionFile_Action() { name = "/actions/C3D_Input/in/A", type = "boolean" });
+                actionfile.actions.Add(new SteamVR_Input_ActionFile_Action() { name = "/actions/C3D_Input/in/B", type = "boolean" });
+                actionfile.actions.Add(new SteamVR_Input_ActionFile_Action() { name = "/actions/C3D_Input/in/X", type = "boolean" });
+                actionfile.actions.Add(new SteamVR_Input_ActionFile_Action() { name = "/actions/C3D_Input/in/Y", type = "boolean" });
                 actionfile.action_sets.Add(cognitiveActionSet);
 
                 SaveActionFile(actionfile);
@@ -2086,70 +2103,87 @@ namespace Cognitive3D
 
         internal static void SetDefaultBindings()
         {
-            SteamVR_Input_BindingFile bindingfile;
-            if (LoadBindingFile(out bindingfile))
+            List<string> bindings = new List<string>() { "bindings_vive_controller", "bindings_oculus_touch" };
+            foreach (var binding in bindings)
             {
-                if (bindingfile.bindings.ContainsKey("/actions/c3d_input"))
+                if (LoadBindingFile(out var bindingfile, binding))
                 {
-                    bindingfile.bindings.Remove("/actions/c3d_input");
+                    Debug.LogError("Name is " + bindingfile.name);
+
+                    if (bindingfile.bindings.ContainsKey("/actions/c3d_input"))
+                    {
+                        bindingfile.bindings.Remove("/actions/c3d_input");
+                    }
+
+                    SteamVR_Input_BindingFile_ActionList actionlist = new SteamVR_Input_BindingFile_ActionList();
+
+                    if (bindingfile.name.Contains("vive_controller"))
+                    {
+                        actionlist.sources.Add(createSource("button", "/user/hand/left/input/grip", "click", "/actions/c3d_input/in/grip"));
+                        actionlist.sources.Add(createSource("button", "/user/hand/right/input/grip", "click", "/actions/c3d_input/in/grip"));
+
+                        actionlist.sources.Add(createSource("button", "/user/hand/left/input/menu", "click", "/actions/c3d_input/in/menu"));
+                        actionlist.sources.Add(createSource("button", "/user/hand/right/input/menu", "click", "/actions/c3d_input/in/menu"));
+
+                        actionlist.sources.Add(createSource("trigger", "/user/hand/left/input/trigger", "pull", "/actions/c3d_input/in/trigger"));
+                        actionlist.sources.Add(createSource("trigger", "/user/hand/right/input/trigger", "pull", "/actions/c3d_input/in/trigger"));
+
+                        //left touchpad
+                        SteamVR_Input_BindingFile_Source bindingSource_left_pad = new SteamVR_Input_BindingFile_Source();
+                        bindingSource_left_pad.mode = "trackpad";
+                        bindingSource_left_pad.path = "/user/hand/left/input/trackpad";
+                        {
+                            SteamVR_Input_BindingFile_Source_Input_StringDictionary stringDictionary_press = new SteamVR_Input_BindingFile_Source_Input_StringDictionary();
+                            stringDictionary_press.Add("output", "/actions/c3d_input/in/touchpad_press");
+                            bindingSource_left_pad.inputs.Add("click", stringDictionary_press);
+
+                            SteamVR_Input_BindingFile_Source_Input_StringDictionary stringDictionary_touch = new SteamVR_Input_BindingFile_Source_Input_StringDictionary();
+                            stringDictionary_touch.Add("output", "/actions/c3d_input/in/touchpad_touch");
+                            bindingSource_left_pad.inputs.Add("touch", stringDictionary_touch);
+
+                            SteamVR_Input_BindingFile_Source_Input_StringDictionary stringDictionary_pos = new SteamVR_Input_BindingFile_Source_Input_StringDictionary();
+                            stringDictionary_pos.Add("output", "/actions/c3d_input/in/touchpad");
+                            bindingSource_left_pad.inputs.Add("position", stringDictionary_pos);
+                        }
+                        actionlist.sources.Add(bindingSource_left_pad);
+
+                        //right touchpad
+                        SteamVR_Input_BindingFile_Source bindingSource_right_pad = new SteamVR_Input_BindingFile_Source();
+                        bindingSource_right_pad.mode = "trackpad";
+                        bindingSource_right_pad.path = "/user/hand/right/input/trackpad";
+                        {
+                            SteamVR_Input_BindingFile_Source_Input_StringDictionary stringDictionary_press = new SteamVR_Input_BindingFile_Source_Input_StringDictionary();
+                            stringDictionary_press.Add("output", "/actions/c3d_input/in/touchpad_press");
+                            bindingSource_right_pad.inputs.Add("click", stringDictionary_press);
+
+                            SteamVR_Input_BindingFile_Source_Input_StringDictionary stringDictionary_touch = new SteamVR_Input_BindingFile_Source_Input_StringDictionary();
+                            stringDictionary_touch.Add("output", "/actions/c3d_input/in/touchpad_touch");
+                            bindingSource_right_pad.inputs.Add("touch", stringDictionary_touch);
+
+                            SteamVR_Input_BindingFile_Source_Input_StringDictionary stringDictionary_pos = new SteamVR_Input_BindingFile_Source_Input_StringDictionary();
+                            stringDictionary_pos.Add("output", "/actions/c3d_input/in/touchpad");
+                            bindingSource_right_pad.inputs.Add("position", stringDictionary_pos);
+                        }
+                        actionlist.sources.Add(bindingSource_right_pad);
+                    }
+                    else if (bindingfile.name.Contains("oculus_touch"))
+                    {
+                        actionlist.sources.Add(createSource("button", "/user/hand/left/input/x", "click", "/actions/c3d_input/in/X"));
+                        actionlist.sources.Add(createSource("button", "/user/hand/right/input/a", "click", "/actions/c3d_input/in/A"));
+
+                        actionlist.sources.Add(createSource("button", "/user/hand/left/input/y", "click", "/actions/c3d_input/in/Y"));
+                        actionlist.sources.Add(createSource("button", "/user/hand/right/input/b", "click", "/actions/c3d_input/in/B"));
+                    }
+
+                    Debug.LogError("Or here? " + actionlist.sources.Count);
+                    bindingfile.bindings.Add("/actions/c3d_input", actionlist);
+                    Util.logDevelopment($"SceneSetup.SetDefaultBindings has saved Cognitive3D input bindings for {binding}");
+                    SaveBindingFile(bindingfile, binding);
                 }
-
-                SteamVR_Input_BindingFile_ActionList actionlist = new SteamVR_Input_BindingFile_ActionList();
-
-                actionlist.sources.Add(createSource("button", "/user/hand/left/input/grip","click", "/actions/c3d_input/in/grip"));
-                actionlist.sources.Add(createSource("button", "/user/hand/right/input/grip", "click", "/actions/c3d_input/in/grip"));
-
-                actionlist.sources.Add(createSource("button", "/user/hand/left/input/menu","click", "/actions/c3d_input/in/menu"));
-                actionlist.sources.Add(createSource("button", "/user/hand/right/input/menu", "click", "/actions/c3d_input/in/menu"));
-
-                actionlist.sources.Add(createSource("trigger", "/user/hand/left/input/trigger", "pull", "/actions/c3d_input/in/trigger"));
-                actionlist.sources.Add(createSource("trigger", "/user/hand/right/input/trigger", "pull", "/actions/c3d_input/in/trigger"));
-
-                //left touchpad
-                SteamVR_Input_BindingFile_Source bindingSource_left_pad = new SteamVR_Input_BindingFile_Source();
-                bindingSource_left_pad.mode = "trackpad";
-                bindingSource_left_pad.path = "/user/hand/left/input/trackpad";
+                else
                 {
-                    SteamVR_Input_BindingFile_Source_Input_StringDictionary stringDictionary_press = new SteamVR_Input_BindingFile_Source_Input_StringDictionary();
-                    stringDictionary_press.Add("output", "/actions/c3d_input/in/touchpad_press");
-                    bindingSource_left_pad.inputs.Add("click", stringDictionary_press);
-
-                    SteamVR_Input_BindingFile_Source_Input_StringDictionary stringDictionary_touch = new SteamVR_Input_BindingFile_Source_Input_StringDictionary();
-                    stringDictionary_touch.Add("output", "/actions/c3d_input/in/touchpad_touch");
-                    bindingSource_left_pad.inputs.Add("touch", stringDictionary_touch);
-
-                    SteamVR_Input_BindingFile_Source_Input_StringDictionary stringDictionary_pos = new SteamVR_Input_BindingFile_Source_Input_StringDictionary();
-                    stringDictionary_pos.Add("output", "/actions/c3d_input/in/touchpad");
-                    bindingSource_left_pad.inputs.Add("position", stringDictionary_pos);
+                    Debug.LogError($"SceneSetup.SetDefaultBindings has failed to load steamvr binding file for {binding}");
                 }
-                actionlist.sources.Add(bindingSource_left_pad);
-
-                //right touchpad
-                SteamVR_Input_BindingFile_Source bindingSource_right_pad = new SteamVR_Input_BindingFile_Source();
-                bindingSource_right_pad.mode = "trackpad";
-                bindingSource_right_pad.path = "/user/hand/right/input/trackpad";
-                {
-                    SteamVR_Input_BindingFile_Source_Input_StringDictionary stringDictionary_press = new SteamVR_Input_BindingFile_Source_Input_StringDictionary();
-                    stringDictionary_press.Add("output", "/actions/c3d_input/in/touchpad_press");
-                    bindingSource_right_pad.inputs.Add("click", stringDictionary_press);
-
-                    SteamVR_Input_BindingFile_Source_Input_StringDictionary stringDictionary_touch = new SteamVR_Input_BindingFile_Source_Input_StringDictionary();
-                    stringDictionary_touch.Add("output", "/actions/c3d_input/in/touchpad_touch");
-                    bindingSource_right_pad.inputs.Add("touch", stringDictionary_touch);
-
-                    SteamVR_Input_BindingFile_Source_Input_StringDictionary stringDictionary_pos = new SteamVR_Input_BindingFile_Source_Input_StringDictionary();
-                    stringDictionary_pos.Add("output", "/actions/c3d_input/in/touchpad");
-                    bindingSource_right_pad.inputs.Add("position", stringDictionary_pos);
-                }
-                actionlist.sources.Add(bindingSource_right_pad);
-
-                bindingfile.bindings.Add("/actions/c3d_input", actionlist);
-                Util.logDevelopment("SceneSetup.SetDefaultBindings save Cognitive3D input bindings");
-                SaveBindingFile(bindingfile);
-            }
-            else
-            {
-                Debug.LogError("SceneSetup.SetDefaultBindings failed to load steamvr binding file");
             }
         }
 
@@ -2167,9 +2201,9 @@ namespace Cognitive3D
             return bindingSource;
         }
 
-        static bool LoadBindingFile(out SteamVR_Input_BindingFile bindingfile)
+        static bool LoadBindingFile(out SteamVR_Input_BindingFile bindingfile, string bindingFileName)
         {
-            string bindingFilePath = SteamVR_Input.GetActionsFileFolder(true) + "/bindings_vive_controller.json";
+            string bindingFilePath = SteamVR_Input.GetActionsFileFolder(true) + "/" + bindingFileName + ".json";
             if (!File.Exists(bindingFilePath))
             {
                 Debug.LogErrorFormat("<b>[SteamVR]</b> binding file doesn't exist: {0}", bindingFilePath);
@@ -2182,9 +2216,9 @@ namespace Cognitive3D
             return true;
         }
 
-        static bool SaveBindingFile(SteamVR_Input_BindingFile bindingfile)
+        static bool SaveBindingFile(SteamVR_Input_BindingFile bindingfile, string bindingFileName)
         {
-            string bindingFilePath = SteamVR_Input.GetActionsFileFolder(true) + "/bindings_vive_controller.json";
+            string bindingFilePath = SteamVR_Input.GetActionsFileFolder(true) + "/" + bindingFileName+ ".json";
 
             string newJSON = JsonConvert.SerializeObject(bindingfile, Formatting.Indented, new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore });
 
