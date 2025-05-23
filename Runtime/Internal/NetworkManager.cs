@@ -18,6 +18,14 @@ namespace Cognitive3D
     [AddComponentMenu("")]
     internal class NetworkManager : MonoBehaviour
     {
+        internal delegate void onNetworkResponse(int responseCode, string url, string responseBody);
+        internal static event onNetworkResponse OnNetworkResponse;
+        internal static void InvokeNetworkResponse(int responseCode, string url, string responseBody)
+        {
+            if (OnNetworkResponse != null)
+                OnNetworkResponse.Invoke(responseCode, url, responseBody);
+        }
+
         //used by posting session data - get all details of the web response
         public delegate void FullResponse(string url, string uploadcontent, int responsecode, string error, string downloadcontent);
         //used by getting exitpoll question set - only need to know the c
@@ -169,6 +177,9 @@ namespace Cognitive3D
         {
             // Retrieving the most recent response code to initiate the cooldown procedure
             lastResponseCode = responsecode;
+
+            if (Cognitive3D_Preferences.Instance.EnableDevLogging)
+                InvokeNetworkResponse(responsecode, url, text);
 
             if (responsecode == 200)
             {
