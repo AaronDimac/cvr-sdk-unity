@@ -59,7 +59,8 @@ namespace Cognitive3D
         {
             if (!Cognitive3D_Manager.IsInitialized)
             {
-                Util.logDebug("Cannot display exitpoll. Session has not begun");
+                Util.logDebug("Cannot display ExitPoll Survey. Session has not begun");
+                myparameters = parameters;
                 Cleanup(false);
                 return;
             }
