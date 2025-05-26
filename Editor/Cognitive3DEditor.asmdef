@@ -86,6 +86,11 @@
             "name": "com.normalvr.normcore",
             "expression": "",
             "define": "COGNITIVE3D_INCLUDE_NORMCORE"
+        },
+        {
+            "name": "com.meta.xr.sdk.platform",
+            "expression": "",
+            "define": "COGNITIVE3D_META_PLATFORM"
         }
     ],
     "noEngineReferences": false
