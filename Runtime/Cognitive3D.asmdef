@@ -79,6 +79,11 @@
             "name": "com.meta.xr.sdk.platform",
             "expression": "",
             "define": "COGNITIVE3D_META_PLATFORM"
+        },
+        {
+            "name": "com.unity.xr.oculus",
+            "expression": "",
+            "define": "COGNITIVE3D_META_OCULUS_XR"
         }
     ],
     "noEngineReferences": false
