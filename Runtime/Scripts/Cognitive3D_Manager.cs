@@ -29,7 +29,7 @@ namespace Cognitive3D
     [DefaultExecutionOrder(-50)]
     public class Cognitive3D_Manager : MonoBehaviour
     {
-        public static readonly string SDK_VERSION = "1.8.0";
+        public static readonly string SDK_VERSION = "1.9.0";
     
         private static Cognitive3D_Manager instance;
         public static Cognitive3D_Manager Instance
@@ -69,7 +69,7 @@ namespace Cognitive3D
         [HideInInspector]
         public Transform trackingSpace;
 
-        internal static bool autoInitializeInput = true;
+        internal static bool autoInitializePlayerSetup = true;
 
         /// <summary>
         /// sets instance of Cognitive3D_Manager
@@ -1138,6 +1138,16 @@ namespace Cognitive3D
             if (DataCache == null)
                 return 0;
             return DataCache.GetCacheFillAmount();
+        }
+        
+        /// <summary>
+        /// Upload all data from local storage. will call completed after everything has been uploaded, failed if not connected to internet or local storage not enabled
+        /// </summary>
+        /// <param name="completedCallback"></param>
+        /// <param name="failedCallback"></param>
+        public static void UploadAllLocalData(System.Action completedCallback, System.Action failedCallback)
+        {
+            NetworkManager.UploadAllLocalData(completedCallback, failedCallback);
         }
     }
 }

@@ -344,13 +344,17 @@ namespace Cognitive3D.Serialization
                     {
                         JsonUtil.SetLong(properties[i].Key, (long)properties[i].Value, eventBuilder);
                     }
+                    else if (properties[i].Value.GetType() == typeof(bool))
+                    {
+                        JsonUtil.SetBool(properties[i].Key, (bool)properties[i].Value, eventBuilder);
+                    }
                     else if (properties[i].Value.GetType() == null)
                     {
                         JsonUtil.SetNull(properties[i].Key, eventBuilder);
                     }
                     else
                     {
-                        JsonUtil.SetString(properties[i].Key, properties[i].Value.ToString(), eventBuilder);
+                        JsonUtil.SetObject(properties[i].Key, properties[i].Value, eventBuilder);
                     }
                 }
                 eventBuilder.Append("}"); //close properties object
@@ -1485,13 +1489,30 @@ namespace Cognitive3D.Serialization
                         List<KeyValuePair<string, object>> thisSubscription = metaSubscriptionDetails[i];
                         foreach (var kvp in thisSubscription)
                         {
+                            if (kvp.Value == null) { Util.logDevelopment("Subscription " + kvp.Key + " is NULL "); continue; }
                             if (kvp.Value.GetType() == typeof(string))
                             {
                                 JsonUtil.SetString(kvp.Key, kvp.Value.ToString(), gazebuilder);
                             }
+                            else if (kvp.Value.GetType() == typeof(float))
+                            {
+                                JsonUtil.SetFloat(kvp.Key, (float)kvp.Value, gazebuilder);
+                            }
+                            else if (kvp.Value.GetType() == typeof(int))
+                            {
+                                JsonUtil.SetInt(kvp.Key, (int)kvp.Value, gazebuilder);
+                            }
+                            else if (kvp.Value.GetType() == typeof(double))
+                            {
+                                JsonUtil.SetDouble(kvp.Key, (double)kvp.Value, gazebuilder);
+                            }
                             else if (kvp.Value.GetType() == typeof(long))
                             {
                                 JsonUtil.SetLong(kvp.Key, (long)kvp.Value, gazebuilder);
+                            }
+                            else if (kvp.Value.GetType() == typeof(bool))
+                            {
+                                JsonUtil.SetBool(kvp.Key, (bool)kvp.Value, gazebuilder);
                             }
                             else
                             {
@@ -1526,6 +1547,22 @@ namespace Cognitive3D.Serialization
                     {
                         JsonUtil.SetFloat(kvp.Key, (float)kvp.Value, gazebuilder);
                     }
+                    else if (kvp.Value.GetType() == typeof(double))
+                    {
+                        JsonUtil.SetDouble(kvp.Key, (double)kvp.Value, gazebuilder);
+                    }
+                    else if (kvp.Value.GetType() == typeof(int))
+                    {
+                        JsonUtil.SetInt(kvp.Key, (int)kvp.Value, gazebuilder);
+                    }
+                    else if (kvp.Value.GetType() == typeof(long))
+                    {
+                        JsonUtil.SetLong(kvp.Key, (long)kvp.Value, gazebuilder);
+                    }
+                    else if (kvp.Value.GetType() == typeof(bool))
+                    {
+                        JsonUtil.SetBool(kvp.Key, (bool)kvp.Value, gazebuilder);
+                    }
                     else
                     {
                         JsonUtil.SetObject(kvp.Key, kvp.Value, gazebuilder);
@@ -1541,6 +1578,7 @@ namespace Cognitive3D.Serialization
                 gazebuilder.Append("\"properties\":{");
                 foreach (var kvp in GetNewSessionProperties(true))
                 {
+                    if (kvp.Value == null) { Util.logDevelopment("Session Property " + kvp.Key + " is NULL "); continue; }
                     if (kvp.Value.GetType() == typeof(string))
                     {
                         JsonUtil.SetString(kvp.Key, (string)kvp.Value, gazebuilder);
@@ -1548,6 +1586,22 @@ namespace Cognitive3D.Serialization
                     else if (kvp.Value.GetType() == typeof(float))
                     {
                         JsonUtil.SetFloat(kvp.Key, (float)kvp.Value, gazebuilder);
+                    }
+                    else if (kvp.Value.GetType() == typeof(double))
+                    {
+                        JsonUtil.SetDouble(kvp.Key, (double)kvp.Value, gazebuilder);
+                    }
+                    else if (kvp.Value.GetType() == typeof(int))
+                    {
+                        JsonUtil.SetInt(kvp.Key, (int)kvp.Value, gazebuilder);
+                    }
+                    else if (kvp.Value.GetType() == typeof(long))
+                    {
+                        JsonUtil.SetLong(kvp.Key, (long)kvp.Value, gazebuilder);
+                    }
+                    else if (kvp.Value.GetType() == typeof(bool))
+                    {
+                        JsonUtil.SetBool(kvp.Key, (bool)kvp.Value, gazebuilder);
                     }
                     else
                     {
