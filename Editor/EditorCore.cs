@@ -234,6 +234,42 @@ namespace Cognitive3D
             PlayerSettings.SetScriptingDefineSymbolsForGroup(EditorUserBuildSettings.selectedBuildTargetGroup, alldefines);
         }
 
+        public static void SetPlayerDefine(string C3DSymbol)
+        {
+            //get all scripting define symbols
+            string s = PlayerSettings.GetScriptingDefineSymbolsForGroup(EditorUserBuildSettings.selectedBuildTargetGroup);
+            string[] ExistingSymbols = s.Split(';');
+
+            //categorizing definition symbols
+            List<string> ExistingNonC3DSymbols = new List<string>();
+            foreach (var v in ExistingSymbols)
+            {
+                if (!v.StartsWith("C3D_"))
+                {
+                    ExistingNonC3DSymbols.Add(v);
+                }
+            }
+
+            //combine symbols
+            List<string> finalDefines = new List<string>();
+            foreach (var v in ExistingNonC3DSymbols)
+                finalDefines.Add(v);
+            
+            // Add C3D define
+            finalDefines.Add(C3DSymbol);
+
+            //rebuild symbols
+            string alldefines = "";
+            for (int i = 0; i < finalDefines.Count; i++)
+            {
+                if (!string.IsNullOrEmpty(finalDefines[i]))
+                {
+                    alldefines += finalDefines[i] + ";";
+                }
+            }
+            PlayerSettings.SetScriptingDefineSymbolsForGroup(EditorUserBuildSettings.selectedBuildTargetGroup, alldefines);
+        }
+
         static Cognitive3D_Preferences _prefs;
         /// <summary>
         /// Gets the Cognitive3D_preferences or creates and returns new default preferences
@@ -2070,6 +2106,13 @@ namespace Cognitive3D
             {
                 callback.Invoke(0, "Invalid Developer Key", "");
             }
+        }
+
+        [System.Serializable]
+        internal class ApplicationKeyResponseData
+        {
+            public string apiKey;
+            public bool valid;
         }
 
         [System.Serializable]
