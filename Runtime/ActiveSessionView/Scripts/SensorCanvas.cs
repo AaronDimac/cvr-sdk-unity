@@ -37,6 +37,8 @@ namespace Cognitive3D.ActiveSession
         public float LineWidth = 0.03f;
         public float MaxSensorTimeSpan = 120;
 
+        public List<string> allowedSensorNames = new List<string>();
+
         public SensorEntry[] SensorEntries;
         public SensorRenderCamera renderCamera;
 
@@ -75,6 +77,15 @@ namespace Cognitive3D.ActiveSession
 
         private void SensorRecorder_OnNewSensorRecorded(string sensorName, float value)
         {
+            //reject sensors if there is an allow list and the sensor is not included
+            if (allowedSensorNames.Count > 0)
+            {
+                if (allowedSensorNames.Contains(sensorName) == false)
+                {
+                    return;
+                }
+            }
+
             for (int i = 0; i < SensorEntries.Length; i++)
             {
                 if (SensorEntries[i].name == sensorName)
