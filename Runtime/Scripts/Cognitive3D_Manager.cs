@@ -349,7 +349,11 @@ namespace Cognitive3D
 
         private void SendHardwareDataAsSessionProperty()
         {
+#if UNITY_WEBGL && !UNITY_EDITOR
+            SetSessionProperty("c3d.device.type", "Web");
+#else
             SetSessionProperty("c3d.device.type", SystemInfo.deviceType.ToString());
+#endif
             SetSessionProperty("c3d.device.cpu", SystemInfo.processorType);
             SetSessionProperty("c3d.device.model", SystemInfo.deviceModel);
             SetSessionProperty("c3d.device.gpu", SystemInfo.graphicsDeviceName);
