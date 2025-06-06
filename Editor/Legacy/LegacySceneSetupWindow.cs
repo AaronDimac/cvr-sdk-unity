@@ -1608,7 +1608,7 @@ namespace Cognitive3D
             GUI.Label(new Rect(30, 370, 440, 440), " - Custom Events\n - ExitPoll Surveys\n - Ready Room User Onboarding\n - Dynamic Objects", "normallabel");
             if (GUI.Button(new Rect(150, 460, 200, 30), "Open Help Window"))
             {
-                HelpWindow.Init();
+                LegacyHelpWindow.Init();
             }
         }
 

@@ -9,14 +9,14 @@ using UnityEditor.SceneManagement;
 
 namespace Cognitive3D
 {
-    internal class HelpWindow : EditorWindow
+    internal class LegacyHelpWindow : EditorWindow
     {
         readonly Color CommentAreaDarkGrey = new Color(0.21f, 0.21f, 0.21f);
         readonly Rect steptitlerect = new Rect(30, 5, 100, 440);
         internal static void Init()
         {
             SegmentAnalytics.TrackEvent("HelpWindow_Opened", "HelpWindow");
-            HelpWindow window = (HelpWindow)EditorWindow.GetWindow(typeof(HelpWindow), true, "Help (Version " + Cognitive3D_Manager.SDK_VERSION + ")");
+            LegacyHelpWindow window = (LegacyHelpWindow)EditorWindow.GetWindow(typeof(LegacyHelpWindow), true, "Help (Version " + Cognitive3D_Manager.SDK_VERSION + ")");
             window.minSize = new Vector2(500, 550);
             window.maxSize = new Vector2(500, 550);
             window.Show();
@@ -332,7 +332,7 @@ namespace Cognitive3D
             Rect buttonrect = new Rect(150, 460, 200, 30);
             if (GUI.Button(buttonrect, "Open Scene Setup Window"))
             {
-                SceneSetupWindow.Init();
+                LegacySceneSetupWindow.Init();
             }
         }
 
