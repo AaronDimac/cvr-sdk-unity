@@ -7,17 +7,16 @@ using UnityEngine;
 namespace Cognitive3D
 {
     [InitializeOnLoad]
-    public class SetupWindow : EditorWindow
+    public class ProjectSetupWindow : EditorWindow
     {
         bool keysSet = false;
         private string developerKey;
         private string apiKey;
 
         #region Project Setup Window
-        [MenuItem("Cognitive3D/(New) Project Setup")]
-        public static void ShowWindow()
+        public static void Init()
         {
-            SetupWindow setup = GetWindow<SetupWindow>("Project Setup");
+            ProjectSetupWindow setup = GetWindow<ProjectSetupWindow>("Project Setup");
             setup.minSize = new Vector2(600, 800);
             setup.maxSize = new Vector2(600, 800);
             setup.LoadKeys();
