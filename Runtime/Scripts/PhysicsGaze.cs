@@ -74,10 +74,8 @@ namespace Cognitive3D
                     DisplayGazePoints[DisplayGazePoints.Count].Transform = hitDynamic.transform;
                     DisplayGazePoints[DisplayGazePoints.Count].IsLocal = true;
                     DisplayGazePoints.Update();
-                    yield return null;
                 }
-
-                if (Cognitive3D_Preferences.Instance.EnableGaze == true && GameplayReferences.HMDCameraComponent && Physics.Raycast(ray, out var hit, GameplayReferences.HMDCameraComponent.farClipPlane, Cognitive3D_Preferences.Instance.GazeLayerMask, Cognitive3D_Preferences.Instance.TriggerInteraction))
+                else if (Cognitive3D_Preferences.Instance.EnableGaze == true && GameplayReferences.HMDCameraComponent && Physics.Raycast(ray, out var hit, GameplayReferences.HMDCameraComponent.farClipPlane, Cognitive3D_Preferences.Instance.GazeLayerMask, Cognitive3D_Preferences.Instance.TriggerInteraction))
                 {
                     Vector3 pos = GameplayReferences.HMD.position;
                     Vector3 gazepoint = hit.point;
