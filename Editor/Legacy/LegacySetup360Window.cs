@@ -8,7 +8,7 @@ using Cognitive3D;
 
 namespace Cognitive3D
 {
-    public class Setup360Window : EditorWindow
+    public class LegacySetup360Window : EditorWindow
     {
         UnityEngine.Video.VideoClip selectedClip;
         UnityEngine.Camera userCamera;
@@ -16,7 +16,7 @@ namespace Cognitive3D
 
         public static void Init()
         {
-            Setup360Window window = (Setup360Window)EditorWindow.GetWindow(typeof(Setup360Window), true, "360 Video Setup");
+            LegacySetup360Window window = (LegacySetup360Window)EditorWindow.GetWindow(typeof(LegacySetup360Window), true, "360 Video Setup");
             window.Show();
         }
 
