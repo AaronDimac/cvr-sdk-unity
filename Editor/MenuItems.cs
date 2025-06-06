@@ -12,6 +12,11 @@ namespace Cognitive3D
         {
             ProjectSetupWindow.Init();
         }
+        [MenuItem("Cognitive3D/Feature Builder", priority = 10)]
+        static void Cognitive3DFeatureBuilder()
+        {
+            FeaturesWindow.Init();
+        }
         [MenuItem("Cognitive3D/Project Validation", priority = 15)]
         static void Cognitive3DProjectValidation()
         {

@@ -14,8 +14,7 @@ namespace Cognitive3D
 
         private Vector2 mainScroll;
 
-        [MenuItem("Cognitive3D/(New) Features")]
-        internal static void ShowWindow()
+        internal static void Init()
         {
             FeaturesWindow window = GetWindow<FeaturesWindow>("Features");
             window.minSize = new Vector2(600, 800);
