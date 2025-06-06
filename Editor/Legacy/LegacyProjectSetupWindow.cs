@@ -6,13 +6,13 @@ using Cognitive3D;
 
 namespace Cognitive3D
 {
-    internal class ProjectSetupWindow : EditorWindow
+    internal class LegacyProjectSetupWindow : EditorWindow
     {
         readonly Rect steptitlerect = new Rect(30, 5, 100, 440);
         internal static void Init()
         {
             SegmentAnalytics.TrackEvent("ProjectSetupWindow_Opened", "ProjectSetupWindow");
-            ProjectSetupWindow window = (ProjectSetupWindow)EditorWindow.GetWindow(typeof(ProjectSetupWindow), true, "Project Setup (Version " + Cognitive3D_Manager.SDK_VERSION + ")");
+            LegacyProjectSetupWindow window = (LegacyProjectSetupWindow)EditorWindow.GetWindow(typeof(LegacyProjectSetupWindow), true, "Project Setup (Version " + Cognitive3D_Manager.SDK_VERSION + ")");
             window.minSize = new Vector2(500, 550);
             window.maxSize = new Vector2(500, 550);
             window.Show();
@@ -27,7 +27,7 @@ namespace Cognitive3D
         internal static void Init(Page page)
         {
             SegmentAnalytics.TrackEvent("ProjectSetupWindow_Opened", "ProjectSetupWindow");
-            ProjectSetupWindow window = (ProjectSetupWindow)EditorWindow.GetWindow(typeof(ProjectSetupWindow), true, "Project Setup (Version " + Cognitive3D_Manager.SDK_VERSION + ")");
+            LegacyProjectSetupWindow window = (LegacyProjectSetupWindow)EditorWindow.GetWindow(typeof(LegacyProjectSetupWindow), true, "Project Setup (Version " + Cognitive3D_Manager.SDK_VERSION + ")");
             window.minSize = new Vector2(500, 550);
             window.maxSize = new Vector2(500, 550);
             window.currentPage = page;
@@ -42,7 +42,7 @@ namespace Cognitive3D
         internal static void Init(Rect position)
         {
             SegmentAnalytics.TrackEvent("ProjectSetupWindow_Opened", "ProjectSetupWindow");
-            ProjectSetupWindow window = (ProjectSetupWindow)EditorWindow.GetWindow(typeof(ProjectSetupWindow), true, "Project Setup (Version " + Cognitive3D_Manager.SDK_VERSION + ")");
+            LegacyProjectSetupWindow window = (LegacyProjectSetupWindow)EditorWindow.GetWindow(typeof(LegacyProjectSetupWindow), true, "Project Setup (Version " + Cognitive3D_Manager.SDK_VERSION + ")");
             window.minSize = new Vector2(500, 550);
             window.maxSize = new Vector2(500, 550);
             window.position = new Rect(position.x + 5, position.y + 5, 500, 550);
@@ -852,7 +852,7 @@ namespace Cognitive3D
             GUI.Label(new Rect(30, 30, 440, 440), "The project settings are complete. Next you'll be guided to upload a scene to give context to the data you record.", "normallabel");
             if (GUI.Button(new Rect(150, 100, 200, 30), "Quick Scene Setup"))
             {
-                SceneSetupWindow.Init(position);
+                LegacySceneSetupWindow.Init(position);
                 SegmentAnalytics.TrackEvent("QuickSceneSetupSelected_ProjectSetupNextStepsPage", "QuickSceneSetup");
                 Close();
             }
