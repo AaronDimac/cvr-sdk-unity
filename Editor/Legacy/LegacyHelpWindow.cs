@@ -324,7 +324,7 @@ namespace Cognitive3D
             Rect buttonrect = new Rect(150, 460, 200, 30);
             if (GUI.Button(buttonrect, "Open Dynamic Object Window"))
             {
-                DynamicObjectsWindow.Init();
+                LegacyDynamicObjectsWindow.Init();
             }
         }        
         void DrawSceneWindowButton()

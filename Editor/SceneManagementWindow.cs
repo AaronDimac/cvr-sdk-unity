@@ -373,15 +373,15 @@ namespace Cognitive3D
 
                 // Instantiate and setup C3D_Manager if it doesn't exist
                 case SceneManagementUploadState.SceneSetup:
-                    SceneSetupWindow.PerformBasicSetup();
+                    LegacySceneSetupWindow.PerformBasicSetup();
                     EditorSceneManager.SaveOpenScenes();
                     sceneUploadState = SceneManagementUploadState.GameObjectSetup;
                     return;
 
                 // Assign dynamics to controllers
                 case SceneManagementUploadState.GameObjectSetup:
-                    SceneSetupWindow.Init();
-                    SceneSetupWindow.SetupPlayer();
+                    LegacySceneSetupWindow.Init();
+                    LegacySceneSetupWindow.SetupPlayer();
                     EditorSceneManager.SaveOpenScenes();
                     sceneUploadState = SceneManagementUploadState.Export;
                     return;
@@ -412,14 +412,14 @@ namespace Cognitive3D
 
                 // Start upload process
                 case SceneManagementUploadState.StartUpload:
-                    SceneSetupWindow.CompletedUpload = false;
-                    SceneSetupWindow.UploadSceneAndDynamics(exportDynamics, exportDynamics, true, true, false);
+                    LegacySceneSetupWindow.CompletedUpload = false;
+                    LegacySceneSetupWindow.UploadSceneAndDynamics(exportDynamics, exportDynamics, true, true, false);
                     sceneUploadState = SceneManagementUploadState.Uploading;
                     return;
 
                 // Wait for upload to finish
                 case SceneManagementUploadState.Uploading:
-                    if (SceneSetupWindow.CompletedUpload)
+                    if (LegacySceneSetupWindow.CompletedUpload)
                     {
                         sceneUploadState = SceneManagementUploadState.Complete;
                     }
@@ -428,7 +428,7 @@ namespace Cognitive3D
                 // All done, clean up/reset variables and move to next scene
                 case SceneManagementUploadState.Complete:
                     EditorSceneManager.SaveOpenScenes();
-                    SceneSetupWindow.CompletedUpload = false;
+                    LegacySceneSetupWindow.CompletedUpload = false;
                     sceneUploadState = SceneManagementUploadState.Init;
                     sceneIndex++;
                     return;

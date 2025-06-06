@@ -1053,7 +1053,7 @@ namespace Cognitive3D
                 case Page.DynamicSetup:
                     onclick = () =>
                     {
-                        DynamicObjectsWindow.Init(position);
+                        LegacyDynamicObjectsWindow.Init(position);
                         Close();
                     };
                     

@@ -20,119 +20,16 @@ namespace Cognitive3D
         //TODO CONSIDER the list of files, to compare against the uploaded and exported content
     }
 
-    [System.Serializable]
-    internal class AggregationManifest
-    {
-        [System.Serializable]
-        public class AggregationManifestEntry
-        {
-            public string name;
-            public string mesh;
-            public string id;
-            public bool isController;
-            public float[] scaleCustom = new float[] { 1, 1, 1 };
-            public float[] position = new float[] { 0, 0, 0 };
-            public float[] rotation = new float[] { 0, 0, 0, 1 };
-            public AggregationManifestEntry(string _name, string _mesh, string _id, bool _isController, float[] _scaleCustom)
-            {
-                name = _name;
-                mesh = _mesh;
-                id = _id;
-                isController = _isController;
-                scaleCustom = _scaleCustom;
-            }
-            public AggregationManifestEntry(string _name, string _mesh, string _id, bool _isController, float[] _scaleCustom, float[] _position, float[] _rotation)
-            {
-                name = _name;
-                mesh = _mesh;
-                id = _id;
-                isController = _isController;
-                scaleCustom = _scaleCustom;
-                position = _position;
-                rotation = _rotation;
-            }
-            public override string ToString()
-            {
-                return "{\"name\":\"" + name + "\",\"mesh\":\"" + mesh + "\",\"id\":\"" + id + "\",\"isController\":\"" + isController +
-                    "\",\"scaleCustom\":[" + scaleCustom[0].ToString("0.0000", System.Globalization.CultureInfo.InvariantCulture) + "," + scaleCustom[1].ToString("0.0000", System.Globalization.CultureInfo.InvariantCulture) + "," + scaleCustom[2].ToString("0.0000", System.Globalization.CultureInfo.InvariantCulture) +
-                    "],\"initialPosition\":[" + position[0].ToString("0.0000", System.Globalization.CultureInfo.InvariantCulture) + "," + position[1].ToString("0.0000", System.Globalization.CultureInfo.InvariantCulture) + "," + position[2].ToString("0.0000", System.Globalization.CultureInfo.InvariantCulture) +
-                    "],\"initialRotation\":[" + rotation[0].ToString("0.0000", System.Globalization.CultureInfo.InvariantCulture) + "," + rotation[1].ToString("0.0000", System.Globalization.CultureInfo.InvariantCulture) + "," + rotation[2].ToString("0.0000", System.Globalization.CultureInfo.InvariantCulture) + "," + rotation[3].ToString("0.0000", System.Globalization.CultureInfo.InvariantCulture) + "]}";
-            }
-        }
-        public List<AggregationManifestEntry> objects = new List<AggregationManifestEntry>();
-
-        /// <summary>
-        /// adds or updates dynamic object ids in a provided manifest for aggregation
-        /// </summary>
-        /// <param name="scenedynamics"></param>
-        public void AddOrReplaceDynamic(List<DynamicObject> scenedynamics, bool silent = false)
-        {
-            bool meshNameMissing = false;
-            List<string> missingMeshGameObjects = new List<string>();
-            foreach (var dynamic in scenedynamics)
-            {
-
-                var replaceEntry = objects.Find(delegate (AggregationManifest.AggregationManifestEntry obj) { return obj.id == dynamic.CustomId.ToString(); });
-                if (replaceEntry == null)
-                {
-                    //don't include meshes with empty mesh names in manifest
-                    if (!string.IsNullOrEmpty(dynamic.MeshName))
-                    {
-                        objects.Add(new AggregationManifest.AggregationManifestEntry(dynamic.gameObject.name, dynamic.MeshName, dynamic.CustomId.ToString(),
-                            dynamic.IsController,
-                            new float[] { dynamic.transform.lossyScale.x, dynamic.transform.lossyScale.y, dynamic.transform.lossyScale.z },
-                            new float[] { dynamic.transform.position.x, dynamic.transform.position.y, dynamic.transform.position.z },
-                            new float[] { dynamic.transform.rotation.x, dynamic.transform.rotation.y, dynamic.transform.rotation.z, dynamic.transform.rotation.w }));
-                    }
-                    else
-                    {
-                        missingMeshGameObjects.Add(dynamic.gameObject.name);
-                        meshNameMissing = true;
-                    }
-                }
-                else
-                {
-                    if (!string.IsNullOrEmpty(dynamic.MeshName))
-                    {
-                        replaceEntry.mesh = dynamic.MeshName;
-                        replaceEntry.name = dynamic.gameObject.name;
-                    }
-                    else
-                    {
-                        missingMeshGameObjects.Add(dynamic.gameObject.name);
-                        meshNameMissing = true;
-                    }
-                }
-            }
-
-            if (meshNameMissing)
-            {
-                System.Text.StringBuilder sb = new System.Text.StringBuilder();
-                sb.Append("Dynamic Objects missing mesh name:\n");
-                foreach (var v in missingMeshGameObjects)
-                {
-                    sb.Append(v);
-                    sb.Append("\n");
-                }
-                Debug.LogWarning(sb.ToString());
-                if (silent == false)
-                {
-                    EditorUtility.DisplayDialog("Error", "One or more Dynamic Objects are missing a mesh name and were not uploaded to scene.\n\nSee Console for details", "Ok");
-                }
-            }
-        }
-    }
-
     //temporary popup window for mass renaming dynamic object components
     //TODO format to keep consistent look with onboarding screens
-    internal class RenameDynamicWindow : EditorWindow
+    internal class LegacyRenameDynamicWindow : EditorWindow
     {
-        static DynamicObjectsWindow sourceWindow;
+        static LegacyDynamicObjectsWindow sourceWindow;
         string defaultMeshName;
         static System.Action<string> action;
-        public static void Init(DynamicObjectsWindow dynamicsWindow, string defaultName, System.Action<string> renameAction, string title)
+        public static void Init(LegacyDynamicObjectsWindow dynamicsWindow, string defaultName, System.Action<string> renameAction, string title)
         {
-            RenameDynamicWindow window = (RenameDynamicWindow)EditorWindow.GetWindow(typeof(RenameDynamicWindow), true, title);
+            LegacyRenameDynamicWindow window = (LegacyRenameDynamicWindow)EditorWindow.GetWindow(typeof(LegacyRenameDynamicWindow), true, title);
             window.ShowUtility();
             sourceWindow = dynamicsWindow;
             window.defaultMeshName = defaultName;
@@ -169,7 +66,7 @@ namespace Cognitive3D
         }
     }
 
-    internal class DynamicObjectsWindow : EditorWindow
+    internal class LegacyDynamicObjectsWindow : EditorWindow
     {
         //cached gui styles
         GUIStyle dynamiclabel;
@@ -225,7 +122,7 @@ namespace Cognitive3D
         public static void Init()
         {
             SegmentAnalytics.TrackEvent("DynamicObjectsWindow_Opened", "DynamicObjectsWindow");
-            DynamicObjectsWindow window = (DynamicObjectsWindow)EditorWindow.GetWindow(typeof(DynamicObjectsWindow), true, "Dynamic Objects (" + Cognitive3D_Manager.SDK_VERSION + ")");
+            LegacyDynamicObjectsWindow window = (LegacyDynamicObjectsWindow)EditorWindow.GetWindow(typeof(LegacyDynamicObjectsWindow), true, "Dynamic Objects (" + Cognitive3D_Manager.SDK_VERSION + ")");
             window.minSize = new Vector2(600, 550);
             window.maxSize = new Vector2(600, 550);
             window.Show();
@@ -237,7 +134,7 @@ namespace Cognitive3D
         public static void Init(Rect position)
         {
             SegmentAnalytics.TrackEvent("DynamicObjectsWindow_Opened", "DynamicObjectsWindow");
-            DynamicObjectsWindow window = (DynamicObjectsWindow)EditorWindow.GetWindow(typeof(DynamicObjectsWindow), true, "Dynamic Objects (" +Cognitive3D_Manager.SDK_VERSION +")");
+            LegacyDynamicObjectsWindow window = (LegacyDynamicObjectsWindow)EditorWindow.GetWindow(typeof(LegacyDynamicObjectsWindow), true, "Dynamic Objects (" +Cognitive3D_Manager.SDK_VERSION +")");
             window.minSize = new Vector2(600, 550);
             window.maxSize = new Vector2(600, 550);
             window.position = new Rect(position.x+5, position.y+5, 600, 550);
@@ -255,7 +152,7 @@ namespace Cognitive3D
             if (responseCode == 200)
             {
                 //dev key is fine
-                DynamicObjectsWindow window = (DynamicObjectsWindow)EditorWindow.GetWindow(typeof(DynamicObjectsWindow));
+                LegacyDynamicObjectsWindow window = (LegacyDynamicObjectsWindow)EditorWindow.GetWindow(typeof(LegacyDynamicObjectsWindow));
                 window.GetDashboardManifest();
                 Util.logDevelopment(text);
             }
@@ -669,7 +566,7 @@ namespace Cognitive3D
                     break;
                 }
             }
-            RenameDynamicWindow.Init(this, defaultvalue, RenameGameObject, "Rename GameObjects");
+            LegacyRenameDynamicWindow.Init(this, defaultvalue, RenameGameObject, "Rename GameObjects");
         }
 
         void OnRenameMeshSelected()
@@ -686,7 +583,7 @@ namespace Cognitive3D
                     break;
                 }
             }
-            RenameDynamicWindow.Init(this, defaultvalue, RenameMesh, "Rename Meshes");
+            LegacyRenameDynamicWindow.Init(this, defaultvalue, RenameMesh, "Rename Meshes");
         }
 
         void OnOpenDynamicExportFolder()
@@ -1220,7 +1117,7 @@ namespace Cognitive3D
                                 }
                                 ExportUtility.ExportDynamicObjects(exportList);
                             }
-                            SceneSetupWindow.Init();
+                            LegacySceneSetupWindow.Init();
                             Close();
                         }
 
