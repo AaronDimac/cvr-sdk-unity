@@ -62,7 +62,7 @@ namespace Cognitive3D
                 },
                 fixAction: () =>
                 {
-                    ProjectSetupWindow.Init(ProjectSetupWindow.Page.SDKSelection);
+                    ProjectSetupWindow.Init();
                 }
                 );
 
@@ -223,7 +223,7 @@ namespace Cognitive3D
                 },
                 fixAction: () =>
                 {
-                    SceneSetupWindow.Init(SceneSetupWindow.Page.PlayerSetup);
+                    ProjectSetupWindow.Init();
                 }
             );
             
@@ -239,7 +239,7 @@ namespace Cognitive3D
                 },
                 fixAction: () =>
                 {
-                    ProjectSetupWindow.Init(ProjectSetupWindow.Page.APIKeys);
+                    ProjectSetupWindow.Init();
                 }
                 );
             
@@ -289,7 +289,7 @@ namespace Cognitive3D
                 },
                 fixAction: () =>
                 {
-                    SceneSetupWindow.Init(SceneSetupWindow.Page.Welcome);
+                    ProjectSetupWindow.Init();
                 }
                 );
 
@@ -306,7 +306,7 @@ namespace Cognitive3D
                 },
                 fixAction: () =>
                 {
-                    SceneSetupWindow.Init(SceneSetupWindow.Page.Welcome);
+                    ProjectSetupWindow.Init();
                 }
                 );
 
@@ -388,7 +388,7 @@ namespace Cognitive3D
                 },
                 fixAction: () =>
                 {
-                    SceneSetupWindow.Init(SceneSetupWindow.Page.PlayerSetup);
+                    ProjectSetupWindow.Init();
                 }
             );
 
@@ -404,7 +404,7 @@ namespace Cognitive3D
                 },
                 fixAction: () =>
                 {
-                    SceneSetupWindow.Init(SceneSetupWindow.Page.PlayerSetup);
+                    ProjectSetupWindow.Init();
                 }
             );
 
