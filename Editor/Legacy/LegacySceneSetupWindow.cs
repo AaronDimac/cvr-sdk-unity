@@ -41,7 +41,7 @@ using Meta.XR.MRUtilityKit;
 
 namespace Cognitive3D
 {
-    internal class SceneSetupWindow : EditorWindow
+    internal class LegacySceneSetupWindow : EditorWindow
     {
 #if C3D_OCULUS
         static bool wantEyeTrackingEnabled;
@@ -64,7 +64,7 @@ namespace Cognitive3D
         internal static void Init()
         {
             SegmentAnalytics.TrackEvent("SceneSetupWindow_Opened", "SceneSetupWindow");
-            SceneSetupWindow window = (SceneSetupWindow)EditorWindow.GetWindow(typeof(SceneSetupWindow), true, "Scene Setup (Version " + Cognitive3D_Manager.SDK_VERSION + ")");
+            LegacySceneSetupWindow window = (LegacySceneSetupWindow)EditorWindow.GetWindow(typeof(LegacySceneSetupWindow), true, "Scene Setup (Version " + Cognitive3D_Manager.SDK_VERSION + ")");
             currentPage = Page.Welcome;
             window.minSize = new Vector2(500, 550);
             window.maxSize = new Vector2(500, 550);
@@ -112,7 +112,7 @@ namespace Cognitive3D
         internal static void Init(Page page)
         {
             SegmentAnalytics.TrackEvent("SceneSetupWindow_Opened", "SceneSetupWindow");
-            SceneSetupWindow window = (SceneSetupWindow)EditorWindow.GetWindow(typeof(SceneSetupWindow), true, "Scene Setup (Version " + Cognitive3D_Manager.SDK_VERSION + ")");
+            LegacySceneSetupWindow window = (LegacySceneSetupWindow)EditorWindow.GetWindow(typeof(LegacySceneSetupWindow), true, "Scene Setup (Version " + Cognitive3D_Manager.SDK_VERSION + ")");
             currentPage = page;
             window.minSize = new Vector2(500, 550);
             window.maxSize = new Vector2(500, 550);
@@ -160,7 +160,7 @@ namespace Cognitive3D
         internal static void Init(Rect position)
         {
             SegmentAnalytics.TrackEvent("SceneSetupWindow_Opened", "SceneSetupWindow");
-            SceneSetupWindow window = (SceneSetupWindow)EditorWindow.GetWindow(typeof(SceneSetupWindow), true, "Scene Setup (Version " + Cognitive3D_Manager.SDK_VERSION + ")");
+            LegacySceneSetupWindow window = (LegacySceneSetupWindow)EditorWindow.GetWindow(typeof(LegacySceneSetupWindow), true, "Scene Setup (Version " + Cognitive3D_Manager.SDK_VERSION + ")");
             window.minSize = new Vector2(500, 550);
             window.maxSize = new Vector2(500, 550);
             window.position = new Rect(position.x+5, position.y+5, 500, 550);
@@ -373,7 +373,7 @@ namespace Cognitive3D
             if (GUI.Button(new Rect(150, 100, 200, 30), "Open Project Setup Window"))
             {
                 Close();
-                ProjectSetupWindow.Init(position);
+                LegacyProjectSetupWindow.Init(position);
             }
 
             //skip this screen if the developer key is valid
