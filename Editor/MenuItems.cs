@@ -43,7 +43,7 @@ namespace Cognitive3D
         [MenuItem("Cognitive3D/Legacy/Scene Management", priority = 70)]
         static void Cognitive3DLegacySceneManagement()
         {
-            SceneManagementWindow.Init();
+            LegacySceneManagementWindow.Init();
         }
         [MenuItem("Cognitive3D/Legacy/360 Setup", priority = 75)]
         static void Cognitive3DLegacy360Setup()

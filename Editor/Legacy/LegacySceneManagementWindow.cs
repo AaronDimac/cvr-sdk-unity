@@ -6,7 +6,7 @@ using UnityEditor.SceneManagement;
 
 namespace Cognitive3D
 {
-    internal class SceneManagementWindow : EditorWindow
+    internal class LegacySceneManagementWindow : EditorWindow
     {
 
         #region SCENE_ENTRY_CLASS
@@ -101,7 +101,7 @@ namespace Cognitive3D
             SegmentAnalytics.TrackEvent("SceneManageWindow_Opened", "SceneManageWindow");
             // Only search "Assets/" - don't search Packages/
             string[] foldersToSearch = { "Assets/" };
-            SceneManagementWindow window = (SceneManagementWindow)EditorWindow.GetWindow(typeof(SceneManagementWindow), true, "Scene Management (Version " + Cognitive3D_Manager.SDK_VERSION + ")");
+            LegacySceneManagementWindow window = (LegacySceneManagementWindow)EditorWindow.GetWindow(typeof(LegacySceneManagementWindow), true, "Scene Management (Version " + Cognitive3D_Manager.SDK_VERSION + ")");
             window.minSize = new Vector2(600, 550);
             window.maxSize = new Vector2(600, 550);
             window.Show();
