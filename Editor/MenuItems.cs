@@ -12,11 +12,6 @@ namespace Cognitive3D
         {
             ProjectSetupWindow.Init();
         }
-        [MenuItem("Cognitive3D/Scene Setup", priority = 10)]
-        static void Cognitive3DSceneSetup()
-        {
-            SceneSetupWindow.Init();
-        }
         [MenuItem("Cognitive3D/Project Validation", priority = 15)]
         static void Cognitive3DProjectValidation()
         {
@@ -30,20 +25,35 @@ namespace Cognitive3D
 
 
 
-        [MenuItem("Cognitive3D/Dynamic Objects", priority = 55)]
-        static void Cognitive3DManageDynamicObjects()
+        [MenuItem("Cognitive3D/Legacy/Dynamic Objects", priority = 55)]
+        static void Cognitive3DLegacyDynamicObjects()
         {
-            DynamicObjectsWindow.Init();
+            LegacyDynamicObjectsWindow.Init();
         }
-        [MenuItem("Cognitive3D/Scene Management", priority = 60)]
-        static void Cognitive3DSceneManagement()
+        [MenuItem("Cognitive3D/Legacy/Project Setup", priority = 60)]
+        static void Cognitive3DLegacyProjectSetup()
+        {
+            LegacyProjectSetupWindow.Init();
+        }
+        [MenuItem("Cognitive3D/Legacy/Scene Setup", priority = 65)]
+        static void Cognitive3DLegacySceneSetup()
+        {
+            LegacySceneSetupWindow.Init();
+        }
+        [MenuItem("Cognitive3D/Legacy/Scene Management", priority = 70)]
+        static void Cognitive3DLegacySceneManagement()
         {
             SceneManagementWindow.Init();
         }
-        [MenuItem("Cognitive3D/360 Setup", priority = 65)]
-        static void Cognitive3D360Setup()
+        [MenuItem("Cognitive3D/Legacy/360 Setup", priority = 75)]
+        static void Cognitive3DLegacy360Setup()
         {
-            Setup360Window.Init();
+            LegacySetup360Window.Init();
+        }
+        [MenuItem("Cognitive3D/Legacy/Help", priority = 80)]
+        static void Cognitive3DLegacyHelp()
+        {
+            LegacyHelpWindow.Init();
         }
 
 
@@ -61,11 +71,6 @@ namespace Cognitive3D
         static void CognitiveCheckUpdates()
         {
             EditorCore.ForceCheckUpdates();
-        }
-        [MenuItem("Cognitive3D/Help", priority = 120)]
-        static void Cognitive3DHelp()
-        {
-            HelpWindow.Init();
         }
     }
 }
