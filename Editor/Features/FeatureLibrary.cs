@@ -11,6 +11,7 @@ namespace Cognitive3D
         internal enum FeatureActionType
         {
             Apply,
+            Remove,
             Upload,
             LinkTo,
             Settings
@@ -120,7 +121,7 @@ namespace Cognitive3D
 
                                             GameObject instance = (GameObject)PrefabUtility.InstantiatePrefab(prefab);
                                             Undo.RegisterCreatedObjectUndo(instance, "Add ExitPoll Prefab");
-                                            Selection.activeObject = instance;              
+                                            Selection.activeObject = instance;
                                         }
 
                                         return;
@@ -153,10 +154,10 @@ namespace Cognitive3D
                     {
                         new FeatureAction(
                             FeatureActionType.Apply,
-                            "Adds Remote Controls component to Cognitive3D_Manager prefab",
+                            "Adds/Removes Remote Controls component to Cognitive3D_Manager prefab",
                             () =>
                             {
-
+                                AddOrRemoveComponent<Cognitive3D.Components.RemoteControls>();
                             }
                         ),
                         new FeatureAction(
@@ -171,7 +172,8 @@ namespace Cognitive3D
                             }
                         )
                     },
-                    new MediaDetailGUI()
+                    new MediaDetailGUI(),
+                    () => TryGetComponent<Cognitive3D.Components.RemoteControls>()
                 ),
                 new FeatureData(
                     "Eye Tracking",
@@ -185,11 +187,12 @@ namespace Cognitive3D
                             "Adds Eye Tracking (Fixation) component to Cognitive3D_Manager prefab",
                             () =>
                             {
-
+                                AddOrRemoveComponent<FixationRecorder>();
                             }
                         )
                     },
-                    new MediaDetailGUI()
+                    new MediaDetailGUI(),
+                    () => TryGetComponent<FixationRecorder>()
                 ),
                 new FeatureData(
                     "Oculus Social",
@@ -203,11 +206,12 @@ namespace Cognitive3D
                             "Adds Oculus Social to Cognitive3D_Manager prefab",
                             () =>
                             {
-
+                                AddOrRemoveComponent<Cognitive3D.Components.OculusSocial>();
                             }
                         )
                     },
-                    new MediaDetailGUI()
+                    new MediaDetailGUI(),
+                    () => TryGetComponent<Cognitive3D.Components.OculusSocial>()
                 ),
                 new FeatureData(
                     "Custom Events",
@@ -273,6 +277,55 @@ namespace Cognitive3D
                 projectID = userdata.projectId;
             }
         }
+
+        internal static void AddOrRemoveComponent<T>() where T : Component
+        {
+            GameObject c3dPrefab = Resources.Load<GameObject>("Cognitive3D_Manager");
+
+            if (c3dPrefab == null)
+            {
+                Debug.LogError("Cognitive3D Manager prefab not found in Resources folder!");
+                return;
+            }
+
+            string assetPath = AssetDatabase.GetAssetPath(c3dPrefab);
+
+            GameObject prefabContents = PrefabUtility.LoadPrefabContents(assetPath);
+
+            if (prefabContents.GetComponent<T>() != null)
+            {
+                Object.DestroyImmediate(prefabContents.GetComponent<T>());
+            }
+            else
+            {
+                prefabContents.AddComponent<T>();
+            }
+
+            PrefabUtility.SaveAsPrefabAsset(prefabContents, assetPath);
+            PrefabUtility.UnloadPrefabContents(prefabContents);
+
+            AssetDatabase.Refresh();
+        }
+
+        internal static bool TryGetComponent<T>() where T : Component
+        {
+            GameObject c3dPrefab = Resources.Load<GameObject>("Cognitive3D_Manager");
+
+            if (c3dPrefab == null)
+            {
+                return false;
+            }
+
+            string assetPath = AssetDatabase.GetAssetPath(c3dPrefab);
+
+            GameObject prefabContents = PrefabUtility.LoadPrefabContents(assetPath);
+
+            bool hasComponent = prefabContents.GetComponent<T>() != null;
+
+            PrefabUtility.UnloadPrefabContents(prefabContents);
+
+            return hasComponent;
+        }
     }
 
     internal class FeatureData
@@ -281,12 +334,13 @@ namespace Cognitive3D
         internal string Description;
         internal Texture2D Icon;
         internal System.Action OnClick;
+        internal System.Func<bool> IsApplied;
 
         internal List<FeatureAction> Actions;
 
         internal IFeatureDetailGUI DetailGUI;
 
-        internal FeatureData(string title, string description, Texture2D icon, System.Action onClick, List<FeatureAction> actions, IFeatureDetailGUI detailGUI = null)
+        internal FeatureData(string title, string description, Texture2D icon, System.Action onClick, List<FeatureAction> actions, IFeatureDetailGUI detailGUI = null, System.Func<bool> isApplied = null)
         {
             Title = title;
             Description = description;
@@ -294,6 +348,7 @@ namespace Cognitive3D
             OnClick = onClick;
             Actions = actions ?? new List<FeatureAction>();
             DetailGUI = detailGUI;
+            IsApplied = isApplied;
         }
     }
 
