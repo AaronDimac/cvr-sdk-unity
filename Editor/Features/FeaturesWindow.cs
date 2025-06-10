@@ -16,9 +16,11 @@ namespace Cognitive3D
 
         internal static void Init()
         {
-            FeaturesWindow window = GetWindow<FeaturesWindow>("Features");
+            var window = CreateInstance<FeaturesWindow>();
             window.minSize = new Vector2(600, 800);
             window.maxSize = new Vector2(600, 800);
+            window.titleContent = new GUIContent("Features");
+            window.ShowUtility();
         }
 
         private List<FeatureData> features;
@@ -138,7 +140,20 @@ namespace Cognitive3D
                     float x = buttonRect.xMax - ((featureData.Actions.Count - i) * (buttonWidth + spacing));
                     Rect actionRect = new Rect(x, buttonRect.y + yOffset, buttonWidth, buttonRect.height - 60);
 
-                    if (GUI.Button(actionRect, new GUIContent(GetSymbol(action.Type), action.Tooltip), EditorCore.styles.applyButtonStyle))
+                    string symbol = GetSymbol(action.Type);
+                    string tooltip = action.Tooltip;
+
+                    if (action.Type == FeatureLibrary.FeatureActionType.Apply && featureData.IsApplied != null && featureData.IsApplied.Invoke())
+                    {
+                        symbol = GetSymbol(FeatureLibrary.FeatureActionType.Remove);
+                    }
+                    else if (action.Type == FeatureLibrary.FeatureActionType.Apply)
+                    {
+                        symbol = GetSymbol(FeatureLibrary.FeatureActionType.Apply);
+                    }
+
+                    // Draw the button
+                    if (GUI.Button(actionRect, new GUIContent(symbol, tooltip), EditorCore.styles.applyButtonStyle))
                     {
                         action.OnClick?.Invoke();
                         Event.current.Use();
@@ -188,6 +203,7 @@ namespace Cognitive3D
             return type switch
             {
                 FeatureLibrary.FeatureActionType.Apply => "+",
+                FeatureLibrary.FeatureActionType.Remove => "-",
                 FeatureLibrary.FeatureActionType.Upload => "↑",
                 FeatureLibrary.FeatureActionType.LinkTo => "🔗",
                 FeatureLibrary.FeatureActionType.Settings => "⚙️",
