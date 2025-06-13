@@ -22,10 +22,15 @@ namespace Cognitive3D
         {
             ProjectValidationSettingsProvider.OpenProjectSetupTool();
         }
-        [MenuItem("Cognitive3D/Preferences...", priority = 20)]
-        static void Cognitive3DOptions()
+        [MenuItem("Cognitive3D/Preferences", priority = 20)]
+        static void Cognitive3DPreferences()
         {
-            Selection.activeObject = EditorCore.GetPreferences();
+            PreferencesSettingsProvider.OpenSettingsWindow();
+        }
+        [MenuItem("Cognitive3D/Data Uploader", priority = 25)]
+        static void Cognitive3DDataUploader()
+        {
+            DataUploaderSettingsProvider.OpenSettingsWindow();
         }
 
 
