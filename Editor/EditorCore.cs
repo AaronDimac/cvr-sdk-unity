@@ -350,6 +350,21 @@ namespace Cognitive3D
                 // Copy serialized data
                 EditorUtility.CopySerialized(newPref, mainPrefs);
 
+                // Restore the original name to avoid asset mismatch warnings
+                mainPrefs.name = originalName;
+
+                EditorUtility.SetDirty(mainPrefs);
+                AssetDatabase.SaveAssets();
+                AssetDatabase.Refresh();
+
+                Debug.Log("Applied current preferences to main asset.");
+            }
+            else
+            {
+                Debug.LogError("Failed to load or create main preferences asset.");
+            }
+        }
+
         static Cognitive3D_Preferences _prefs;
         /// <summary>
         /// Gets the Cognitive3D_preferences or creates and returns new default preferences
