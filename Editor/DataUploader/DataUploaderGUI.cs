@@ -1,0 +1,176 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEditor;
+using UnityEngine.Networking;
+
+namespace Cognitive3D
+{
+    internal class DataUploaderGUI
+    {
+        private string folderPath = "";
+
+        internal void OnGUI()
+        {
+            using (new EditorGUILayout.VerticalScope(EditorCore.styles.DetailContainer))
+            {
+                GUILayout.Label("Data Upload Tool", EditorStyles.boldLabel);
+
+                EditorGUILayout.Space();
+
+                EditorGUILayout.LabelField("Select Folder to Upload", EditorStyles.boldLabel);
+
+                using (new GUILayout.HorizontalScope())
+                {
+                    folderPath = EditorGUILayout.TextField(folderPath);
+
+                    if (GUILayout.Button("Browse", GUILayout.Width(70)))
+                    {
+                        string selectedPath = EditorUtility.OpenFolderPanel("Select Folder", "", "");
+                        if (!string.IsNullOrEmpty(selectedPath))
+                        {
+                            folderPath = selectedPath;
+                        }
+                    }
+                }
+
+                GUILayout.Space(20);
+
+                using (new GUILayout.HorizontalScope())
+                {
+                    GUILayout.FlexibleSpace();
+
+                    if (GUILayout.Button("Upload Data", GUILayout.Width(120)))
+                    {
+                        UploadData(folderPath);
+                    }
+
+                    GUILayout.FlexibleSpace();
+                }
+            }
+        }
+        
+        ICache ic;
+
+        private void UploadData(string path)
+        {
+            if (string.IsNullOrEmpty(path))
+            {
+                EditorUtility.DisplayDialog("Invalid Path", "Please select a valid folder path before uploading.", "OK");
+                return;
+            }
+
+            if (ic != null)
+            {
+                Clear();
+            } 
+
+            ic = new DualFileCache(path + "/");
+            
+            try
+            {
+                if (ic.HasContent())
+                {
+                    Util.logDebug($"Sending data from: {path}");
+                    StartUpload();
+                }
+                else
+                {
+                    Util.logWarning("No data in Local Cache to upload!");
+                    Clear();
+                    EditorUtility.DisplayDialog("No Data", "There's no data to upload in the selected folder.", "OK");
+                }
+            }
+            catch (System.Exception ex)
+            {
+                Util.logError($"Upload failed: {ex.Message}");
+                EditorUtility.DisplayDialog("Upload Failed", $"Something went wrong:\n{ex.Message}", "OK");
+            }
+        }
+
+        UnityWebRequest uploadRequest;
+        int numberOfBatches;
+		int attemptedUploads;
+
+        void StartUpload()
+        {
+            attemptedUploads = 0;
+            numberOfBatches = ic.NumberOfBatches();
+			EditorApplication.update += Editor_Update;
+        }
+
+        void Editor_Update()
+        {
+            float progress = numberOfBatches > 0 ? (float)attemptedUploads / numberOfBatches : 0f;
+            EditorUtility.DisplayProgressBar("Uploading Data", $"Uploading batch {attemptedUploads} of {numberOfBatches}", progress);
+
+			if (uploadRequest == null)
+            {
+                string destination = string.Empty;
+                string content = string.Empty;
+                if (ic.PeekContent(ref destination, ref content))
+                {
+                    if (!string.IsNullOrEmpty(destination) && !string.IsNullOrEmpty(content))
+                    {
+                        var bytes = System.Text.Encoding.UTF8.GetBytes(content);
+                        uploadRequest = UnityWebRequest.Put(destination, bytes);
+                        uploadRequest.method = "POST";
+                        uploadRequest.SetRequestHeader("Content-Type", "application/json");
+                        uploadRequest.SetRequestHeader("X-HTTP-Method-Override", "POST");
+                        uploadRequest.SetRequestHeader("Authorization", "APIKEY:DATA " + Cognitive3D_Preferences.Instance.ApplicationKey);
+                        uploadRequest.SendWebRequest();
+                        attemptedUploads++;
+
+                        if (Cognitive3D_Preferences.Instance.EnableDevLogging)
+                            Util.logDevelopment("EDITOR Upload From Cache " + destination + " " + content);
+                    }
+                }
+            }
+            else if (uploadRequest.isDone)
+            {
+                int responseCode = (int)uploadRequest.responseCode;
+                var headers = uploadRequest.GetResponseHeaders();
+                bool hasRequestTimeHeader = headers != null && headers.ContainsKey("cvr-request-time");
+
+                if (!hasRequestTimeHeader)
+                {
+                    responseCode = 307;
+                }
+
+
+                if (responseCode == 200)
+                {
+                    ic.PopContent();
+                }
+                else
+                {
+                    string destination = string.Empty;
+                    string content = string.Empty;
+                    if (ic.PeekContent(ref destination, ref content))
+                    {
+                        ic.PopContent();
+                        ic.WriteContent(destination, content);
+                    }
+                }
+
+                uploadRequest.Dispose();
+                uploadRequest = null;
+
+                if (attemptedUploads >= numberOfBatches || !ic.HasContent())
+                {
+                    Util.logDevelopment("Editor has finished uploading");
+                    EditorApplication.update -= Editor_Update;
+                    ic.Close();
+                    EditorUtility.ClearProgressBar();
+                    EditorUtility.DisplayDialog("Upload Complete", "All data have been uploaded.", "OK");
+                }
+            }
+        }
+
+        void Clear()
+        {
+            ic.Close();
+            ic = null;
+        }
+    }
+}
