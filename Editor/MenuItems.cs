@@ -20,7 +20,7 @@ namespace Cognitive3D
         [MenuItem("Cognitive3D/Project Validation", priority = 15)]
         static void Cognitive3DProjectValidation()
         {
-            ProjectValidationSettingsProvider.OpenProjectSetupTool();
+            ProjectValidationSettingsProvider.OpenSettingsWindow();
         }
         [MenuItem("Cognitive3D/Preferences", priority = 20)]
         static void Cognitive3DPreferences()
