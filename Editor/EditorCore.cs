@@ -270,6 +270,86 @@ namespace Cognitive3D
             PlayerSettings.SetScriptingDefineSymbolsForGroup(EditorUserBuildSettings.selectedBuildTargetGroup, alldefines);
         }
 
+        /// <summary>
+        /// Creates a new Cognitive3D_Preferences asset at the specified path and returns it.
+        /// If the path is invalid or empty, returns the existing preferences.
+        /// </summary>
+        public static Cognitive3D_Preferences CreatePreferences(string path)
+        {
+            if (!string.IsNullOrEmpty(path))
+            {
+                var newAsset = ScriptableObject.CreateInstance<Cognitive3D_Preferences>();
+                AssetDatabase.CreateAsset(newAsset, path);
+                AssetDatabase.SaveAssets();
+                AssetDatabase.Refresh();
+                Selection.activeObject = newAsset;
+                return newAsset;
+            }
+
+            return GetPreferences();
+        }
+
+        /// <summary>
+        /// Creates a copy of an existing Cognitive3D_Preferences asset and saves it at the specified path.
+        /// If the path is invalid, returns the existing preferences.
+        /// </summary>
+        public static Cognitive3D_Preferences CopyPreferences(string path, Cognitive3D_Preferences preferencesToCopy)
+        {
+            if (!string.IsNullOrEmpty(path))
+            {
+                // Duplicate the asset
+                string originalPath = AssetDatabase.GetAssetPath(preferencesToCopy);
+                AssetDatabase.CopyAsset(originalPath, path);
+                AssetDatabase.Refresh();
+
+                // Load and set the new copied asset
+                var copiedPrefs = AssetDatabase.LoadAssetAtPath<Cognitive3D_Preferences>(path);
+                if (copiedPrefs != null)
+                {
+                    return copiedPrefs;
+                }
+            }
+
+            return GetPreferences();
+        }
+
+        /// <summary>
+        /// Sets the current active Cognitive3D_Preferences instance used by the editor.
+        /// </summary>
+        internal static void SetPreferences(Cognitive3D_Preferences newPreferences)
+        {
+            _prefs = newPreferences;
+        }
+
+        /// <summary>
+        /// Copies all data from the given preferences object into the main preferences asset in the Resources folder.
+        /// If the main asset does not exist, it will be created.
+        /// </summary>
+        public static void SaveToPreference(Cognitive3D_Preferences newPref)
+        {
+            var mainPrefs = Resources.Load<Cognitive3D_Preferences>("Cognitive3D_Preferences");
+            if (mainPrefs == null)
+            {
+                mainPrefs = ScriptableObject.CreateInstance<Cognitive3D_Preferences>();
+                string filepath = "Assets/Resources";
+                if (!AssetDatabase.IsValidFolder(filepath))
+                {
+                    AssetDatabase.CreateFolder("Assets", "Resources");
+                }
+
+                AssetDatabase.CreateAsset(mainPrefs, $"{filepath}/Cognitive3D_Preferences.asset");
+                AssetDatabase.SaveAssets();
+                AssetDatabase.Refresh();
+            }
+
+            if (mainPrefs != null)
+            {
+                // Save the original name to restore after copying
+                string originalName = mainPrefs.name;
+
+                // Copy serialized data
+                EditorUtility.CopySerialized(newPref, mainPrefs);
+
         static Cognitive3D_Preferences _prefs;
         /// <summary>
         /// Gets the Cognitive3D_preferences or creates and returns new default preferences
@@ -415,6 +495,11 @@ namespace Cognitive3D
             internal const float LabelWidth = 96f;
             internal const float TitleLabelWidth = 196f;
             private const float IconSize = 16f;
+
+            internal readonly GUIStyle DetailContainer = new GUIStyle()
+            {
+                padding = new RectOffset(10, 10, 5, 5)
+            };
 
             internal readonly GUIStyle ListLabel = new GUIStyle("TV Selection")
             {

@@ -21,7 +21,6 @@ namespace Cognitive3D
                 }
 
                 // Draw and allow replacing the preferences asset
-                GUILayout.BeginHorizontal();
                 EditorGUI.BeginChangeCheck();
                 var newPrefs = (Cognitive3D_Preferences)EditorGUILayout.ObjectField(
                     "Preferences Asset", currentPrefs, typeof(Cognitive3D_Preferences), false);
@@ -31,7 +30,10 @@ namespace Cognitive3D
                     currentPrefs = newPrefs;
                 }
 
-                if (GUILayout.Button("Create New", GUILayout.Width(100)))
+                EditorGUILayout.Space(5);
+
+                GUILayout.BeginHorizontal();
+                if (GUILayout.Button("Create New"))
                 {
                     string path = EditorUtility.SaveFilePanelInProject(
                         "Create New Cognitive3D Preferences",
@@ -42,6 +44,29 @@ namespace Cognitive3D
                     newPrefs = EditorCore.CreatePreferences(path);
                     EditorCore.SetPreferences(newPrefs);
                     currentPrefs = newPrefs;
+                }
+                if (GUILayout.Button("Copy Current"))
+                {
+                    string path = EditorUtility.SaveFilePanelInProject(
+                        "Copy Preferences",
+                        "Cognitive3D_Preferences_Copy",
+                        "asset",
+                        "Choose a location to save the copied preferences asset");
+
+                    newPrefs = EditorCore.CopyPreferences(path, currentPrefs);
+                    EditorCore.SetPreferences(newPrefs);
+                    currentPrefs = newPrefs;
+                }
+                if (GUILayout.Button("Save"))
+                {
+                    if (currentPrefs == null)
+                    {
+                        Debug.LogError("No current preferences selected.");
+                        return;
+                    }
+
+                    // Copy serialized data
+                    EditorCore.SaveToPreference(currentPrefs);
                 }
                 GUILayout.EndHorizontal();
 
