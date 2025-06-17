@@ -143,7 +143,7 @@ namespace Cognitive3D
                             }
                         )
                     },
-                    new MediaDetailGUI()
+                    new ExitpollDetailGUI()
                 ),
                 new FeatureData(
                     "Remote Controls",
@@ -172,7 +172,7 @@ namespace Cognitive3D
                             }
                         )
                     },
-                    new MediaDetailGUI(),
+                    new RemoteControlsDetailGUI(),
                     () => TryGetComponent<Cognitive3D.Components.RemoteControls>()
                 ),
                 new FeatureData(
@@ -191,7 +191,7 @@ namespace Cognitive3D
                             }
                         )
                     },
-                    new MediaDetailGUI(),
+                    new EyeTrackingDetailGUI(),
                     () => TryGetComponent<FixationRecorder>()
                 ),
                 new FeatureData(
@@ -229,15 +229,31 @@ namespace Cognitive3D
                             }
                         )
                     },
-                    new MediaDetailGUI()
+                    new CustomEventDetailGUI()
                 ),
                 new FeatureData(
                     "Media (360 Video)",
                     "Media related context",
                     EditorCore.DynamicsIcon,
-                    () => { setFeatureIndex(5); },
+                    () => { setFeatureIndex(6); },
                     new List<FeatureAction>
                     {
+                        new FeatureAction(
+                            FeatureActionType.Apply,
+                            "Add Media components (Dynamic Object and Mesh Collider) to the selected GameObjects",
+                            () =>
+                            {
+                                GameObject[] selectedObjects = Selection.gameObjects;
+
+                                foreach (GameObject obj in selectedObjects)
+                                {
+                                    if (!obj.GetComponent<MediaComponent>())
+                                    {
+                                        obj.AddComponent<MediaComponent>();
+                                    }
+                                }
+                            }
+                        ),
                         new FeatureAction(
                             FeatureActionType.Settings,
                             "Media settings",
@@ -332,6 +348,7 @@ namespace Cognitive3D
     {
         internal string Title;
         internal string Description;
+        internal List<string> Tags;
         internal Texture2D Icon;
         internal System.Action OnClick;
         internal System.Func<bool> IsApplied;
