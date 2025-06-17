@@ -66,11 +66,6 @@ namespace Cognitive3D
                 GetEntryList();
             }
 
-            if (DynamicObjects.Length == 0)
-            {
-                // Warn user
-            }
-
             GUILayout.BeginHorizontal();
             {
                 GUILayout.Label("Dynamic Objects", EditorCore.styles.FeatureTitleStyle);
@@ -118,14 +113,12 @@ namespace Cognitive3D
                 "These are all Dynamic Objects currently in the scene. Select all or the ones you want to upload.",
                 EditorStyles.wordWrappedLabel
             );
-
-            EditorGUILayout.Space(10);
-
             if (DynamicObjects.Length == 0)
             {
                 EditorGUILayout.HelpBox("No Dynamic Objects found in the scene.", MessageType.Warning);
-                return;
             }
+
+            EditorGUILayout.Space(10);
 
             GUILayout.BeginHorizontal();
             GUILayout.Label("Dynamics in " + UnityEditor.SceneManagement.EditorSceneManager.GetActiveScene().name, EditorCore.styles.IssuesTitleBoldLabel);
