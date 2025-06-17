@@ -13,6 +13,7 @@ namespace Cognitive3D
 
         int _choiceIndex = 0;
 
+        #region Visual Elements
         public void OnGUI()
         {
             GUILayout.BeginHorizontal();
@@ -36,8 +37,36 @@ namespace Cognitive3D
                 EditorStyles.wordWrappedLabel
             );
 
+            EditorGUILayout.Space(10);
+
+            GUILayout.Label("1. Create Media", EditorCore.styles.FeatureTitleStyle);
+            GUILayout.Label("Create and manage your media assets in the Dashboard.", EditorStyles.wordWrappedLabel);
+
+            if (GUILayout.Button("Open Dashboard Media Manager", GUILayout.Height(30)) && FeatureLibrary.projectID > 0)
+            {
+                Application.OpenURL(CognitiveStatics.GetMediaSettingsUrl(FeatureLibrary.projectID));
+            }
+
+            EditorGUILayout.Space(10);
+
+            GUILayout.Label("2.Add Media Component", EditorCore.styles.FeatureTitleStyle);
+            GUILayout.Label("Select a GameObject in your scene and click below to add the Media component.", EditorStyles.wordWrappedLabel);
+
+            if (GUILayout.Button("Add Media to Selected", GUILayout.Height(30)))
+            {
+                AttachMediaToSelected();
+            }
+
+            EditorGUILayout.Space(10);
+
+            GUILayout.Label("3. (Optional) Build Media", EditorCore.styles.FeatureTitleStyle);
+            GUILayout.Label("Use the tool below to build media interactively. Components will be added automatically.", EditorStyles.wordWrappedLabel);
+
             GUILayout.Space(10);
-            GUILayout.Label("Settings:", EditorStyles.boldLabel);
+
+            EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+            GUILayout.Space(10);
+            
             GUILayout.BeginHorizontal();
             GUILayout.FlexibleSpace();
             if (selectedClip != null)
@@ -50,6 +79,7 @@ namespace Cognitive3D
             }
             GUILayout.FlexibleSpace();
             GUILayout.EndHorizontal();
+
             selectedClip = (UnityEngine.Video.VideoClip)EditorGUILayout.ObjectField("Video Clip", selectedClip, typeof(UnityEngine.Video.VideoClip), true);
             userCamera = (UnityEngine.Camera)EditorGUILayout.ObjectField("Main Camera", userCamera, typeof(UnityEngine.Camera), true);
 
@@ -94,8 +124,12 @@ namespace Cognitive3D
                 CreateAssets();
             }
             EditorGUI.EndDisabledGroup();
+            EditorGUILayout.Space(10);
+            EditorGUILayout.EndVertical();
         }
+        #endregion
 
+        #region Media Utilities
         void CreateAssets()
         {
             Shader skyshader = Shader.Find("Skybox/Panoramic");
@@ -193,5 +227,17 @@ namespace Cognitive3D
             UnityEditor.SceneManagement.EditorSceneManager.MarkAllScenesDirty();
             Selection.activeGameObject = internalGo;
         }
+
+        internal static void AttachMediaToSelected()
+        {
+            foreach (var obj in Selection.gameObjects)
+            {
+                if (obj.GetComponent<MediaComponent>() == null)
+                {
+                    Undo.AddComponent<MediaComponent>(obj);
+                }
+            }
+        }
+        #endregion
     }
 }
