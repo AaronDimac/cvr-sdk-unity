@@ -122,51 +122,9 @@ namespace Cognitive3D
 
             GUILayout.BeginHorizontal();
             GUILayout.Label("Dynamics in " + UnityEditor.SceneManagement.EditorSceneManager.GetActiveScene().name, EditorCore.styles.IssuesTitleBoldLabel);
-            GUILayout.FlexibleSpace();
-            if (GUILayout.Button(new GUIContent(EditorCore.RefreshIcon, "Refresh List"), EditorCore.styles.IconButton))
-            {
-                RefreshList();
-            }
-            if (GUILayout.Button(new GUIContent(EditorCore.SettingsIcon2, "Additional Settings"), EditorCore.styles.IconButton))
-            {
-                GenericMenu gm = new GenericMenu();
-
-                bool hasSelectedAnyEntry = false;
-                foreach (var entry in dynamicObjects)
-                {
-                    if (entry.selected) { hasSelectedAnyEntry = true; break; }
-                }
-
-                //export resolution options
-                gm.AddItem(new GUIContent("Full Texture Resolution"), Cognitive3D_Preferences.Instance.TextureResize == 1, OnSelectFullResolution);
-                gm.AddItem(new GUIContent("Half Texture Resolution"), Cognitive3D_Preferences.Instance.TextureResize == 2, OnSelectHalfResolution);
-                gm.AddItem(new GUIContent("Quarter Texture Resolution"), Cognitive3D_Preferences.Instance.TextureResize == 4, OnSelectQuarterResolution);
-                gm.AddItem(new GUIContent("Export lowest LOD meshes"), Cognitive3D_Preferences.Instance.ExportSceneLODLowest, OnToggleLODMeshes);
-
-                //dynamic object tools
-                gm.AddSeparator("");
-                if (!hasSelectedAnyEntry)
-                {
-                    gm.AddDisabledItem(new GUIContent("Rename Selected Mesh"));
-                    gm.AddDisabledItem(new GUIContent("Rename Selected GameObject"));
-                }
-                else
-                {
-                    gm.AddItem(new GUIContent("Rename Selected Mesh"), false, OnRenameMeshSelected);
-                    gm.AddItem(new GUIContent("Rename Selected GameObject"), false, OnRenameGameObjectSelected);
-                }
-
-                //asset management tools
-                gm.AddSeparator("");
-                gm.AddItem(new GUIContent("Open Dynamic Export Folder"), false, OnOpenDynamicExportFolder);
-                gm.AddItem(new GUIContent("Get Dynamic IDs from Dashboard"), false, GetDashboardManifest);
-
-#if UNITY_2020_1_OR_NEWER
-                gm.AddItem(new GUIContent("Include Disabled Dynamic Objects"), Cognitive3D_Preferences.Instance.IncludeDisabledDynamicObjects, ToggleIncludeDisabledObjects);
-#endif
-                gm.ShowAsContext();
-            }
             GUILayout.EndHorizontal();
+
+            EditorGUILayout.Space(5);
 
             EditorGUILayout.BeginVertical(EditorStyles.helpBox);
 
@@ -245,12 +203,57 @@ namespace Cognitive3D
             GUILayout.Label("Dynamic ID", GUILayout.Width(100));
             DrawColumnSeparator();
 
-            GUILayout.Label("Exported", EditorCore.styles.centeredLabelStyle, GUILayout.Width(90));
+            GUILayout.Label("Exported", EditorCore.styles.centeredLabelStyle, GUILayout.Width(70));
             DrawColumnSeparator();
 
-            GUILayout.Label("Uploaded", EditorCore.styles.centeredLabelStyle, GUILayout.Width(90));
+            GUILayout.Label("Uploaded", EditorCore.styles.centeredLabelStyle, GUILayout.Width(70));
 
             GUILayout.FlexibleSpace();
+
+            if (GUILayout.Button(new GUIContent(EditorCore.RefreshIcon, "Refresh List"), EditorStyles.toolbarButton, GUILayout.Width(24)))
+            {
+                RefreshList();
+            }
+
+            if (GUILayout.Button(new GUIContent(EditorCore.SettingsIcon2, "Additional Settings"), EditorStyles.toolbarButton, GUILayout.Width(24)))
+            {
+                GenericMenu gm = new GenericMenu();
+
+                bool hasSelectedAnyEntry = false;
+                foreach (var entry in dynamicObjects)
+                {
+                    if (entry.selected) { hasSelectedAnyEntry = true; break; }
+                }
+
+                //export resolution options
+                gm.AddItem(new GUIContent("Full Texture Resolution"), Cognitive3D_Preferences.Instance.TextureResize == 1, OnSelectFullResolution);
+                gm.AddItem(new GUIContent("Half Texture Resolution"), Cognitive3D_Preferences.Instance.TextureResize == 2, OnSelectHalfResolution);
+                gm.AddItem(new GUIContent("Quarter Texture Resolution"), Cognitive3D_Preferences.Instance.TextureResize == 4, OnSelectQuarterResolution);
+                gm.AddItem(new GUIContent("Export lowest LOD meshes"), Cognitive3D_Preferences.Instance.ExportSceneLODLowest, OnToggleLODMeshes);
+
+                //dynamic object tools
+                gm.AddSeparator("");
+                if (!hasSelectedAnyEntry)
+                {
+                    gm.AddDisabledItem(new GUIContent("Rename Selected Mesh"));
+                    gm.AddDisabledItem(new GUIContent("Rename Selected GameObject"));
+                }
+                else
+                {
+                    gm.AddItem(new GUIContent("Rename Selected Mesh"), false, OnRenameMeshSelected);
+                    gm.AddItem(new GUIContent("Rename Selected GameObject"), false, OnRenameGameObjectSelected);
+                }
+
+                //asset management tools
+                gm.AddSeparator("");
+                gm.AddItem(new GUIContent("Open Dynamic Export Folder"), false, OnOpenDynamicExportFolder);
+                gm.AddItem(new GUIContent("Get Dynamic IDs from Dashboard"), false, GetDashboardManifest);
+
+#if UNITY_2020_1_OR_NEWER
+                gm.AddItem(new GUIContent("Include Disabled Dynamic Objects"), Cognitive3D_Preferences.Instance.IncludeDisabledDynamicObjects, ToggleIncludeDisabledObjects);
+#endif
+                gm.ShowAsContext();
+            }
             EditorGUILayout.EndHorizontal();
         }
 
@@ -282,10 +285,10 @@ namespace Cognitive3D
             GUILayout.Label(new GUIContent(obj.objectReference.GetId(), obj.objectReference.GetId()), GUILayout.Width(100));
 
             GUILayout.Space(5);
-            DrawStatusIcon(obj.hasExportedMesh, GUILayout.Width(90));
+            DrawStatusIcon(obj.hasExportedMesh, GUILayout.Width(70));
 
             GUILayout.Space(5);
-            DrawStatusIcon(obj.hasBeenUploaded, GUILayout.Width(90));
+            DrawStatusIcon(obj.hasBeenUploaded, GUILayout.Width(70));
 
             GUILayout.FlexibleSpace();
 
