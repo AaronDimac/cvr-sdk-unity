@@ -81,6 +81,8 @@ namespace Cognitive3D
         /// </summary>
         internal static event onUploadScenesComplete OnUploadScenesComplete;
         private static void InvokeUploadScenesCompleteEvent() { if (OnUploadScenesComplete != null) { OnUploadScenesComplete.Invoke(); } }
+        private static bool completedUpload = false;
+        internal static bool CompletedUpload { get => completedUpload; set => completedUpload = value; }
 
         internal static List<SceneEntry> GetSelectedScenes(List<SceneEntry> sceneEntries)
         {
@@ -191,13 +193,13 @@ namespace Cognitive3D
                     return;
 
                 case SceneManagementUploadState.StartUpload:
-                    SceneSetupWindow.CompletedUpload = false;
-                    SceneSetupWindow.UploadSceneAndDynamics(exportDynamics, exportDynamics, true, true, false);
+                    CompletedUpload = false;
+                    UploadSceneAndDynamics(exportDynamics, exportDynamics, true, true, false);
                     sceneUploadState = SceneManagementUploadState.Uploading;
                     return;
 
                 case SceneManagementUploadState.Uploading:
-                    if (SceneSetupWindow.CompletedUpload)
+                    if (CompletedUpload)
                     {
                         sceneUploadState = SceneManagementUploadState.Complete;
                     }
@@ -205,11 +207,148 @@ namespace Cognitive3D
 
                 case SceneManagementUploadState.Complete:
                     UnityEditor.SceneManagement.EditorSceneManager.SaveOpenScenes();
-                    SceneSetupWindow.CompletedUpload = false;
+                    CompletedUpload = false;
                     sceneUploadState = SceneManagementUploadState.Init;
                     sceneIndex++;
                     return;
             }
+        }
+
+        /// <summary>
+        /// Upload exported scene and optionally, dynamics
+        /// </summary>
+        /// <param name="uploadExportedDynamics">If true, upload dynamics from export directory</param>
+        /// <param name="exportAndUploadDynamicsFromScene">If true, exports dynamics from scene, and uploads them</param>
+        /// <param name="uploadSceneGeometry">If true, upload scene geometry</param>
+        /// <param name="uploadThumbnail">If true, upload scene thumbnail</param>
+        /// <param name="showPopups">If true, show popups (use false for automation)</param>
+        internal static void UploadSceneAndDynamics(bool uploadExportedDynamics, bool exportAndUploadDynamicsFromScene, bool uploadSceneGeometry, bool uploadThumbnail, bool showPopups = false)
+        {
+            System.Action completedmanifestupload = delegate
+            {
+                if (uploadExportedDynamics)
+                {
+                    ExportUtility.UploadAllDynamicObjectMeshes(showPopups);
+                }
+                else if (exportAndUploadDynamicsFromScene)
+                {
+                    List<string> dynamicMeshNames = new List<string>();
+                    var dynamicObjectsInScene = GetDynamicObjectsInScene();
+                    foreach (var dyn in dynamicObjectsInScene)
+                    {
+                        dynamicMeshNames.Add(dyn.MeshName);
+                    }
+                    ExportUtility.UploadDynamicObjects(dynamicMeshNames, showPopups);
+                }
+                CompletedUpload = true;
+            };
+
+            // Fifth: upload manifest
+            System.Action completedRefreshSceneVersion = delegate
+            {
+                if (uploadExportedDynamics || exportAndUploadDynamicsFromScene)
+                {
+                    //TODO ask if dev wants to upload disabled dynamic objects as well (if there are any)
+                    AggregationManifest manifest = new AggregationManifest();
+                    manifest.AddOrReplaceDynamic(GetDynamicObjectsInScene());
+                    EditorCore.UploadManifest(manifest, completedmanifestupload, completedmanifestupload);
+                }
+                else
+                {
+                    completedmanifestupload.Invoke();
+                }
+            };
+
+            // Fourth upload dynamics
+            System.Action<int> completeSceneUpload = delegate (int responseCode)
+            {
+                if (responseCode == 200 || responseCode == 201)
+                {
+                    if (exportAndUploadDynamicsFromScene)
+                    {
+                        ExportAllDynamicsInScene();
+                    }
+                    EditorCore.RefreshSceneVersion(completedRefreshSceneVersion); // likely completed in previous step, but just in case
+                }
+                ProjectValidation.RegenerateItems();
+            };
+
+            //third upload scene
+            System.Action completeScreenshot = delegate
+            {
+                Cognitive3D_Preferences.SceneSettings current = Cognitive3D_Preferences.FindCurrentScene();
+                if (current == null)
+                {
+                    Debug.LogError("Trying to upload to a scene with no settings");
+                    return;
+                }
+
+                if (uploadSceneGeometry)
+                {
+                    if (showPopups)
+                    {
+                        if (string.IsNullOrEmpty(current.SceneId))
+                        {
+                            // NEW SCENE
+                            if (EditorUtility.DisplayDialog("Upload New Scene", "Upload " + current.SceneName + " to " + EditorCore.DisplayValue(DisplayKey.ViewerName) + "?", "Ok", "Cancel"))
+                            {
+                                sceneUploadProgress = 0;
+                                sceneUploadStartTime = EditorApplication.timeSinceStartup;
+                                ExportUtility.UploadDecimatedScene(current, completeSceneUpload, ReceiveSceneUploadProgress);
+                            }
+                        }
+                        else
+                        {
+                            // NEW SCENE VERSION
+                            if (EditorUtility.DisplayDialog("Upload New Version", "Upload a new version of this existing scene? Will archive previous version", "Ok", "Cancel"))
+                            {
+                                sceneUploadProgress = 0;
+                                sceneUploadStartTime = EditorApplication.timeSinceStartup;
+                                ExportUtility.UploadDecimatedScene(current, completeSceneUpload, ReceiveSceneUploadProgress);
+                            }
+                        }
+                    }
+                    else // UPLOAD WITHOUT POPUPS
+                    {
+                        ExportUtility.UploadDecimatedScene(current, completeSceneUpload, ReceiveSceneUploadProgress);
+                    }
+                }
+                else
+                {
+                    //check to upload the thumbnail (without the scene geo)
+                    if (uploadThumbnail)
+                    {
+                        EditorCore.UploadSceneThumbnail(current);
+                    }
+                    completeSceneUpload.Invoke(200);
+                }
+            };
+
+            //second save screenshot
+            System.Action completedRefreshSceneVersion1 = delegate
+            {
+                if (uploadThumbnail)
+                {
+                    EditorCore.SaveScreenshot(EditorCore.GetSceneRenderTexture(), UnityEngine.SceneManagement.SceneManager.GetActiveScene().name, completeScreenshot);
+                }
+                else
+                {
+                    //use the existing screenshot (assuming it exists)
+                    completeScreenshot.Invoke();
+                    completeScreenshot = null;
+                }
+            };
+
+            CompletedUpload = false;
+            EditorCore.RefreshSceneVersion(completedRefreshSceneVersion1);
+        }
+
+        static float sceneUploadProgress;
+        static double sceneUploadStartTime;
+        //TODO styled UI element to display web request progress instead of built-in unity popup
+        static void ReceiveSceneUploadProgress(float progress)
+        {
+            sceneUploadProgress = progress;
         }
         #endregion
 
@@ -218,6 +357,22 @@ namespace Cognitive3D
         {
             return GameObject.FindObjectsByType<DynamicObject>(FindObjectsSortMode.None).ToList();
         }
+
+        internal static void ExportAllDynamicsInScene()
+        {
+            List<DynamicObject> dynsInSceneList = new List<DynamicObject>();
+
+            // This array HAS TO BE reinitialized here because
+            // this function can be from other places and
+            // we cannot guarantee that it has been initialized
+            var dynamicObjectsInScene = GetDynamicObjectsInScene();
+            foreach (var dyn in dynamicObjectsInScene)
+            {
+                dynsInSceneList.Add(dyn);
+            }
+            ExportUtility.ExportDynamicObjects(dynsInSceneList);
+        }
+
         internal static void ExportAndUploadAllDynamicsInScene()
         {
             List<DynamicObject> dynsInSceneList = new List<DynamicObject>();
@@ -253,6 +408,7 @@ namespace Cognitive3D
                     }
                     ExportUtility.UploadDynamicObjects(dynamicMeshNames, showPopups);
                 }
+                // CompletedUpload = true;
             }
 
             void OnSceneVersionRefreshed()
@@ -268,7 +424,96 @@ namespace Cognitive3D
                     OnManifestUploadComplete();
                 }
             }
+
+            // CompletedUpload = false;
             EditorCore.RefreshSceneVersion(OnSceneVersionRefreshed);
+        }
+
+        internal static void ExportAndUploadDynamics(bool selectedOnly, List<DynamicObjectEntry> entries, DynamicObjectDetailGUI detailGUI = null)
+        {
+            EditorCore.RefreshSceneVersion(() =>
+            {
+                int selection = EditorUtility.DisplayDialogComplex("Export Meshes?", "Do you want to export meshes before uploading to Scene Explorer?", "Yes, export selected meshes", "No, use existing files", "Cancel");
+
+                if (selection == 2) //cancel
+                {
+                    return;
+                }
+
+                List<GameObject> uploadList = new List<GameObject>();
+                List<DynamicObject> exportList = new List<DynamicObject>();
+
+                if (selection == 0) //export
+                {
+                    foreach (var entry in entries)
+                    {
+                        var dyn = entry.objectReference;
+                        if (dyn == null) { continue; }
+                        if (selectedOnly)
+                        {
+                            if (!entry.selected) { continue; }
+                        }
+                        //check if export files exist
+                        exportList.Add(dyn);
+                        uploadList.Add(dyn.gameObject);
+                    }
+                    ExportUtility.ExportDynamicObjects(exportList);
+                }
+                else if (selection == 1) //don't export
+                {
+                    foreach (var entry in entries)
+                    {
+                        var dyn = entry.objectReference;
+                        if (dyn == null) { continue; }
+                        if (selectedOnly)
+                        {
+                            if (!entry.selected) { continue; }
+                        }
+                        //check if export files exist
+                        uploadList.Add(dyn.gameObject);
+                    }
+                }
+                //upload meshes and ids
+                EditorCore.RefreshSceneVersion(delegate
+                {
+                    if (ExportUtility.UploadSelectedDynamicObjectMeshes(uploadList, true))
+                    {
+                        var manifest = new AggregationManifest();
+                        List<DynamicObject> manifestList = new List<DynamicObject>();
+                        foreach (var entry in entries)
+                        {
+                            if (selectedOnly)
+                            {
+                                if (!entry.selected) { continue; }
+                            }
+                            var dyn = entry.objectReference;
+                            if (dyn == null) { continue; }
+
+                            if (!entry.isIdPool)
+                            {
+                                if (dyn.idSource == DynamicObject.IdSourceType.CustomID)
+                                {
+                                    manifestList.Add(entry.objectReference);
+                                }
+                            }
+                            else
+                            {
+                                foreach (var poolid in entry.poolReference.Ids)
+                                {
+                                    manifest.objects.Add(new AggregationManifest.AggregationManifestEntry(entry.poolReference.PrefabName, entry.poolReference.MeshName, poolid, entry.objectReference.IsController, new float[] { 1, 1, 1 }, new float[] { 0, 0, 0 }, new float[] { 0, 0, 0, 1 }));
+                                }
+                            }
+                        }
+                        manifest.AddOrReplaceDynamic(manifestList);
+                        System.Action refreshWindowOnManifest = delegate
+                        {
+                            if (detailGUI != null) detailGUI.RefreshList();
+                        };
+
+                        EditorCore.UploadManifest(manifest, refreshWindowOnManifest);
+                    }
+                });
+            });
         }
         #endregion
     }
@@ -324,6 +569,111 @@ namespace Cognitive3D
             hasExportedMesh = exportedMesh;
             selected = initiallySelected;
             hasBeenUploaded = uploaded;
+        }
+    }
+    #endregion
+
+    #region Aggregation Manifest
+    [System.Serializable]
+    internal class AggregationManifest
+    {
+        [System.Serializable]
+        public class AggregationManifestEntry
+        {
+            public string name;
+            public string mesh;
+            public string id;
+            public bool isController;
+            public float[] scaleCustom = new float[] { 1, 1, 1 };
+            public float[] position = new float[] { 0, 0, 0 };
+            public float[] rotation = new float[] { 0, 0, 0, 1 };
+            public AggregationManifestEntry(string _name, string _mesh, string _id, bool _isController, float[] _scaleCustom)
+            {
+                name = _name;
+                mesh = _mesh;
+                id = _id;
+                isController = _isController;
+                scaleCustom = _scaleCustom;
+            }
+            public AggregationManifestEntry(string _name, string _mesh, string _id, bool _isController, float[] _scaleCustom, float[] _position, float[] _rotation)
+            {
+                name = _name;
+                mesh = _mesh;
+                id = _id;
+                isController = _isController;
+                scaleCustom = _scaleCustom;
+                position = _position;
+                rotation = _rotation;
+            }
+            public override string ToString()
+            {
+                return "{\"name\":\"" + name + "\",\"mesh\":\"" + mesh + "\",\"id\":\"" + id + "\",\"isController\":\"" + isController +
+                    "\",\"scaleCustom\":[" + scaleCustom[0].ToString("0.0000", System.Globalization.CultureInfo.InvariantCulture) + "," + scaleCustom[1].ToString("0.0000", System.Globalization.CultureInfo.InvariantCulture) + "," + scaleCustom[2].ToString("0.0000", System.Globalization.CultureInfo.InvariantCulture) +
+                    "],\"initialPosition\":[" + position[0].ToString("0.0000", System.Globalization.CultureInfo.InvariantCulture) + "," + position[1].ToString("0.0000", System.Globalization.CultureInfo.InvariantCulture) + "," + position[2].ToString("0.0000", System.Globalization.CultureInfo.InvariantCulture) +
+                    "],\"initialRotation\":[" + rotation[0].ToString("0.0000", System.Globalization.CultureInfo.InvariantCulture) + "," + rotation[1].ToString("0.0000", System.Globalization.CultureInfo.InvariantCulture) + "," + rotation[2].ToString("0.0000", System.Globalization.CultureInfo.InvariantCulture) + "," + rotation[3].ToString("0.0000", System.Globalization.CultureInfo.InvariantCulture) + "]}";
+            }
+        }
+        public List<AggregationManifestEntry> objects = new List<AggregationManifestEntry>();
+
+        /// <summary>
+        /// adds or updates dynamic object ids in a provided manifest for aggregation
+        /// </summary>
+        /// <param name="scenedynamics"></param>
+        public void AddOrReplaceDynamic(List<DynamicObject> scenedynamics, bool silent = false)
+        {
+            bool meshNameMissing = false;
+            List<string> missingMeshGameObjects = new List<string>();
+            foreach (var dynamic in scenedynamics)
+            {
+
+                var replaceEntry = objects.Find(delegate (AggregationManifest.AggregationManifestEntry obj) { return obj.id == dynamic.CustomId.ToString(); });
+                if (replaceEntry == null)
+                {
+                    //don't include meshes with empty mesh names in manifest
+                    if (!string.IsNullOrEmpty(dynamic.MeshName))
+                    {
+                        objects.Add(new AggregationManifest.AggregationManifestEntry(dynamic.gameObject.name, dynamic.MeshName, dynamic.CustomId.ToString(),
+                            dynamic.IsController,
+                            new float[] { dynamic.transform.lossyScale.x, dynamic.transform.lossyScale.y, dynamic.transform.lossyScale.z },
+                            new float[] { dynamic.transform.position.x, dynamic.transform.position.y, dynamic.transform.position.z },
+                            new float[] { dynamic.transform.rotation.x, dynamic.transform.rotation.y, dynamic.transform.rotation.z, dynamic.transform.rotation.w }));
+                    }
+                    else
+                    {
+                        missingMeshGameObjects.Add(dynamic.gameObject.name);
+                        meshNameMissing = true;
+                    }
+                }
+                else
+                {
+                    if (!string.IsNullOrEmpty(dynamic.MeshName))
+                    {
+                        replaceEntry.mesh = dynamic.MeshName;
+                        replaceEntry.name = dynamic.gameObject.name;
+                    }
+                    else
+                    {
+                        missingMeshGameObjects.Add(dynamic.gameObject.name);
+                        meshNameMissing = true;
+                    }
+                }
+            }
+
+            if (meshNameMissing)
+            {
+                System.Text.StringBuilder sb = new System.Text.StringBuilder();
+                sb.Append("Dynamic Objects missing mesh name:\n");
+                foreach (var v in missingMeshGameObjects)
+                {
+                    sb.Append(v);
+                    sb.Append("\n");
+                }
+                Debug.LogWarning(sb.ToString());
+                if (silent == false)
+                {
+                    EditorUtility.DisplayDialog("Error", "One or more Dynamic Objects are missing a mesh name and were not uploaded to scene.\n\nSee Console for details", "Ok");
+                }
+            }
         }
     }
     #endregion
