@@ -49,6 +49,21 @@ namespace Cognitive3D
             );
 
             EditorGUI.SelectableLabel(rect, codeSample, EditorCore.styles.codeSnippet);
+
+            EditorGUILayout.Space(5);
+            codeSample = "new Cognitive3D.CustomEvent(\"Event Name\")\n.SetProperty(\"Property Name\", Property Value)\n.Send()";
+
+            EditorGUILayout.Space(5);
+            EditorGUILayout.LabelField("Example with properties:", EditorStyles.boldLabel);
+
+            rect = GUILayoutUtility.GetRect(
+                new GUIContent(codeSample),
+                EditorCore.styles.codeSnippet,
+                GUILayout.ExpandWidth(true),
+                GUILayout.MinHeight(90)
+            );
+
+            EditorGUI.SelectableLabel(rect, codeSample, EditorCore.styles.codeSnippet);
         }
     }
 }
