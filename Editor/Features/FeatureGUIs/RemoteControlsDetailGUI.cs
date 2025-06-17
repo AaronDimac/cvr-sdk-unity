@@ -24,6 +24,36 @@ namespace Cognitive3D
                 GUILayout.FlexibleSpace(); // Push content to the left
             }
             GUILayout.EndHorizontal();
+
+            GUILayout.Label(
+                "A/B Testing and Remote Config let you customize app behavior and settings for different user segments.",
+                EditorStyles.wordWrappedLabel
+            );
+
+            EditorGUILayout.Space(10);
+
+            GUILayout.Label("Step 1: Create Remote Variables", EditorCore.styles.FeatureTitleStyle);
+
+            GUILayout.Label(
+                "Set up a Remote variable in the Dashboard to fetch in your project.",
+                EditorStyles.wordWrappedLabel
+            );
+
+            if (GUILayout.Button("Open Dashboard Remote Controls Manager", GUILayout.Height(30)) && FeatureLibrary.projectID > 0)
+            {
+                Application.OpenURL(CognitiveStatics.GetRemoteControlsSettingsUrl(FeatureLibrary.projectID));
+            }
+
+            EditorGUILayout.Space(10);
+
+            GUILayout.Label("Step 2: Add to Cognitive3D_Manager prefab", EditorCore.styles.FeatureTitleStyle);
+            GUILayout.Label("Adds the Remote Controls component to the Cognitive3D_Manager prefab to fetch remote variables in your scene.", EditorStyles.wordWrappedLabel);
+
+            var btnLabel = FeatureLibrary.TryGetComponent<Cognitive3D.Components.RemoteControls>() ? "Remove Remote Controls" : "Add Remote Controls";
+            if (GUILayout.Button(btnLabel, GUILayout.Height(30)))
+            {
+                FeatureLibrary.AddOrRemoveComponent<Cognitive3D.Components.RemoteControls>();
+            }
         }
     }
 }
