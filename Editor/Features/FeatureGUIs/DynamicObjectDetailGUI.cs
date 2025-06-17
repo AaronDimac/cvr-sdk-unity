@@ -49,6 +49,7 @@ namespace Cognitive3D
 
         private double lastCheckTime = 0;
 
+        #region Visual Elements
         public void OnGUI()
         {
             // Check for updates only once per second
@@ -105,35 +106,6 @@ namespace Cognitive3D
                 selectAll = allSelected;
             }
         }
-
-        #region Retrieve Dynamics
-        private void GetEntryList()
-        {
-            Clear();
-            foreach (var dynamic in DynamicObjects)
-            {
-                dynamicObjects.Add(
-                    new DynamicObjectData
-                    {
-                        Name = dynamic.gameObject.name,
-                        MeshName = dynamic.MeshName,
-                        DynamicId = dynamic.GetId(),
-                        Exported = EditorCore.GetExportedDynamicObjectNames().Contains(dynamic.MeshName) || !dynamic.UseCustomMesh,
-                        Uploaded = true,
-                        referenceObj = dynamic.gameObject
-                    }
-                );
-            }
-
-            refreshList = false;
-        }
-
-        void Clear()
-        {
-            _cachedDynamics = null;
-            dynamicObjects.Clear();
-        }
-        #endregion
 
         private void DrawHeader()
         {
@@ -238,6 +210,35 @@ namespace Cognitive3D
             GUILayout.FlexibleSpace();
             GUILayout.EndHorizontal();
         }
+        #endregion
+
+        #region Retrieve Dynamics
+        private void GetEntryList()
+        {
+            Clear();
+            foreach (var dynamic in DynamicObjects)
+            {
+                dynamicObjects.Add(
+                    new DynamicObjectData
+                    {
+                        Name = dynamic.gameObject.name,
+                        MeshName = dynamic.MeshName,
+                        DynamicId = dynamic.GetId(),
+                        Exported = EditorCore.GetExportedDynamicObjectNames().Contains(dynamic.MeshName) || !dynamic.UseCustomMesh,
+                        Uploaded = true,
+                        referenceObj = dynamic.gameObject
+                    }
+                );
+            }
+
+            refreshList = false;
+        }
+
+        void Clear()
+        {
+            _cachedDynamics = null;
+            dynamicObjects.Clear();
+        }
 
         private class DynamicObjectData
         {
@@ -249,5 +250,6 @@ namespace Cognitive3D
             internal bool IsSelected;
             internal GameObject referenceObj;
         }
+        #endregion
     }
 }
