@@ -17,7 +17,7 @@ namespace Cognitive3D
             Settings
         }
 
-        private static int projectID;
+        internal static int projectID;
         private static int userID;
 
         internal static List<FeatureData> CreateFeatures(System.Action<int> setFeatureIndex)
@@ -41,15 +41,7 @@ namespace Cognitive3D
                             "Add Dynamic Object component to selected game objects",
                             () =>
                             {
-                                GameObject[] selectedObjects = Selection.gameObjects;
-
-                                foreach (GameObject obj in selectedObjects)
-                                {
-                                    if (!obj.GetComponent<DynamicObject>())
-                                    {
-                                        obj.AddComponent<DynamicObject>();
-                                    }
-                                }
+                                DynamicObjectDetailGUI.AttachDynamicObjectToSelected();
                             }
                         ),
                         new FeatureAction(
@@ -75,60 +67,7 @@ namespace Cognitive3D
                             "Adds ExitPoll folder to Assets folder",
                             () =>
                             {
-                                var packageName = "com.cognitive3d.c3d-sdk";
-                                var sampleName = "Exitpoll Customization";
-
-                                var samples = UnityEditor.PackageManager.UI.Sample.FindByPackage(packageName, null);
-
-                                foreach (var sample in samples)
-                                {
-                                    if (sample.displayName == sampleName)
-                                    {
-                                        if (!sample.isImported)
-                                        {
-                                            sample.Import();
-                                            Debug.Log($"Imported sample: {sample.displayName}");
-                                        }
-                                        else
-                                        {
-                                            Debug.LogWarning($"{sample.displayName} sample already imported. Path: {sample.importPath}");
-                                        }
-
-                                        if (GameObject.FindAnyObjectByType<ExitPollHolder>() == null)
-                                        {
-                                            string fullPath = sample.importPath + "/ExitPollHolderPrefab.prefab";
-
-                                            // Normalize slashes
-                                            fullPath = fullPath.Replace("\\", "/");
-
-                                            // Find where "Assets" starts in the full path
-                                            int assetsIndex = fullPath.IndexOf("Assets/");
-                                            if (assetsIndex == -1)
-                                            {
-                                                Debug.LogError("Could not find 'Assets/' in path: " + fullPath);
-                                                return;
-                                            }
-
-                                            string assetRelativePath = fullPath.Substring(assetsIndex);
-
-                                            // Load and instantiate
-                                            GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(assetRelativePath);
-                                            if (prefab == null)
-                                            {
-                                                Debug.LogError("Could not find prefab at: " + assetRelativePath);
-                                                return;
-                                            }
-
-                                            GameObject instance = (GameObject)PrefabUtility.InstantiatePrefab(prefab);
-                                            Undo.RegisterCreatedObjectUndo(instance, "Add ExitPoll Prefab");
-                                            Selection.activeObject = instance;
-                                        }
-
-                                        return;
-                                    }
-                                }
-
-                                Debug.LogError("Exitpoll Customization sample not found!");
+                                ExitpollDetailGUI.ImportExitPollSampleWithOptionalPrefab(true);
                             }
                         ),
                         new FeatureAction(
