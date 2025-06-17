@@ -60,6 +60,7 @@ namespace Cognitive3D
 
         private Vector2 scrollPos;
 
+        private bool selectAll;
         private List<SceneEntry> sceneEntries = new List<SceneEntry>();
 
         private void OnGUI()
@@ -183,9 +184,21 @@ namespace Cognitive3D
                     GUILayout.Label("Configure which scenes should be prepared and uploaded.", EditorCore.styles.DescriptionPadding);
                     EditorGUILayout.BeginVertical(EditorCore.styles.ListBoxPadding);
 
-                    EditorGUILayout.BeginHorizontal();
-                    GUILayout.Label("Scene Name", EditorCore.styles.leftPaddingBoldLabel, GUILayout.Width(200));
-                    GUILayout.Label("Version Number", EditorStyles.boldLabel);
+                    EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
+                    bool newSelectAll = EditorGUILayout.Toggle(selectAll, GUILayout.Width(40));
+                    // If the checkbox changed, update all rows
+                    if (newSelectAll != selectAll)
+                    {
+                        selectAll = newSelectAll;
+                        foreach (var scene in sceneEntries)
+                        {
+                            scene.selected = selectAll;
+                        }
+                    }
+                    DrawColumnSeparator();
+                    GUILayout.Label("Scene Name", EditorCore.styles.leftPaddingBoldLabel, GUILayout.Width(185));
+                    DrawColumnSeparator();
+                    GUILayout.Label("Version Number", EditorCore.styles.leftPaddingBoldLabel);
                     EditorGUILayout.EndHorizontal();
 
                     // Scrollable list of scenes
@@ -196,10 +209,28 @@ namespace Cognitive3D
                         string sceneName = System.IO.Path.GetFileNameWithoutExtension(sceneEntries[i].path);
 
                         EditorGUILayout.BeginHorizontal();
-                        sceneEntries[i].selected = EditorGUILayout.ToggleLeft(sceneName, sceneEntries[i].selected, GUILayout.Width(200));
+                        sceneEntries[i].selected = EditorGUILayout.Toggle(sceneEntries[i].selected, GUILayout.Width(40));
 
-                        GUILayout.Label(sceneEntries[i].versionNumber.ToString()); 
+                        GUILayout.Space(5);
+                        GUILayout.Label(sceneName, EditorCore.styles.leftPaddingLabel, GUILayout.Width(185));
+
+                        GUILayout.Label(sceneEntries[i].versionNumber.ToString(), EditorCore.styles.leftPaddingLabel); 
                         EditorGUILayout.EndHorizontal();
+                    }
+
+                    bool allSelected = true;
+                    foreach (var scene in sceneEntries)
+                    {
+                        if (!scene.selected)
+                        {
+                            allSelected = false;
+                            break;
+                        }
+                    }
+
+                    if (selectAll != allSelected)
+                    {
+                        selectAll = allSelected;
                     }
 
                     GUILayout.EndScrollView();
@@ -277,6 +308,12 @@ namespace Cognitive3D
             }
         }
 
+        private void DrawColumnSeparator()
+        {
+            var rect = GUILayoutUtility.GetRect(1, 18, GUILayout.Width(1));
+            EditorGUI.DrawRect(rect, new Color(0.5f, 0.5f, 0.5f, 0.4f));
+        }
+
         #region Developer and App Key Utilities
         private void LoadKeys()
         {
@@ -287,7 +324,7 @@ namespace Cognitive3D
             {
                 keysSet = true;
             }
-            
+
             EditorCore.RefreshSceneVersionComplete += CacheCurrentScenes;
         }
 
