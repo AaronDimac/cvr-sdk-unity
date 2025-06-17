@@ -16,9 +16,8 @@ namespace Cognitive3D
 
         internal static void Init()
         {
-            var window = CreateInstance<FeaturesWindow>();
+            FeaturesWindow window = GetWindow<FeaturesWindow>("Features");
             window.minSize = new Vector2(600, 800);
-            window.maxSize = new Vector2(600, 800);
             window.titleContent = new GUIContent("Features");
             window.ShowUtility();
         }
@@ -55,8 +54,10 @@ namespace Cognitive3D
                 Repaint();
             }
 
-            Rect mainRect = new Rect(-600 * slideProgress, 0, 600, position.height);
-            Rect detailRect = new Rect(600 - 600 * slideProgress, 0, 600, position.height);
+            float width = position.width;
+
+            Rect mainRect = new Rect(-width * slideProgress, 0, width, position.height);
+            Rect detailRect = new Rect(width - width * slideProgress, 0, width, position.height);
 
             GUILayout.BeginArea(mainRect);
             mainScroll = GUILayout.BeginScrollView(mainScroll);
@@ -220,8 +221,6 @@ namespace Cognitive3D
             }
 
             var feature = features[currentFeatureIndex];
-
-            GUILayout.Space(20);
 
             // Custom GUI
             GUILayout.BeginVertical(EditorCore.styles.DetailContainer);
