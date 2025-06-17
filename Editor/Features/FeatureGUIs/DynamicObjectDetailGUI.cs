@@ -107,13 +107,7 @@ namespace Cognitive3D
 
             if (GUILayout.Button("Add Dynamic Object to Selected", GUILayout.Height(30)))
             {
-                foreach (var obj in Selection.gameObjects)
-                {
-                    if (obj.GetComponent<DynamicObject>() == null)
-                    {
-                        Undo.AddComponent<DynamicObject>(obj);
-                    }
-                }
+                AttachDynamicObjectToSelected();
                 RefreshList();
             }
             #endregion
@@ -339,6 +333,16 @@ namespace Cognitive3D
         #endregion
 
         #region Dynamic Utilities
+        internal static void AttachDynamicObjectToSelected()
+        {
+            foreach (var obj in Selection.gameObjects)
+            {
+                if (obj.GetComponent<DynamicObject>() == null)
+                {
+                    Undo.AddComponent<DynamicObject>(obj);
+                }
+            }
+        }
 
         void RenameMesh(string newMeshName)
         {
@@ -430,7 +434,6 @@ namespace Cognitive3D
             Cognitive3D_Preferences.Instance.IncludeDisabledDynamicObjects = !Cognitive3D_Preferences.Instance.IncludeDisabledDynamicObjects;
             RefreshList();
         }
-
         #endregion
 
         #region Retrieve Dynamics
