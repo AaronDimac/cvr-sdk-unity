@@ -20,52 +20,6 @@ namespace Cognitive3D
         //TODO CONSIDER the list of files, to compare against the uploaded and exported content
     }
 
-    //temporary popup window for mass renaming dynamic object components
-    //TODO format to keep consistent look with onboarding screens
-    internal class LegacyRenameDynamicWindow : EditorWindow
-    {
-        static LegacyDynamicObjectsWindow sourceWindow;
-        string defaultMeshName;
-        static System.Action<string> action;
-        public static void Init(LegacyDynamicObjectsWindow dynamicsWindow, string defaultName, System.Action<string> renameAction, string title)
-        {
-            LegacyRenameDynamicWindow window = (LegacyRenameDynamicWindow)EditorWindow.GetWindow(typeof(LegacyRenameDynamicWindow), true, title);
-            window.ShowUtility();
-            sourceWindow = dynamicsWindow;
-            window.defaultMeshName = defaultName;
-            action = renameAction;
-        }
-
-        bool hasDoneInitialFocus;
-        void OnGUI()
-        {
-            GUI.SetNextControlName("initialFocus");
-            defaultMeshName = GUILayout.TextField(defaultMeshName);
-
-            if (!hasDoneInitialFocus)
-            {
-                hasDoneInitialFocus = true;
-                GUI.FocusControl("initialFocus");
-            }
-
-            GUILayout.BeginHorizontal();
-            if (GUILayout.Button("Rename"))
-            {
-                action.Invoke(defaultMeshName);
-                sourceWindow.RefreshList();
-                Close();
-            }
-            if (GUILayout.Button("Cancel"))
-            {
-                sourceWindow.RefreshList();
-                Close();
-            }
-            GUILayout.EndHorizontal();
-            //rename textfield
-            //rename + cancel buttons
-        }
-    }
-
     internal class LegacyDynamicObjectsWindow : EditorWindow
     {
         //cached gui styles
@@ -566,7 +520,7 @@ namespace Cognitive3D
                     break;
                 }
             }
-            LegacyRenameDynamicWindow.Init(this, defaultvalue, RenameGameObject, "Rename GameObjects");
+            RenameDynamicWindow.Init(this, defaultvalue, RenameGameObject, "Rename GameObjects");
         }
 
         void OnRenameMeshSelected()
@@ -583,7 +537,7 @@ namespace Cognitive3D
                     break;
                 }
             }
-            LegacyRenameDynamicWindow.Init(this, defaultvalue, RenameMesh, "Rename Meshes");
+            RenameDynamicWindow.Init(this, defaultvalue, RenameMesh, "Rename Meshes");
         }
 
         void OnOpenDynamicExportFolder()
