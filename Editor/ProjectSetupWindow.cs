@@ -185,8 +185,8 @@ namespace Cognitive3D
                     EditorGUILayout.BeginVertical(EditorCore.styles.ListBoxPadding);
 
                     EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
+                    // Select All Toggle
                     bool newSelectAll = EditorGUILayout.Toggle(selectAll, GUILayout.Width(40));
-                    // If the checkbox changed, update all rows
                     if (newSelectAll != selectAll)
                     {
                         selectAll = newSelectAll;
@@ -196,9 +196,31 @@ namespace Cognitive3D
                         }
                     }
                     DrawColumnSeparator();
+
+                    // Column Headers
                     GUILayout.Label("Scene Name", EditorCore.styles.leftPaddingBoldLabel, GUILayout.Width(185));
                     DrawColumnSeparator();
                     GUILayout.Label("Version Number", EditorCore.styles.leftPaddingBoldLabel);
+
+                    // Flexible space to push icon to the right
+                    GUILayout.FlexibleSpace();
+
+                    // Gear Icon Button
+                    if (GUILayout.Button(new GUIContent(EditorCore.SettingsIcon2, "Additional Settings"), EditorStyles.toolbarButton, GUILayout.Width(24)))
+                    {
+                        GenericMenu gm = new GenericMenu();
+                        gm.AddItem(new GUIContent("Full Texture Resolution"), Cognitive3D_Preferences.Instance.TextureResize == 1, OnSelectFullResolution);
+                        gm.AddItem(new GUIContent("Half Texture Resolution"), Cognitive3D_Preferences.Instance.TextureResize == 2, OnSelectHalfResolution);
+                        gm.AddItem(new GUIContent("Quarter Texture Resolution"), Cognitive3D_Preferences.Instance.TextureResize == 4, OnSelectQuarterResolution);
+                        gm.AddSeparator("");
+                        gm.AddItem(new GUIContent("Export lowest LOD meshes"), Cognitive3D_Preferences.Instance.ExportSceneLODLowest, OnToggleLODMeshes);
+
+#if UNITY_2020_1_OR_NEWER
+                        gm.AddItem(new GUIContent("Include Disabled Dynamic Objects"), Cognitive3D_Preferences.Instance.IncludeDisabledDynamicObjects, OnToggleIncludeDisabledDynamics);
+#endif
+                        gm.ShowAsContext();
+                    }
+
                     EditorGUILayout.EndHorizontal();
 
                     // Scrollable list of scenes
@@ -523,6 +545,29 @@ namespace Cognitive3D
             {
                 CacheCurrentScenes();
             }
+        }
+
+        void OnSelectFullResolution()
+        {
+            Cognitive3D_Preferences.Instance.TextureResize = 1;
+        }
+        void OnSelectHalfResolution()
+        {
+            Cognitive3D_Preferences.Instance.TextureResize = 2;
+        }
+        void OnSelectQuarterResolution()
+        {
+            Cognitive3D_Preferences.Instance.TextureResize = 4;
+        }
+        void OnToggleLODMeshes()
+        {
+            Cognitive3D_Preferences.Instance.ExportSceneLODLowest = !Cognitive3D_Preferences.Instance.ExportSceneLODLowest;
+        }
+
+        //Unity 2020.1+
+        void OnToggleIncludeDisabledDynamics()
+        {
+            Cognitive3D_Preferences.Instance.IncludeDisabledDynamicObjects = !Cognitive3D_Preferences.Instance.IncludeDisabledDynamicObjects;
         }
         #endregion
         #region Callback Responses
