@@ -24,6 +24,31 @@ namespace Cognitive3D
                 GUILayout.FlexibleSpace(); // Push content to the left
             }
             GUILayout.EndHorizontal();
+
+            GUILayout.Label(
+                "A Custom Event is a feature to highlight specific interactions and incidents during the session.\nYou are able to view these Custom Events in the session details page or real-time in Scene Explorer.",
+                EditorStyles.wordWrappedLabel
+            );
+
+            string codeSample = "new CustomEvent(\"Event Name\").Send();";
+
+            EditorGUILayout.Space(5);
+            EditorGUILayout.LabelField("Example:", EditorStyles.boldLabel);
+
+            // Creates a 1x1 texture with grey background color
+            Texture2D bgTexture = new Texture2D(1, 1);
+            bgTexture.SetPixel(0, 0, new Color(0.35f, 0.35f, 0.35f));
+            bgTexture.Apply();
+            EditorCore.styles.codeSnippet.normal.background = bgTexture;
+
+            Rect rect = GUILayoutUtility.GetRect(
+                new GUIContent(codeSample),
+                EditorCore.styles.codeSnippet,
+                GUILayout.ExpandWidth(true),
+                GUILayout.MinHeight(60)
+            );
+
+            EditorGUI.SelectableLabel(rect, codeSample, EditorCore.styles.codeSnippet);
         }
     }
 }
