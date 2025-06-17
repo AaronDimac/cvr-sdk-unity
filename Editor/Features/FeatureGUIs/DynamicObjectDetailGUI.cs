@@ -90,7 +90,7 @@ namespace Cognitive3D
             EditorGUILayout.Space(10);
 
             #region Add DynamicObject Components
-            GUILayout.Label("Step 1: Add Dynamic Object Component", EditorCore.styles.FeatureTitleStyle);
+            GUILayout.Label("1. Add Dynamic Object Component", EditorCore.styles.FeatureTitleStyle);
 
             GUILayout.Label(
                 "Select GameObjects in the scene that you want to track, then click the button below to add the Dynamic Object component.",
@@ -107,7 +107,7 @@ namespace Cognitive3D
             EditorGUILayout.Space(20);
 
             #region View and Upload Dynamic Objects
-            GUILayout.Label("Step 2: Manage and Upload", EditorCore.styles.FeatureTitleStyle);
+            GUILayout.Label("2. Manage and Upload", EditorCore.styles.FeatureTitleStyle);
 
             GUILayout.Label(
                 "These are all Dynamic Objects currently in the scene. Select all or the ones you want to upload.",
