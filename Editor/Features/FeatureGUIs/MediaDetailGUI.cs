@@ -15,7 +15,22 @@ namespace Cognitive3D
 
         public void OnGUI()
         {
-            GUILayout.Label("Scene Media", EditorCore.styles.FeatureTitleStyle);
+            GUILayout.BeginHorizontal();
+            {
+                GUILayout.Label("Scene Media", EditorCore.styles.FeatureTitleStyle);
+
+                float iconSize = EditorGUIUtility.singleLineHeight;
+                Rect iconRect = GUILayoutUtility.GetRect(iconSize, iconSize, GUILayout.Width(iconSize), GUILayout.Height(iconSize));
+
+                if (GUI.Button(iconRect, EditorCore.InfoGrey, EditorCore.styles.InfoButton))
+                {
+                    Application.OpenURL("https://docs.cognitive3d.com/unity/media/");
+                }
+
+                GUILayout.FlexibleSpace(); // Push content to the left
+            }
+            GUILayout.EndHorizontal();
+
             GUILayout.Label(
                 "Scene Media allows you detect and aggregate gaze data on media objects like images, videos, and 360 degree videos.",
                 EditorStyles.wordWrappedLabel
