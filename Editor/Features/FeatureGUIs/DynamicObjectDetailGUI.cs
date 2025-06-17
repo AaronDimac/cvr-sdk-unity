@@ -7,7 +7,6 @@ namespace Cognitive3D
 {
     internal class DynamicObjectDetailGUI : IFeatureDetailGUI
     {
-        private Vector2 mainScrollPos;
         private Vector2 scrollPos;
 
         private bool selectAll;
@@ -71,8 +70,6 @@ namespace Cognitive3D
             {
                 // Warn user
             }
-
-            mainScrollPos = EditorGUILayout.BeginScrollView(mainScrollPos);
 
             GUILayout.BeginHorizontal();
             {
@@ -227,8 +224,6 @@ namespace Cognitive3D
                 selectAll = allSelected;
             }
             #endregion
-
-            EditorGUILayout.EndScrollView();
         }
 
         private void DrawHeader()
@@ -317,6 +312,10 @@ namespace Cognitive3D
 
         private void DrawStatusIcon(bool state, params GUILayoutOption[] options)
         {
+            // var icon = state
+            //     ? new GUIContent(EditorCore.CircleEmpty, "Tooltip text")
+            //     : new GUIContent(EditorCore.CompleteCheckmark, "Tooltip text");
+
             GUILayout.BeginHorizontal(options);
             GUILayout.FlexibleSpace();
             if (state)
