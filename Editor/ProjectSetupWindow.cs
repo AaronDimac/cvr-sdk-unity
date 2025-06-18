@@ -45,6 +45,8 @@ namespace Cognitive3D
         private Vector2 mainScroll;
 
         int lastDevKeyResponseCode;
+        private bool forceUpdateApiKey = false;
+        private string apiKeyFromDashboard = "";
 
         bool autoSelectXR = true;
         bool previousAutoSelectXR = false;
@@ -88,6 +90,9 @@ namespace Cognitive3D
             GUILayout.BeginArea(contentRect);
             mainScroll = GUILayout.BeginScrollView(mainScroll);
 
+            bool completenessStatus;
+            Texture2D statusIcon;
+
             using (new EditorGUILayout.VerticalScope(EditorCore.styles.ContextPadding))
             {
                 GUILayout.Space(5);
@@ -96,33 +101,48 @@ namespace Cognitive3D
                     EditorCore.styles.ItemDescription);
 
                 #region Dev and App keys
-                DrawFoldout("Developer and App Keys", EditorCore.CompleteCheckmark, () =>
+                completenessStatus = !string.IsNullOrEmpty(developerKey) && !string.IsNullOrEmpty(apiKey);
+                statusIcon = GetStatusIcon(completenessStatus);
+
+                DrawFoldout("Developer and App Keys", statusIcon, () =>
                 {
                     GUILayout.Label("Enter your developer key:", EditorCore.styles.DescriptionPadding);
                     developerKey = EditorGUILayout.TextField("Developer Key", developerKey);
                     GUILayout.Space(10);
 
                     EditorGUILayout.BeginHorizontal();
-                    apiKey = EditorGUILayout.TextField("Application Key", apiKey);
+
+                    Rect apiKeyRect = EditorGUILayout.GetControlRect();
+
+                    // Draw with EditorGUI to retain full control
+                    apiKey = EditorGUI.TextField(apiKeyRect, "Application Key", forceUpdateApiKey ? apiKeyFromDashboard : apiKey);
+
+                    if (forceUpdateApiKey)
+                    {
+                        forceUpdateApiKey = false;
+                        GUI.FocusControl(null); // Optionally clear focus
+                    }
 
                     if (GUILayout.Button("Get from Dashboard", GUILayout.Width(130)))
                     {
-                        if (lastDevKeyResponseCode != 200)
-                        {
-                            EditorCore.CheckForExpiredDeveloperKey(GetDevKeyResponse);
-                            EditorCore.CheckForApplicationKey(developerKey, GetApplicationKeyResponse);
-                            EditorCore.CheckSubscription(developerKey, GetSubscriptionResponse);
-                        }
-                    }
-                    EditorGUILayout.EndHorizontal();
+                        EditorCore.CheckForExpiredDeveloperKey(GetDevKeyResponse);
+                        EditorCore.CheckForApplicationKey(developerKey, GetApplicationKeyResponse);
+                        EditorCore.CheckSubscription(developerKey, GetSubscriptionResponse);
 
+                        forceUpdateApiKey = true;
+                    }
+
+                    EditorGUILayout.EndHorizontal();
                     GUILayout.Space(10);
                 });
                 #endregion
 
                 EditorGUI.BeginDisabledGroup(!keysSet);
                 #region XR SDK
-                DrawFoldout("XR SDK Setup", EditorCore.CompleteCheckmark, () =>
+                completenessStatus = autoSelectXR;
+                statusIcon = GetStatusIcon(completenessStatus);
+
+                DrawFoldout("XR SDK Setup", statusIcon, () =>
                 {
                     bool newAutoSelectXR = EditorGUILayout.Toggle("Auto-select XR SDK", autoSelectXR);
 
@@ -144,7 +164,10 @@ namespace Cognitive3D
                 #endregion
 
                 #region Player Setup
-                DrawFoldout("Player Setup", EditorCore.CompleteCheckmark, () =>
+                completenessStatus = autoPlayerSetup;
+                statusIcon = GetStatusIcon(completenessStatus);
+
+                DrawFoldout("Player Setup", statusIcon, () =>
                 {
                     GUILayout.Label(
                         "Use your existing Player Prefab to assign tracked objects. Enable auto-setup for automatic detection, or disable it to assign manually.",
@@ -179,7 +202,10 @@ namespace Cognitive3D
                 #endregion
 
                 #region Scene Upload
-                DrawFoldout("Scene Upload", EditorCore.CompleteCheckmark, () =>
+                completenessStatus = Cognitive3D_Preferences.Instance.sceneSettings.Count > 0;
+                statusIcon = GetStatusIcon(completenessStatus);
+                
+                DrawFoldout("Scene Upload", statusIcon, () =>
                 {
                     GUILayout.Label("Configure which scenes should be prepared and uploaded.", EditorCore.styles.DescriptionPadding);
                     EditorGUILayout.BeginVertical(EditorCore.styles.ListBoxPadding);
@@ -236,7 +262,7 @@ namespace Cognitive3D
                         GUILayout.Space(5);
                         GUILayout.Label(sceneName, EditorCore.styles.leftPaddingLabel, GUILayout.Width(185));
 
-                        GUILayout.Label(sceneEntries[i].versionNumber.ToString(), EditorCore.styles.leftPaddingLabel); 
+                        GUILayout.Label(sceneEntries[i].versionNumber.ToString(), EditorCore.styles.leftPaddingLabel);
                         EditorGUILayout.EndHorizontal();
                     }
 
@@ -307,27 +333,31 @@ namespace Cognitive3D
                 }
             }
 
-
             using (var scope = new EditorGUILayout.VerticalScope(EditorCore.styles.List))
-            {
-                GUILayout.BeginHorizontal();
-                foldoutStates[title] = EditorGUILayout.Foldout(foldoutStates[title], title, true);
-                if (icon != null)
                 {
-                    GUILayout.Label(icon, EditorCore.styles.InlinedIconStyle);
-                }
-                GUILayout.EndHorizontal();
-
-                if (foldoutStates[title])
-                {
-                    using (new EditorGUILayout.VerticalScope(EditorCore.styles.ListLabel))
+                    GUILayout.BeginHorizontal();
+                    foldoutStates[title] = EditorGUILayout.Foldout(foldoutStates[title], title, true);
+                    if (icon != null)
                     {
-                        EditorGUI.indentLevel++;
-                        drawContent?.Invoke();
-                        EditorGUI.indentLevel--;
+                        GUILayout.Label(icon, EditorCore.styles.InlinedIconStyle);
+                    }
+                    GUILayout.EndHorizontal();
+
+                    if (foldoutStates[title])
+                    {
+                        using (new EditorGUILayout.VerticalScope(EditorCore.styles.ListLabel))
+                        {
+                            EditorGUI.indentLevel++;
+                            drawContent?.Invoke();
+                            EditorGUI.indentLevel--;
+                        }
                     }
                 }
-            }
+        }
+
+        Texture2D GetStatusIcon(bool condition)
+        {
+            return condition ? EditorCore.CompleteCheckmark : EditorCore.CircleWarning;
         }
 
         private void DrawColumnSeparator()
@@ -616,6 +646,7 @@ namespace Cognitive3D
                 if (result)
                 {
                     apiKey = responseData.apiKey;
+                    apiKeyFromDashboard = apiKey;
                     SaveApplicationKey();
                 }
             }
@@ -623,6 +654,7 @@ namespace Cognitive3D
             {
                 SegmentAnalytics.TrackEvent("APIKeyFound_ProjectSetup", "ProjectSetupAPIPage");
                 apiKey = responseData.apiKey;
+                apiKeyFromDashboard = apiKey;
                 SaveApplicationKey();
             }
         }
