@@ -18,7 +18,6 @@ namespace Cognitive3D
         {
             ProjectSetupWindow setup = GetWindow<ProjectSetupWindow>("Project Setup");
             setup.minSize = new Vector2(600, 800);
-            setup.maxSize = new Vector2(600, 800);
             setup.LoadKeys();
         }
 
@@ -208,6 +207,10 @@ namespace Cognitive3D
                 DrawFoldout("Scene Upload", statusIcon, () =>
                 {
                     GUILayout.Label("Configure which scenes should be prepared and uploaded.", EditorCore.styles.DescriptionPadding);
+                    GUILayout.BeginHorizontal();
+                    EditorGUILayout.HelpBox("For additive scenes, make sure to follow the setup instructions in the documentation.", MessageType.Warning);
+                    GUILayout.Space(10); // Add right padding
+                    GUILayout.EndHorizontal();
                     EditorGUILayout.BeginVertical(EditorCore.styles.ListBoxPadding);
 
                     EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);
