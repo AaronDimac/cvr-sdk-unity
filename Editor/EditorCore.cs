@@ -466,6 +466,61 @@ namespace Cognitive3D
             }
         }
 
+        public static void RefreshAllScenesVersion(Action refreshSceneVersionComplete)
+        {
+            if (Cognitive3D_Preferences.Instance.sceneSettings.Count == 0) return;
+
+            int pendingRequests = 0;
+
+            foreach (var sceneSetting in Cognitive3D_Preferences.Instance.sceneSettings)
+            {
+                if (!IsDeveloperKeyValid)
+                {
+                    Debug.Log("Developer key invalid");
+                    continue;
+                }
+
+                if (sceneSetting == null || string.IsNullOrEmpty(sceneSetting.SceneId))
+                {
+                    continue;
+                }
+
+                string url = CognitiveStatics.GetSceneVersions(sceneSetting.SceneId);
+                var headers = new Dictionary<string, string>
+                {
+                    { "Authorization", "APIKEY:DEVELOPER " + DeveloperKey }
+                };
+
+                pendingRequests++;
+                EditorNetwork.Get(url, (responseCode, error, text) =>
+                {
+                    if (responseCode != 200)
+                    {
+                        Debug.LogError($"Scene {sceneSetting.SceneId} error: {responseCode}, {error}");
+                    }
+                    else
+                    {
+                        var collection = JsonUtility.FromJson<SceneVersionCollection>(text);
+                        if (collection != null)
+                        {
+                            var latest = collection.GetLatestVersion();
+                            sceneSetting.VersionId = latest.id;
+                            sceneSetting.VersionNumber = latest.versionNumber;
+                            EditorUtility.SetDirty(Cognitive3D_Preferences.Instance);
+                            AssetDatabase.SaveAssets();
+                        }
+                    }
+
+                    // Done with one request
+                    pendingRequests--;
+                    if (pendingRequests == 0)
+                    {
+                        refreshSceneVersionComplete?.Invoke();
+                    }
+                }, headers, true, "Get Scene Version");
+            }
+        }
+
         internal static void GetSceneVersionResponse(int responsecode, string error, string text)
         {
             if (responsecode != 200)
