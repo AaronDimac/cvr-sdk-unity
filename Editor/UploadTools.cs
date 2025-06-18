@@ -152,6 +152,15 @@ namespace Cognitive3D
                         UnityEditor.SceneManagement.EditorSceneManager.OpenScene(sceneEntry.path);
                         sceneUploadState = SceneManagementUploadState.Export;
                     }
+
+                    // Add Cognitive3D_manager
+                    var found = Object.FindObjectOfType<Cognitive3D_Manager>();
+                    if (found == null)
+                    {
+                        GameObject c3dManagerPrefab = Resources.Load<GameObject>("Cognitive3D_Manager");
+                        PrefabUtility.InstantiatePrefab(c3dManagerPrefab);
+                        UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(UnityEditor.SceneManagement.EditorSceneManager.GetActiveScene());
+                    }
                     return;
 
                 case SceneManagementUploadState.SceneSetup:
