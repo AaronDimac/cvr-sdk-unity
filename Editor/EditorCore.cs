@@ -466,6 +466,12 @@ namespace Cognitive3D
             }
         }
 
+        /// <summary>
+        /// Sends version refresh requests for all Cognitive3D setting scenes.  
+        /// Handles each request asynchronously and tracks completion using a counter.  
+        /// Skips scenes with invalid developer keys or missing scene IDs.
+        /// </summary>
+        /// <param name="refreshSceneVersionComplete">Callback invoked after all valid version requests complete.</param>
         public static void RefreshAllScenesVersion(Action refreshSceneVersionComplete)
         {
             if (Cognitive3D_Preferences.Instance.sceneSettings.Count == 0) return;
