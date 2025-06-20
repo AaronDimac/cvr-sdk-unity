@@ -759,6 +759,44 @@ namespace Cognitive3D
 
         bool CombinedWorldGazeRay(out Ray ray)
         {
+#if COGNITIVE3D_VIVE_OPENXR
+            VIVE.OpenXR.XR_HTC_eye_tracker.Interop.GetEyeGazeData(out VIVE.OpenXR.EyeTracker.XrSingleEyeGazeDataHTC[] out_gazes);
+
+            if (out_gazes != null && out_gazes.Length >= 2)
+            {
+                var leftGaze = out_gazes[(int)VIVE.OpenXR.EyeTracker.XrEyePositionHTC.XR_EYE_POSITION_LEFT_HTC];
+                var rightGaze = out_gazes[(int)VIVE.OpenXR.EyeTracker.XrEyePositionHTC.XR_EYE_POSITION_RIGHT_HTC];
+
+                if (leftGaze.isValid && rightGaze.isValid)
+                {
+                    Vector3 leftPos = VIVE.OpenXR.OpenXRHelper.ToUnityVector(leftGaze.gazePose.position);
+                    Vector3 rightPos = VIVE.OpenXR.OpenXRHelper.ToUnityVector(rightGaze.gazePose.position);
+                    Quaternion leftRot = VIVE.OpenXR.OpenXRHelper.ToUnityQuaternion(leftGaze.gazePose.orientation);
+                    Quaternion rightRot = VIVE.OpenXR.OpenXRHelper.ToUnityQuaternion(rightGaze.gazePose.orientation);
+
+                    // Position: average of both eyes
+                    Vector3 centerPos = Vector3.Lerp(leftPos, rightPos, 0.5f);
+
+                    // Rotation: slerp between both
+                    Quaternion centerRot = Quaternion.Slerp(leftRot, rightRot, 0.5f);
+
+                    Vector3 worldDirection = centerRot * Vector3.forward;
+                    if (GameplayReferences.HMD.transform.parent != null)
+                    {
+                        worldDirection = GameplayReferences.HMD.transform.parent.TransformDirection(worldDirection);
+                        Vector3 worldOrigin = GameplayReferences.HMD.transform.parent.TransformPoint(centerPos);
+                        ray = new Ray(worldOrigin, worldDirection);
+                        Debug.DrawRay(worldOrigin, worldDirection * 100f, Color.red);
+                    }
+                    else
+                    {
+                        // fallback if no parent
+                        ray = new Ray(centerPos, centerRot * Vector3.forward);
+                    }
+                    return true;
+                }
+            }
+#endif
             UnityEngine.XR.Eyes eyes;
             if (UnityEngine.XR.InputDevices.GetDeviceAtXRNode(UnityEngine.XR.XRNode.CenterEye).TryGetFeatureValue(UnityEngine.XR.CommonUsages.eyesData, out eyes))
             {
@@ -788,28 +826,51 @@ namespace Cognitive3D
             return false;
         }
 
-        bool LeftEyeOpen()
+        internal static bool LeftEyeOpen()
         {
+#if COGNITIVE3D_VIVE_OPENXR
+            VIVE.OpenXR.XR_HTC_eye_tracker.Interop.GetEyeGeometricData(out VIVE.OpenXR.EyeTracker.XrSingleEyeGeometricDataHTC[] out_geometrics);
+
+            if (out_geometrics != null && out_geometrics.Length > 0)
+            {
+                VIVE.OpenXR.EyeTracker.XrSingleEyeGeometricDataHTC leftGeometric = out_geometrics[(int)VIVE.OpenXR.EyeTracker.XrEyePositionHTC.XR_EYE_POSITION_LEFT_HTC];
+                if (leftGeometric.isValid)
+                {
+                    return leftGeometric.eyeOpenness > 0.5f;
+                }
+            }
+#endif
             UnityEngine.XR.Eyes eyes;
             if (UnityEngine.XR.InputDevices.GetDeviceAtXRNode(UnityEngine.XR.XRNode.LeftEye).TryGetFeatureValue(UnityEngine.XR.CommonUsages.eyesData, out eyes))
             {
                 float open;
                 if (eyes.TryGetLeftEyeOpenAmount(out open))
                 {
-                    return open > 0.6f;
+                    return open > 0.5f;
                 }
             }
             return false;
         }
-        bool RightEyeOpen()
+        internal static bool RightEyeOpen()
         {
-            UnityEngine.XR.Eyes eyes;
+#if COGNITIVE3D_VIVE_OPENXR
+            VIVE.OpenXR.XR_HTC_eye_tracker.Interop.GetEyeGeometricData(out VIVE.OpenXR.EyeTracker.XrSingleEyeGeometricDataHTC[] out_geometrics);
+            if (out_geometrics != null && out_geometrics.Length > 0)
+            {
+                VIVE.OpenXR.EyeTracker.XrSingleEyeGeometricDataHTC rightGeometric = out_geometrics[(int)VIVE.OpenXR.EyeTracker.XrEyePositionHTC.XR_EYE_POSITION_RIGHT_HTC];
+                if (rightGeometric.isValid)
+                {
+                    return rightGeometric.eyeOpenness > 0.5f;
+                }
+            }
+#endif
+                UnityEngine.XR.Eyes eyes;
             if (UnityEngine.XR.InputDevices.GetDeviceAtXRNode(UnityEngine.XR.XRNode.RightEye).TryGetFeatureValue(UnityEngine.XR.CommonUsages.eyesData, out eyes))
             {
                 float open;
                 if (eyes.TryGetRightEyeOpenAmount(out open))
                 {
-                    return open > 0.6f;
+                    return open > 0.5f;
                 }
             }
             return false;
@@ -833,7 +894,7 @@ namespace Cognitive3D
         }
 #endif
 
-#endregion
+        #endregion
 
         //if active fixation is world space, in world space, this indicates the last several positions for the average fixation position
         //if active fixation is local space, these are in local space
