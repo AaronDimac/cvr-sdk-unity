@@ -230,7 +230,6 @@ namespace Cognitive3D
                     {
                         worldGazeDirection = GameplayReferences.HMD.transform.parent.TransformDirection(centerRot * Vector3.forward);
                     }
-                    Debug.DrawRay(GameplayReferences.HMD.position, worldGazeDirection * 100f, Color.red);
                     return worldGazeDirection;
                 }
             }

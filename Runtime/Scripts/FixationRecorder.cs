@@ -786,7 +786,6 @@ namespace Cognitive3D
                         worldDirection = GameplayReferences.HMD.transform.parent.TransformDirection(worldDirection);
                         Vector3 worldOrigin = GameplayReferences.HMD.transform.parent.TransformPoint(centerPos);
                         ray = new Ray(worldOrigin, worldDirection);
-                        Debug.DrawRay(worldOrigin, worldDirection * 100f, Color.red);
                     }
                     else
                     {
