@@ -112,6 +112,8 @@ namespace Cognitive3D
             StartingScale = transform.lossyScale;
             string registerMeshName = MeshName;
 
+            IsController = inputType == InputUtil.InputType.Controller || inputType == InputUtil.InputType.Hand;
+
             // if a controller, delay registering the controller until the controller name has returned something valid
             // if current device is hands or null, then use fallback
             if (IsController)
@@ -122,8 +124,8 @@ namespace Cognitive3D
                 //  and InputDevice.name gives us nothing
                 if (Cognitive3D_Manager.Instance?.GetComponent<Cognitive3D.Components.HandTracking>())
                 {
-                    // If starting with hands or none; use fallback controller
-                    if (InputUtil.GetCurrentTrackedDevice() == InputUtil.InputType.Hand || InputUtil.GetCurrentTrackedDevice() == InputUtil.InputType.None)
+                    // If starting with hands; use fallback controller which is hand
+                    if (InputUtil.GetCurrentTrackedDevice() == InputUtil.InputType.Hand)
                     {
                         // just quickly look up controller by type, isRight
                         InputUtil.SetControllerFromFallback(FallbackControllerType, IsRight, out controllerDisplayType, out commonDynamicMesh);
@@ -188,7 +190,7 @@ namespace Cognitive3D
 
             DataId = Data.Id;
 
-            if (inputType == InputUtil.InputType.Controller || inputType == InputUtil.InputType.Hand)
+            if (IsController)
             {
                 Cognitive3D.DynamicManager.RegisterController(Data);
             }
