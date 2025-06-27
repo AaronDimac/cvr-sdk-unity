@@ -35,12 +35,6 @@ namespace Cognitive3D.Components
             ControllerTracking.OnControllerRegistered += Init;
         }
 
-        void DelayEnable(InputDevice device, XRNode node, bool isValid)
-        {
-            GameplayReferences.OnControllerValidityChange -= DelayEnable;
-            OnSessionBegin();
-        }
-
         void Init()
         {
             string leftHandId = "";
