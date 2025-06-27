@@ -37,19 +37,11 @@ namespace Cognitive3D
                     new List<FeatureAction>
                     {
                         new FeatureAction(
-                            FeatureActionType.Apply,
-                            "Add Dynamic Object component to selected game objects",
+                            FeatureActionType.LinkTo,
+                            "Link to Dynamic Object documentation",
                             () =>
                             {
-                                DynamicObjectDetailGUI.AttachDynamicObjectToSelected();
-                            }
-                        ),
-                        new FeatureAction(
-                            FeatureActionType.Upload,
-                            "Upload all Dynamic Objects in the scene",
-                            () =>
-                            {
-                                UploadTools.ExportAndUploadAllDynamicsInScene();
+                                Application.OpenURL("https://docs.cognitive3d.com/unity/dynamic-objects/");
                             }
                         )
                     },
@@ -63,22 +55,11 @@ namespace Cognitive3D
                     new List<FeatureAction>
                     {
                         new FeatureAction(
-                            FeatureActionType.Apply,
-                            "Adds ExitPoll folder to Assets folder",
-                            () =>
-                            {
-                                ExitpollDetailGUI.ImportExitPollSampleWithOptionalPrefab(true);
-                            }
-                        ),
-                        new FeatureAction(
                             FeatureActionType.LinkTo,
-                            "Link to create/modify hooks on dashboard",
+                            "Link to ExitPoll Survey documentation",
                             () =>
                             {
-                                if (projectID != 0)
-                                {
-                                    Application.OpenURL(CognitiveStatics.GetExitPollSettingsUrl(projectID));
-                                }
+                                Application.OpenURL("https://docs.cognitive3d.com/unity/exitpoll/");
                             }
                         )
                     },
@@ -92,46 +73,16 @@ namespace Cognitive3D
                     new List<FeatureAction>
                     {
                         new FeatureAction(
-                            FeatureActionType.Apply,
-                            "Adds/Removes Remote Controls component to Cognitive3D_Manager prefab",
-                            () =>
-                            {
-                                AddOrRemoveComponent<Cognitive3D.Components.RemoteControls>();
-                            }
-                        ),
-                        new FeatureAction(
                             FeatureActionType.LinkTo,
-                            "Link to create/modify remote controls on dashboard",
+                            "Link to Remote Controls documentation",
                             () =>
                             {
-                                if (projectID != 0)
-                                {
-                                    Application.OpenURL(CognitiveStatics.GetRemoteControlsSettingsUrl(projectID));
-                                }
+                                Application.OpenURL("https://docs.cognitive3d.com/unity/remote-controls/");
                             }
                         )
                     },
                     new RemoteControlsDetailGUI(),
                     () => TryGetComponent<Cognitive3D.Components.RemoteControls>()
-                ),
-                new FeatureData(
-                    "Eye Tracking",
-                    "Visualize player journeys and scene engagement metrics in real time.",
-                    EditorCore.EyeTrackingIcon,
-                    () => { setFeatureIndex(3); },
-                    new List<FeatureAction>
-                    {
-                        new FeatureAction(
-                            FeatureActionType.Apply,
-                            "Adds Eye Tracking (Fixation) component to Cognitive3D_Manager prefab",
-                            () =>
-                            {
-                                AddOrRemoveComponent<FixationRecorder>();
-                            }
-                        )
-                    },
-                    new EyeTrackingDetailGUI(),
-                    () => TryGetComponent<FixationRecorder>()
                 ),
                 new FeatureData(
                     "Oculus Social",
@@ -141,11 +92,11 @@ namespace Cognitive3D
                     new List<FeatureAction>
                     {
                         new FeatureAction(
-                            FeatureActionType.Apply,
-                            "Adds Oculus Social to Cognitive3D_Manager prefab",
+                            FeatureActionType.LinkTo,
+                            "Link to Remote Controls documentation",
                             () =>
                             {
-                                AddOrRemoveComponent<Cognitive3D.Components.OculusSocial>();
+                                Application.OpenURL("https://docs.cognitive3d.com/unity/components/#oculus-social-data");
                             }
                         )
                     },
@@ -161,55 +112,28 @@ namespace Cognitive3D
                     {
                         new FeatureAction(
                             FeatureActionType.LinkTo,
-                            "Link to Custom Events docs",
+                            "Link to Oculus Social Data documentation",
                             () =>
                             {
-
+                                Application.OpenURL("https://docs.cognitive3d.com/unity/customevents/");
                             }
                         )
                     },
                     new CustomEventDetailGUI()
                 ),
                 new FeatureData(
-                    "Media (360 Video)",
+                    "Media and 360 Video",
                     "Media related context",
                     EditorCore.DynamicsIcon,
                     () => { setFeatureIndex(6); },
                     new List<FeatureAction>
                     {
                         new FeatureAction(
-                            FeatureActionType.Apply,
-                            "Add Media components (Dynamic Object and Mesh Collider) to the selected GameObjects",
-                            () =>
-                            {
-                                GameObject[] selectedObjects = Selection.gameObjects;
-
-                                foreach (GameObject obj in selectedObjects)
-                                {
-                                    if (!obj.GetComponent<MediaComponent>())
-                                    {
-                                        obj.AddComponent<MediaComponent>();
-                                    }
-                                }
-                            }
-                        ),
-                        new FeatureAction(
-                            FeatureActionType.Settings,
-                            "Media settings",
-                            () =>
-                            {
-                                setFeatureIndex(5);
-                            }
-                        ),
-                        new FeatureAction(
                             FeatureActionType.LinkTo,
-                            "Link to Media on dashboard",
+                            "Link to Media & 360 Video documentation",
                             () =>
                             {
-                                if (projectID != 0)
-                                {
-                                    Application.OpenURL(CognitiveStatics.GetMediaSettingsUrl(projectID));
-                                }
+                                Application.OpenURL("https://docs.cognitive3d.com/unity/media/");
                             }
                         )
                     },
