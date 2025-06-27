@@ -141,20 +141,8 @@ namespace Cognitive3D
                     float x = buttonRect.xMax - ((featureData.Actions.Count - i) * (buttonWidth + spacing));
                     Rect actionRect = new Rect(x, buttonRect.y + yOffset, buttonWidth, buttonRect.height - 60);
 
-                    string symbol = GetSymbol(action.Type);
-                    string tooltip = action.Tooltip;
-
-                    if (action.Type == FeatureLibrary.FeatureActionType.Apply && featureData.IsApplied != null && featureData.IsApplied.Invoke())
-                    {
-                        symbol = GetSymbol(FeatureLibrary.FeatureActionType.Remove);
-                    }
-                    else if (action.Type == FeatureLibrary.FeatureActionType.Apply)
-                    {
-                        symbol = GetSymbol(FeatureLibrary.FeatureActionType.Apply);
-                    }
-
                     // Draw the button
-                    if (GUI.Button(actionRect, new GUIContent(symbol, tooltip), EditorCore.styles.applyButtonStyle))
+                    if (GUI.Button(actionRect, new GUIContent(EditorCore.ExternalIcon, action.Tooltip), EditorCore.styles.applyButtonStyle))
                     {
                         action.OnClick?.Invoke();
                         Event.current.Use();
@@ -197,19 +185,6 @@ namespace Cognitive3D
             }
 
             GUILayout.EndHorizontal();
-        }
-
-        private string GetSymbol(FeatureLibrary.FeatureActionType type)
-        {
-            return type switch
-            {
-                FeatureLibrary.FeatureActionType.Apply => "+",
-                FeatureLibrary.FeatureActionType.Remove => "-",
-                FeatureLibrary.FeatureActionType.Upload => "↑",
-                FeatureLibrary.FeatureActionType.LinkTo => "🔗",
-                FeatureLibrary.FeatureActionType.Settings => "⚙️",
-                _ => "?"
-            };
         }
 
         private void DrawDetailPage()
