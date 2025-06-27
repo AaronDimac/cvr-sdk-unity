@@ -88,7 +88,7 @@ namespace Cognitive3D
                     "Oculus Social",
                     "Visualize player journeys and scene engagement metrics in real time.",
                     EditorCore.CustomEventIcon,
-                    () => { setFeatureIndex(4); },
+                    () => { setFeatureIndex(3); },
                     new List<FeatureAction>
                     {
                         new FeatureAction(
@@ -107,7 +107,7 @@ namespace Cognitive3D
                     "Custom Events",
                     "Visualize player journeys and scene engagement metrics in real time.",
                     EditorCore.CustomEventIcon,
-                    () => { setFeatureIndex(5); },
+                    () => { setFeatureIndex(4); },
                     new List<FeatureAction>
                     {
                         new FeatureAction(
@@ -125,7 +125,7 @@ namespace Cognitive3D
                     "Media and 360 Video",
                     "Media related context",
                     EditorCore.DynamicsIcon,
-                    () => { setFeatureIndex(6); },
+                    () => { setFeatureIndex(5); },
                     new List<FeatureAction>
                     {
                         new FeatureAction(
