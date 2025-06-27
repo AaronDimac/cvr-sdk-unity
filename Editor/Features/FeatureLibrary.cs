@@ -81,8 +81,7 @@ namespace Cognitive3D
                             }
                         )
                     },
-                    new RemoteControlsDetailGUI(),
-                    () => TryGetComponent<Cognitive3D.Components.RemoteControls>()
+                    new RemoteControlsDetailGUI()
                 ),
                 new FeatureData(
                     "Oculus Social",
@@ -100,8 +99,7 @@ namespace Cognitive3D
                             }
                         )
                     },
-                    new MediaDetailGUI(),
-                    () => TryGetComponent<Cognitive3D.Components.OculusSocial>()
+                    new MediaDetailGUI()
                 ),
                 new FeatureData(
                     "Custom Events",
@@ -214,13 +212,12 @@ namespace Cognitive3D
         internal List<string> Tags;
         internal Texture2D Icon;
         internal System.Action OnClick;
-        internal System.Func<bool> IsApplied;
 
         internal List<FeatureAction> Actions;
 
         internal IFeatureDetailGUI DetailGUI;
 
-        internal FeatureData(string title, string description, Texture2D icon, System.Action onClick, List<FeatureAction> actions, IFeatureDetailGUI detailGUI = null, System.Func<bool> isApplied = null)
+        internal FeatureData(string title, string description, Texture2D icon, System.Action onClick, List<FeatureAction> actions, IFeatureDetailGUI detailGUI = null)
         {
             Title = title;
             Description = description;
@@ -228,7 +225,6 @@ namespace Cognitive3D
             OnClick = onClick;
             Actions = actions ?? new List<FeatureAction>();
             DetailGUI = detailGUI;
-            IsApplied = isApplied;
         }
     }
 
