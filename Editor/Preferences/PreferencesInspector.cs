@@ -25,6 +25,7 @@ namespace Cognitive3D
 
             p.ApplicationKey = EditorGUILayout.TextField("Application Key", p.ApplicationKey);
             p.AttributionKey = EditorGUILayout.TextField("Attribution Key", p.AttributionKey);
+            p.AutoPlayerSetup = EditorGUILayout.Toggle("Auto Player Setup", p.AutoPlayerSetup);
             p.EnableLogging = EditorGUILayout.Toggle("Enable Logging", p.EnableLogging);
             p.EnableDevLogging = EditorGUILayout.Toggle("Enable Development Logging", p.EnableDevLogging);
 

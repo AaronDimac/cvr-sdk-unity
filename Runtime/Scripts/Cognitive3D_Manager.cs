@@ -141,6 +141,8 @@ namespace Cognitive3D
                 return;
             }
 
+            autoInitializePlayerSetup = Cognitive3D_Preferences.Instance.AutoPlayerSetup;
+
             SceneManager.sceneLoaded += SceneManager_SceneLoaded;
             SceneManager.sceneUnloaded += SceneManager_SceneUnloaded;
             Application.wantsToQuit += WantsToQuit;

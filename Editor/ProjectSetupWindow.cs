@@ -63,7 +63,6 @@ namespace Cognitive3D
             { "Default", "C3D_DEFAULT" }
         };
         
-        bool autoPlayerSetup = true;
         GameObject hmd;
         GameObject trackingSpace;
         GameObject rightController;
@@ -173,7 +172,7 @@ namespace Cognitive3D
                 #endregion
 
                 #region Player Setup
-                completenessStatus = autoPlayerSetup;
+                completenessStatus = EditorCore.GetPreferences().AutoPlayerSetup;
                 statusIcon = GetStatusIcon(completenessStatus);
 
                 DrawFoldout("Player Setup", statusIcon, () =>
@@ -182,9 +181,9 @@ namespace Cognitive3D
                         "Use your existing Player Prefab to assign tracked objects. Enable auto-setup for automatic detection, or disable it to assign manually.",
                         EditorCore.styles.DescriptionPadding);
 
-                    autoPlayerSetup = EditorGUILayout.Toggle("Auto Player Setup", autoPlayerSetup);
+                    EditorCore.GetPreferences().AutoPlayerSetup = EditorGUILayout.Toggle("Auto Player Setup", EditorCore.GetPreferences().AutoPlayerSetup);
 
-                    if (!autoPlayerSetup)
+                    if (!EditorCore.GetPreferences().AutoPlayerSetup)
                     {
                         hmd = (GameObject)EditorGUILayout.ObjectField("HMD", hmd, typeof(GameObject), true);
                         trackingSpace = (GameObject)EditorGUILayout.ObjectField("Tracking Space", trackingSpace, typeof(GameObject), true);
