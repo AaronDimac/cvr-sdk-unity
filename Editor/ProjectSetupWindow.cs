@@ -50,8 +50,18 @@ namespace Cognitive3D
         bool autoSelectXR = true;
         bool previousAutoSelectXR = false;
         int selectedSDKIndex = 0;
-        string[] availableXrSdks = new string[] { "MetaXR", "PicoXR", "ViveWave", "SteamVR/OpenVR", "Omnicept", "Default" };
-        string selectedSDKName = "C3D_DEFAULT";
+        Dictionary<string, string> availableXrSdks = new Dictionary<string, string>
+        {
+            { "MetaXR", "C3D_OCULUS" },
+            { "PicoXR", "C3D_PICOXR" },
+            { "ViveWave", "C3D_VIVEWAVE" },
+            { "SteamVR/OpenVR", "C3D_STEAMVR2" },
+            { "SRAnipal", "C3D_SRANIPAL" },
+            { "Omnicept", "C3D_OMNICEPT" },
+            { "VarjoXR", "C3D_VARJOXR" },
+            { "MRTK", "C3D_MRTK" },
+            { "Default", "C3D_DEFAULT" }
+        };
         
         bool autoPlayerSetup = true;
         GameObject hmd;
@@ -124,7 +134,7 @@ namespace Cognitive3D
 
                     if (GUILayout.Button("Get from Dashboard", GUILayout.Width(130)))
                     {
-                        EditorCore.CheckForExpiredDeveloperKey(GetDevKeyResponse);
+                        EditorCore.CheckForExpiredDeveloperKey(developerKey, GetDevKeyResponse);
                         EditorCore.CheckForApplicationKey(developerKey, GetApplicationKeyResponse);
                         EditorCore.CheckSubscription(developerKey, GetSubscriptionResponse);
 
@@ -155,10 +165,10 @@ namespace Cognitive3D
 
                     using (new EditorGUI.DisabledScope(autoSelectXR))
                     {
-                        selectedSDKIndex = EditorGUILayout.Popup("Select XR SDK", selectedSDKIndex, availableXrSdks);
+                        selectedSDKIndex = EditorGUILayout.Popup("Select XR SDK", selectedSDKIndex, availableXrSdks.Keys.ToArray());
                     }
 
-                    EditorGUILayout.HelpBox($"Current SDK: {availableXrSdks[selectedSDKIndex]}", MessageType.Info);
+                    EditorGUILayout.HelpBox($"Current SDK: {availableXrSdks.Keys.ElementAt(selectedSDKIndex)}", MessageType.Info);
                 });
                 #endregion
 
@@ -297,27 +307,7 @@ namespace Cognitive3D
 
             // Sticky footer button
             Rect footerRect = new Rect(0, position.height - footerHeight, position.width, footerHeight);
-            GUILayout.BeginArea(footerRect, EditorStyles.helpBox);
-            GUILayout.FlexibleSpace();
-            GUILayout.BeginHorizontal();
-            GUILayout.FlexibleSpace();
-            if (GUILayout.Button("Upload and Finish", GUILayout.Width(120), GUILayout.Height(30)))
-            {
-                // Upload scenes
-                var selectedScenes = UploadTools.GetSelectedScenes(sceneEntries);
-                UploadTools.UploadScenes(selectedScenes);
-
-                // Set the XR SDK scripting define
-                SetXRSDK();
-
-                // Start tracking compile progress after setting the define
-                compileStartTime = -1; // reset timer for new compile
-                EditorApplication.update += WaitForCompileAndUpload;
-            }
-            GUILayout.FlexibleSpace();
-            GUILayout.EndHorizontal();
-            GUILayout.Space(10);
-            GUILayout.EndArea();
+            DrawFooter(footerRect);            
         }
 
         private Dictionary<string, bool> foldoutStates = new Dictionary<string, bool>();
@@ -369,6 +359,57 @@ namespace Cognitive3D
             EditorGUI.DrawRect(rect, new Color(0.5f, 0.5f, 0.5f, 0.4f));
         }
 
+        private void DrawFooter(Rect footerRect)
+        {
+            GUILayout.BeginArea(footerRect, EditorStyles.helpBox);
+            GUILayout.FlexibleSpace();
+            GUILayout.BeginHorizontal();
+            GUILayout.FlexibleSpace();
+
+            bool xrSdkNeedsUpdate = XRSDKNeedsUpdate();
+            var selectedScenes = UploadTools.GetSelectedScenes(sceneEntries);
+            bool hasScenesToUpload = selectedScenes.Count > 0;
+
+            string footerButtonText = GetFooterButtonText(hasScenesToUpload, xrSdkNeedsUpdate);
+
+            if (GUILayout.Button(footerButtonText, GUILayout.Width(140), GUILayout.Height(30)))
+            {
+                HandleFooterButtonClick(hasScenesToUpload, xrSdkNeedsUpdate, selectedScenes);
+                Close();  // Close the window
+            }
+
+            GUILayout.FlexibleSpace();
+            GUILayout.EndHorizontal();
+            GUILayout.Space(10);
+            GUILayout.EndArea();
+        }
+
+        private string GetFooterButtonText(bool hasScenesToUpload, bool xrSdkNeedsUpdate)
+        {
+            if (hasScenesToUpload && xrSdkNeedsUpdate)
+                return "Upload and Compile";
+            if (hasScenesToUpload)
+                return "Upload and Finish";
+            if (xrSdkNeedsUpdate)
+                return "Compile and Finish";
+            return "Finish";
+        }
+
+        private void HandleFooterButtonClick(bool hasScenesToUpload, bool xrSdkNeedsUpdate, List<SceneEntry> selectedScenes)
+        {
+            if (hasScenesToUpload)
+            {
+                UploadTools.UploadScenes(selectedScenes);
+            }
+
+            if (xrSdkNeedsUpdate)
+            {
+                SetXRSDK();
+                compileStartTime = -1; // Reset timer for new compile
+                EditorApplication.update += WaitForCompileAndUpload;
+            }
+        }
+
         #region Developer and App Key Utilities
         private void LoadKeys()
         {
@@ -406,8 +447,7 @@ namespace Cognitive3D
         double compileStartTime = -1;
         void SetXRSDK()
         {
-            selectedSDKName = SetC3DPlayerDefineName(availableXrSdks[selectedSDKIndex]);
-            EditorCore.SetPlayerDefine(selectedSDKName);
+            EditorCore.SetPlayerDefine(availableXrSdks.Values.ElementAt(selectedSDKIndex));
 
             if (compileStartTime < 0)
             {
@@ -420,28 +460,45 @@ namespace Cognitive3D
             EditorCore.GetPackages(OnGetPackages);
         }
 
+        private bool XRSDKNeedsUpdate()
+        {
+            if (EditorCore.HasC3DDefine(out var c3dSymbols))
+            {
+                string selectedSdk = availableXrSdks.Values.ElementAt(selectedSDKIndex);
+                foreach (var symbol in c3dSymbols)
+                {
+                    if (!symbol.Equals(selectedSdk))
+                    {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
         string packageName;
         void OnGetPackages(UnityEditor.PackageManager.PackageCollection packages)
         {
             //search from specific sdks (single headset support) to general runtimes (openvr, etc)
-            foreach(var package in packages)
+            var XrSdks = availableXrSdks.Keys.ToArray();
+            foreach (var package in packages)
             {
                 if (package.name == "com.unity.xr.picoxr")
                 {
                     packageName = "PicoXR";
-                    selectedSDKIndex = Array.IndexOf(availableXrSdks, packageName);
+                    selectedSDKIndex = Array.IndexOf(XrSdks, packageName);
                     return;
                 }
                 if (package.name == "com.varjo.xr")
                 {
                     packageName = "VarjoXR";
-                    selectedSDKIndex = Array.IndexOf(availableXrSdks, packageName);
+                    selectedSDKIndex = Array.IndexOf(XrSdks, packageName);
                     return;
                 }
                 if (package.name == "com.htc.upm.wave.xrsdk")
                 {
                     packageName = "ViveWave";
-                    selectedSDKIndex = Array.IndexOf(availableXrSdks, packageName);
+                    selectedSDKIndex = Array.IndexOf(XrSdks, packageName);
                     return;
                 }
             }
@@ -451,7 +508,7 @@ namespace Cognitive3D
             if (SRAnipalAssets.Length > 0)
             {
                 packageName = "SRAnipal";
-                selectedSDKIndex = Array.IndexOf(availableXrSdks, packageName);
+                selectedSDKIndex = Array.IndexOf(XrSdks, packageName);
                 return;
             }
 
@@ -459,7 +516,7 @@ namespace Cognitive3D
             if (GliaAssets.Length > 0)
             {
                 packageName = "Omnicept";
-                selectedSDKIndex = Array.IndexOf(availableXrSdks, packageName);
+                selectedSDKIndex = Array.IndexOf(XrSdks, packageName);
                 return;
             }
 
@@ -467,7 +524,7 @@ namespace Cognitive3D
             if (OculusIntegrationAssets.Length > 0)
             {
                 packageName = "MetaXR";
-                selectedSDKIndex = Array.IndexOf(availableXrSdks, packageName);
+                selectedSDKIndex = Array.IndexOf(XrSdks, packageName);
                 return;
             }
 
@@ -475,7 +532,7 @@ namespace Cognitive3D
             if (HololensAssets.Length > 0)
             {
                 packageName = "MRTK";
-                selectedSDKIndex = Array.IndexOf(availableXrSdks, packageName);
+                selectedSDKIndex = Array.IndexOf(XrSdks, packageName);
                 return;
             }
 
@@ -485,7 +542,7 @@ namespace Cognitive3D
                 if (package.name == "com.openvr")
                 {
                     packageName = "SteamVR/OpenVR";
-                    selectedSDKIndex = Array.IndexOf(availableXrSdks, packageName);
+                    selectedSDKIndex = Array.IndexOf(XrSdks, packageName);
                     return;
                 }
             }
@@ -494,39 +551,14 @@ namespace Cognitive3D
             if (SteamVRAssets.Length > 0)
             {
                 packageName = "SteamVR/OpenVR";
-                selectedSDKIndex = Array.IndexOf(availableXrSdks, packageName);
+                selectedSDKIndex = Array.IndexOf(XrSdks, packageName);
                 return;
             }
 
             //default fallback
             packageName = "Default";
-            selectedSDKIndex = Array.IndexOf(availableXrSdks, packageName);
+            selectedSDKIndex = Array.IndexOf(XrSdks, packageName);
             return;
-        }
-
-        string SetC3DPlayerDefineName(string name)
-        {
-            switch (name)
-            {
-                case "MetaXR":
-                    return "C3D_OCULUS";
-                case "ViveWave":
-                    return "C3D_VIVEWAVE";
-                case "PicoXR":
-                    return "C3D_PICOXR";
-                case "SteamVR/OpenVR":
-                    return "C3D_STEAMVR2";
-                case "SRAnipal":
-                    return "C3D_SRANIPAL";
-                case "MRTK":
-                    return "C3D_MRTK";
-                case "Omnicept":
-                    return "C3D_OMNICEPT";
-                case "VarjoXR":
-                    return "C3D_VARJOXR";
-                default:
-                    return "C3D_DEFAULT";
-            }
         }
 
         void WaitForCompileAndUpload()

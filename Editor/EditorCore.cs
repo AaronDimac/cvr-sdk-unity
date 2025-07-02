@@ -199,6 +199,22 @@ namespace Cognitive3D
             return false;
         }
 
+        public static bool HasC3DDefine(out List<string> C3DSymbols)
+        {
+            List<string> ExistingSymbols = GetPlayerDefines();
+            C3DSymbols = new List<string>();
+
+            foreach (var v in ExistingSymbols)
+            {
+                if (v.StartsWith("C3D_"))
+                {
+                    C3DSymbols.Add(v);
+                    return true;
+                }
+            }
+            return false;
+        }
+
         public static void SetPlayerDefine(List<string> C3DSymbols)
         {
             //get all scripting define symbols
@@ -1275,6 +1291,26 @@ namespace Cognitive3D
             return "unknown";
         }
 
+        internal static void SetMainCamera(GameObject camera)
+        {
+            if (camera == null) return;
+
+            if (camera.CompareTag("MainCamera") == false)
+            {
+                camera.tag = "MainCamera";
+            }
+        }
+
+        internal static void SetTrackingSpace(GameObject trackingSpace)
+        {
+            if (trackingSpace == null) return;
+
+            if (!trackingSpace.GetComponent<RoomTrackingSpace>())
+            {
+                trackingSpace.AddComponent<RoomTrackingSpace>();
+            }
+        }
+
         private static GameObject _leftController;
         public static GameObject leftController {
             get {
@@ -1309,6 +1345,34 @@ namespace Cognitive3D
             {
                 leftController = controller;
             }
+        }
+
+        internal static void SetController(bool isRight, GameObject controller)
+        {
+            if (controller == null) return;
+            if (!controller.GetComponent<DynamicObject>())
+            {
+                controller.AddComponent<DynamicObject>();
+            }
+
+            InputUtil.ControllerType controllerType = InputUtil.ControllerType.Quest2;
+#if C3D_STEAMVR2
+            controllerType = InputUtil.ControllerType.ViveWand;
+#elif C3D_OCULUS
+            controllerType = InputUtil.ControllerType.Quest2;
+#elif C3D_PICOXR
+            controllerType = InputUtil.ControllerType.PicoNeo3;
+#elif C3D_VIVEWAVE
+            controllerType = InputUtil.ControllerType.ViveFocus;
+#endif
+
+            var dyn = controller.GetComponent<DynamicObject>();
+            dyn.IsRight = isRight;
+            dyn.IsController = true;
+            dyn.inputType = InputUtil.InputType.Controller;
+            dyn.SyncWithPlayerGazeTick = true;
+            dyn.FallbackControllerType = controllerType;
+            dyn.idSource = DynamicObject.IdSourceType.GeneratedID;
         }
 
         /// <summary>
@@ -2227,6 +2291,15 @@ namespace Cognitive3D
             }
         }
 
+        public static void CheckForExpiredDeveloperKey(string devKey, EditorNetwork.Response callback)
+        {
+
+            Dictionary<string, string> headers = new Dictionary<string, string>();
+            // Debug.Log(EditorPrefs.GetString("c3d_developerkey"));
+            headers.Add("Authorization", "APIKEY:DEVELOPER " + devKey);
+            EditorNetwork.Get("https://" + EditorCore.DisplayValue(DisplayKey.GatewayURL) + "/v0/apiKeys/verify", callback, headers, true);
+        }
+
         internal static void CheckForApplicationKey(string developerKey, EditorNetwork.Response callback)
         {
             if (!string.IsNullOrEmpty(developerKey))
@@ -2239,6 +2312,12 @@ namespace Cognitive3D
             {
                 callback.Invoke(0, "Invalid Developer Key", "");
             }
+        }
+
+        internal static bool IsCurrentSceneValid()
+        {
+            var currentScene = Cognitive3D_Preferences.FindCurrentScene();
+            return !(currentScene == null || string.IsNullOrEmpty(currentScene.SceneId));
         }
 
         internal static void CheckSubscription(string developerKey, EditorNetwork.Response callback)
