@@ -863,7 +863,7 @@ namespace Cognitive3D
                 }
             }
 #endif
-                UnityEngine.XR.Eyes eyes;
+            UnityEngine.XR.Eyes eyes;
             if (UnityEngine.XR.InputDevices.GetDeviceAtXRNode(UnityEngine.XR.XRNode.RightEye).TryGetFeatureValue(UnityEngine.XR.CommonUsages.eyesData, out eyes))
             {
                 float open;

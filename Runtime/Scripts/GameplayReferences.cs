@@ -63,7 +63,7 @@ namespace Cognitive3D
         {
             get
             {
-#if C3D_SRANIPAL || C3D_VARJOVR || C3D_VARJOXR || C3D_PICOVR || C3D_OMNICEPT || COGNITIVE3D_VIVE_OPENXR
+#if C3D_SRANIPAL || C3D_VARJOVR || C3D_VARJOXR || C3D_PICOVR || C3D_OMNICEPT
                 return true;
 #elif C3D_PICOXR
                 return Unity.XR.PXR.PXR_Manager.Instance.eyeTracking;
@@ -89,6 +89,9 @@ namespace Cognitive3D
                 }
 
                 return true;
+#elif COGNITIVE3D_VIVE_OPENXR
+                var feature = UnityEngine.XR.OpenXR.OpenXRSettings.Instance.GetFeature<VIVE.OpenXR.EyeTracker.ViveEyeTracker>();
+                return feature != null && feature.enabled;
 #elif C3D_DEFAULT
                 var head = InputDevices.GetDeviceAtXRNode(XRNode.Head);
                 Eyes eyedata;

@@ -26,7 +26,8 @@
         "meta.xr.mrutilitykit",
         "Unity.Netcode.Runtime",
         "Unity.XR.Hands",
-        "VIVE.OpenXR"
+        "VIVE.OpenXR",
+        "Unity.XR.OpenXR"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
