@@ -35,6 +35,18 @@ namespace Cognitive3D
         }
 
         /// <summary>
+        /// Immediately processes all active dynamic objects in the array,
+        /// bypassing the normal update loop. This is used during
+        /// scene unloads or special cases where dynamic object state needs
+        /// to be flushed before the next frame.
+        /// </summary>
+        internal static void ForceProcessDynamicObjects()
+        {
+            int numTicks = 0;
+            ProcessDynamicArray(ref ActiveDynamicObjectsArray, 0, ref numTicks);
+        }
+
+        /// <summary>
         /// Resets content of Dynamic Manager to avoid carrying internally stored data between game states when no session is active
         /// Intended only for in-app editor tooling
         /// </summary>
@@ -413,7 +425,7 @@ namespace Cognitive3D
 
         internal static void RegisterController(DynamicData data)
         {
-            //check for duplicate ids in all data
+            // check for duplicate ids in all data
             for (int i = 0; i < ActiveDynamicObjectsArray.Length; i++)
             {
                 if (ActiveDynamicObjectsArray[i].active && data.Id == ActiveDynamicObjectsArray[i].Id)

@@ -436,7 +436,7 @@ namespace Cognitive3D
             //DO NOT FLUSH DYNAMICS because dynamics from the next scene are already loaded
             if (!string.IsNullOrEmpty(TrackingSceneId))
             {
-                CoreInterface.FlushSceneChange(true);
+                CoreInterface.FlushSceneChange(true, false);
             }
 
             // upload session properties to new scene
@@ -468,7 +468,8 @@ namespace Cognitive3D
             // Flush recorded data when scene unloads
             if (TrackingScene != null)
             {
-                CoreInterface.FlushSceneChange(true);
+                DynamicManager.ForceProcessDynamicObjects();
+                CoreInterface.FlushSceneChange(true, true);
             }
 
             // upload session properties to new scene
