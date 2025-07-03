@@ -12,6 +12,8 @@ namespace Cognitive3D
         bool keysSet = false;
         private string developerKey;
         private string apiKey;
+        private string devKeyStatusMessage = "";
+        private MessageType devKeyStatusType = MessageType.None;
 
         #region Project Setup Window
         public static void Init()
@@ -43,7 +45,6 @@ namespace Cognitive3D
 
         private Vector2 mainScroll;
 
-        int lastDevKeyResponseCode;
         private bool forceUpdateApiKey = false;
         private string apiKeyFromDashboard = "";
 
@@ -142,6 +143,11 @@ namespace Cognitive3D
 
                     EditorGUILayout.EndHorizontal();
                     GUILayout.Space(10);
+
+                    if (!string.IsNullOrEmpty(devKeyStatusMessage))
+                    {
+                        EditorGUILayout.HelpBox(devKeyStatusMessage, devKeyStatusType);
+                    }
                 });
                 #endregion
 
@@ -152,7 +158,11 @@ namespace Cognitive3D
 
                 DrawFoldout("XR SDK Setup", statusIcon, () =>
                 {
-                    bool newAutoSelectXR = EditorGUILayout.Toggle("Auto-select XR SDK", autoSelectXR);
+                    GUILayout.Label(
+                    "By default, XR plugins are auto-detected, and features are enabled based on the packages present in the project.",
+                    EditorCore.styles.DescriptionPadding);
+
+                    bool newAutoSelectXR = EditorGUILayout.Toggle(new GUIContent("Auto-select XR SDK", "Disable 'Auto-select XR SDK' to configure this manually"), autoSelectXR);
 
                     if (newAutoSelectXR && newAutoSelectXR != previousAutoSelectXR)
                     {
@@ -167,6 +177,8 @@ namespace Cognitive3D
                         selectedSDKIndex = EditorGUILayout.Popup("Select XR SDK", selectedSDKIndex, availableXrSdks.Keys.ToArray());
                     }
 
+                    GUILayout.Space(10);
+
                     EditorGUILayout.HelpBox($"Current SDK: {availableXrSdks.Keys.ElementAt(selectedSDKIndex)}", MessageType.Info);
                 });
                 #endregion
@@ -178,17 +190,23 @@ namespace Cognitive3D
                 DrawFoldout("Player Setup", statusIcon, () =>
                 {
                     GUILayout.Label(
-                        "Use your existing Player Prefab to assign tracked objects. Enable auto-setup for automatic detection, or disable it to assign manually.",
-                        EditorCore.styles.DescriptionPadding);
+                    "By default, key player objects, including the camera (HMD), tracking space, and controllers are automatically detected and tracked.",
+                    EditorCore.styles.DescriptionPadding);
 
-                    EditorCore.GetPreferences().AutoPlayerSetup = EditorGUILayout.Toggle("Auto Player Setup", EditorCore.GetPreferences().AutoPlayerSetup);
+                    EditorCore.GetPreferences().AutoPlayerSetup = EditorGUILayout.Toggle(new GUIContent("Auto Player Setup", "Disable auto-setup to manually assign these from your existing Player Prefab"), EditorCore.GetPreferences().AutoPlayerSetup);
+
+                    GUILayout.Space(10);
 
                     if (!EditorCore.GetPreferences().AutoPlayerSetup)
                     {
-                        hmd = (GameObject)EditorGUILayout.ObjectField("HMD", hmd, typeof(GameObject), true);
-                        trackingSpace = (GameObject)EditorGUILayout.ObjectField("Tracking Space", trackingSpace, typeof(GameObject), true);
-                        rightController = (GameObject)EditorGUILayout.ObjectField("Right Controller", rightController, typeof(GameObject), true);
-                        leftController = (GameObject)EditorGUILayout.ObjectField("Left Controller", leftController, typeof(GameObject), true);
+                        EditorGUILayout.HelpBox("For SteamVR, assign GameObjects with SteamVR_Behaviour_Pose components to the controller fields.", MessageType.Info);
+
+                        GUILayout.Space(5);
+
+                        hmd = (GameObject)EditorGUILayout.ObjectField(new GUIContent("HMD", "The display for HMD should be tagged as MainCamera"), hmd, typeof(GameObject), true);
+                        trackingSpace = (GameObject)EditorGUILayout.ObjectField(new GUIContent("Tracking Space", "The TrackingSpace is the root transform for the HMD and controllers"), trackingSpace, typeof(GameObject), true);
+                        rightController = (GameObject)EditorGUILayout.ObjectField(new GUIContent("Right Controller", "The Right Controller may have Tracked Pose Driver component"), rightController, typeof(GameObject), true);
+                        leftController = (GameObject)EditorGUILayout.ObjectField(new GUIContent("Left Controller", "The Left Controller may have Tracked Pose Driver component"), leftController, typeof(GameObject), true);
 
                         GUILayout.Space(5);
 
@@ -205,6 +223,10 @@ namespace Cognitive3D
                         GUILayout.EndHorizontal();
 
                         GUILayout.Space(5);
+                    }
+                    else
+                    {
+                        EditorGUILayout.HelpBox("Auto Player Setup is enabled, allowing all player-related objects to be automatically detected and tracked.", MessageType.Info);
                     }
                 });
                 #endregion
@@ -358,6 +380,7 @@ namespace Cognitive3D
             EditorGUI.DrawRect(rect, new Color(0.5f, 0.5f, 0.5f, 0.4f));
         }
 
+        #region Footer
         private void DrawFooter(Rect footerRect)
         {
             GUILayout.BeginArea(footerRect, EditorStyles.helpBox);
@@ -408,6 +431,7 @@ namespace Cognitive3D
                 EditorApplication.update += WaitForCompileAndUpload;
             }
         }
+        #endregion
 
         #region Developer and App Key Utilities
         private void LoadKeys()
@@ -417,6 +441,10 @@ namespace Cognitive3D
 
             if (!string.IsNullOrEmpty(developerKey) && !string.IsNullOrEmpty(apiKey))
             {
+                EditorCore.CheckForExpiredDeveloperKey(developerKey, GetDevKeyResponse);
+                EditorCore.CheckForApplicationKey(developerKey, GetApplicationKeyResponse);
+                EditorCore.CheckSubscription(developerKey, GetSubscriptionResponse);
+
                 keysSet = true;
             }
 
@@ -439,9 +467,18 @@ namespace Cognitive3D
             EditorUtility.SetDirty(EditorCore.GetPreferences());
             AssetDatabase.SaveAssets();
         }
+
+        private int GetDaysUntilExpiry(long unixTimestamp)
+        {
+            DateTime dateTime = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+            DateTime expiryDate = dateTime.AddSeconds(unixTimestamp / 1000.0).ToLocalTime();
+            TimeSpan timeLeft = expiryDate - DateTime.Now;
+
+            return Mathf.Max(0, (int)Math.Floor(timeLeft.TotalDays));
+        }
         #endregion
 
-#region XR SDK Utilities
+        #region XR SDK Utilities
         [System.NonSerialized]
         double compileStartTime = -1;
         void SetXRSDK()
@@ -637,7 +674,6 @@ namespace Cognitive3D
         #region Callback Responses
         void GetDevKeyResponse(int responseCode, string error, string text)
         {
-            lastDevKeyResponseCode = responseCode;
             if (responseCode == 200)
             {
                 //dev key is fine
@@ -646,6 +682,9 @@ namespace Cognitive3D
             else
             {
                 Debug.LogError("Developer Key invalid or expired: " + error);
+
+                devKeyStatusMessage = "Developer Key invalid or expired.";
+                devKeyStatusType = MessageType.Error;
             }
         }
 
@@ -704,7 +743,42 @@ namespace Cognitive3D
             // Check if response data is valid
             try
             {
-                JsonUtility.FromJson<EditorCore.OrganizationData>(text);
+                EditorCore.OrganizationData organizationDetails = JsonUtility.FromJson<EditorCore.OrganizationData>(text);
+
+                if (organizationDetails == null)
+                {
+                    Debug.LogError("GetSubscriptionResponse data is null or invalid. Please get in touch");
+                }
+                else
+                {
+                    devKeyStatusMessage = $"Organization name: {organizationDetails.organizationName}";
+                    devKeyStatusType = MessageType.Info;
+                    if (organizationDetails.subscriptions.Length == 0)
+                    {
+                        devKeyStatusMessage += "\nCurrent Subscription Plan: No Subscription";
+                    }
+                    else
+                    {
+                        long expiration = organizationDetails.subscriptions[0].expiration;
+                        int daysRemaining = GetDaysUntilExpiry(expiration);
+
+                        if (expiration == 0)
+                        {
+                            devKeyStatusType = MessageType.Info;
+                            devKeyStatusMessage += "\nDeveloper key is valid and does not expire.";
+                        }
+                        else if (daysRemaining < 0)
+                        {
+                            devKeyStatusType = MessageType.Error;
+                            devKeyStatusMessage += "\nDeveloper key has expired.";
+                        }
+                        else
+                        {
+                            devKeyStatusType = daysRemaining < 7 ? MessageType.Warning : MessageType.Info;
+                            devKeyStatusMessage += $"\nDeveloper key valid. Expires in {daysRemaining} day(s).";
+                        }
+                    }
+                }
             }
             catch
             {
