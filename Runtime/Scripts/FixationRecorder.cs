@@ -759,7 +759,7 @@ namespace Cognitive3D
 
         bool CombinedWorldGazeRay(out Ray ray)
         {
-#if COGNITIVE3D_VIVE_OPENXR
+#if COGNITIVE3D_VIVE_OPENXR_2_5_OR_NEWER
             VIVE.OpenXR.XR_HTC_eye_tracker.Interop.GetEyeGazeData(out VIVE.OpenXR.EyeTracker.XrSingleEyeGazeDataHTC[] out_gazes);
 
             if (out_gazes != null && out_gazes.Length >= 2)
@@ -827,7 +827,7 @@ namespace Cognitive3D
 
         internal static bool LeftEyeOpen()
         {
-#if COGNITIVE3D_VIVE_OPENXR
+#if COGNITIVE3D_VIVE_OPENXR_2_5_OR_NEWER
             VIVE.OpenXR.XR_HTC_eye_tracker.Interop.GetEyeGeometricData(out VIVE.OpenXR.EyeTracker.XrSingleEyeGeometricDataHTC[] out_geometrics);
 
             if (out_geometrics != null && out_geometrics.Length > 0)
@@ -852,7 +852,7 @@ namespace Cognitive3D
         }
         internal static bool RightEyeOpen()
         {
-#if COGNITIVE3D_VIVE_OPENXR
+#if COGNITIVE3D_VIVE_OPENXR_2_5_OR_NEWER
             VIVE.OpenXR.XR_HTC_eye_tracker.Interop.GetEyeGeometricData(out VIVE.OpenXR.EyeTracker.XrSingleEyeGeometricDataHTC[] out_geometrics);
             if (out_geometrics != null && out_geometrics.Length > 0)
             {

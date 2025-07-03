@@ -210,7 +210,7 @@ namespace Cognitive3D
 #else
         static Vector3 GetLookDirection()
         {
-#if COGNITIVE3D_VIVE_OPENXR
+#if COGNITIVE3D_VIVE_OPENXR_2_5_OR_NEWER
             var feature = UnityEngine.XR.OpenXR.OpenXRSettings.Instance.GetFeature<VIVE.OpenXR.EyeTracker.ViveEyeTracker>();
 
             if (feature != null && feature.enabled)

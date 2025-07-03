@@ -89,8 +89,8 @@
         },
         {
             "name": "com.htc.upm.vive.openxr",
-            "expression": "",
-            "define": "COGNITIVE3D_VIVE_OPENXR"
+            "expression": "2.5.0",
+            "define": "COGNITIVE3D_VIVE_OPENXR_2_5_OR_NEWER"
         }
     ],
     "noEngineReferences": false
