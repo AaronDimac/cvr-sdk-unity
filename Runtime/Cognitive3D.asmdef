@@ -25,7 +25,9 @@
         "PhotonRealtime",
         "meta.xr.mrutilitykit",
         "Unity.Netcode.Runtime",
-        "Unity.XR.Hands"
+        "Unity.XR.Hands",
+        "VIVE.OpenXR",
+        "Unity.XR.OpenXR"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
@@ -84,6 +86,11 @@
             "name": "com.unity.xr.oculus",
             "expression": "",
             "define": "COGNITIVE3D_META_OCULUS_XR"
+        },
+        {
+            "name": "com.htc.upm.vive.openxr",
+            "expression": "",
+            "define": "COGNITIVE3D_VIVE_OPENXR"
         }
     ],
     "noEngineReferences": false

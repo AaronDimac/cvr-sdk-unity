@@ -89,6 +89,9 @@ namespace Cognitive3D
                 }
 
                 return true;
+#elif COGNITIVE3D_VIVE_OPENXR
+                var feature = UnityEngine.XR.OpenXR.OpenXRSettings.Instance.GetFeature<VIVE.OpenXR.EyeTracker.ViveEyeTracker>();
+                return feature != null && feature.enabled;
 #elif C3D_DEFAULT
                 var head = InputDevices.GetDeviceAtXRNode(XRNode.Head);
                 Eyes eyedata;
