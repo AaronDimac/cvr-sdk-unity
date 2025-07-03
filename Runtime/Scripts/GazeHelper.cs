@@ -210,7 +210,36 @@ namespace Cognitive3D
 #else
         static Vector3 GetLookDirection()
         {
-            UnityEngine.XR.Eyes eyes;
+#if COGNITIVE3D_VIVE_OPENXR
+            var feature = UnityEngine.XR.OpenXR.OpenXRSettings.Instance.GetFeature<VIVE.OpenXR.EyeTracker.ViveEyeTracker>();
+
+            if (feature != null && feature.enabled)
+            {
+                VIVE.OpenXR.XR_HTC_eye_tracker.Interop.GetEyeGazeData(out VIVE.OpenXR.EyeTracker.XrSingleEyeGazeDataHTC[] out_gazes);
+
+                if (out_gazes != null && out_gazes.Length >= 2)
+                {
+                    var leftGaze = out_gazes[(int)VIVE.OpenXR.EyeTracker.XrEyePositionHTC.XR_EYE_POSITION_LEFT_HTC];
+                    var rightGaze = out_gazes[(int)VIVE.OpenXR.EyeTracker.XrEyePositionHTC.XR_EYE_POSITION_RIGHT_HTC];
+
+                    if (leftGaze.isValid && FixationRecorder.LeftEyeOpen() && rightGaze.isValid && FixationRecorder.RightEyeOpen())
+                    {
+                        Quaternion leftRot = VIVE.OpenXR.OpenXRHelper.ToUnityQuaternion(leftGaze.gazePose.orientation);
+                        Quaternion rightRot = VIVE.OpenXR.OpenXRHelper.ToUnityQuaternion(rightGaze.gazePose.orientation);
+
+                        Quaternion centerRot = Quaternion.Slerp(leftRot, rightRot, 0.5f);
+
+                        Vector3 worldGazeDirection = centerRot * Vector3.forward;
+                        if (GameplayReferences.HMD.transform.parent != null)
+                        {
+                            worldGazeDirection = GameplayReferences.HMD.transform.parent.TransformDirection(centerRot * Vector3.forward);
+                        }
+                        return worldGazeDirection;
+                    }
+                }
+            }
+#endif
+                UnityEngine.XR.Eyes eyes;
             var centereye = UnityEngine.XR.InputDevices.GetDeviceAtXRNode(UnityEngine.XR.XRNode.CenterEye);
 
             if (centereye.TryGetFeatureValue(UnityEngine.XR.CommonUsages.eyesData, out eyes))
