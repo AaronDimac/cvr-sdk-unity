@@ -45,10 +45,11 @@ namespace Cognitive3D
                             }
                         )
                     },
-                    new DynamicObjectDetailGUI()
+                    new DynamicObjectDetailGUI(),
+                    new List<string>{"Component", "All-SDKs"}
                 ),
                 new FeatureData(
-                    "Exit Poll",
+                    "ExitPoll Survey",
                     "Visualize player journeys and scene engagement metrics in real time.",
                     EditorCore.ExitpollIcon,
                     () => { setFeatureIndex(1); },
@@ -63,7 +64,8 @@ namespace Cognitive3D
                             }
                         )
                     },
-                    new ExitpollDetailGUI()
+                    new ExitpollDetailGUI(),
+                    new List<string>{"All-SDKs"}
                 ),
                 new FeatureData(
                     "Remote Controls",
@@ -81,7 +83,8 @@ namespace Cognitive3D
                             }
                         )
                     },
-                    new RemoteControlsDetailGUI()
+                    new RemoteControlsDetailGUI(),
+                    new List<string>{"Component", "All-SDKs"}
                 ),
                 new FeatureData(
                     "Oculus Social",
@@ -99,7 +102,8 @@ namespace Cognitive3D
                             }
                         )
                     },
-                    new MediaDetailGUI()
+                    new MediaDetailGUI(),
+                    new List<string>{"Component", "Meta (Oculus) SDK"}
                 ),
                 new FeatureData(
                     "Custom Events",
@@ -117,13 +121,52 @@ namespace Cognitive3D
                             }
                         )
                     },
-                    new CustomEventDetailGUI()
+                    new CustomEventDetailGUI(),
+                    new List<string>{"API"}
+                ),
+                new FeatureData(
+                    "Sensors",
+                    "Sensor description",
+                    EditorCore.CustomEventIcon,
+                    () => { setFeatureIndex(5); },
+                    new List<FeatureAction>
+                    {
+                        new FeatureAction(
+                            FeatureActionType.LinkTo,
+                            "Link to Sensors documentation",
+                            () =>
+                            {
+                                Application.OpenURL("https://docs.cognitive3d.com/unity/sensors/");
+                            }
+                        )
+                    },
+                    new SensorDetailGUI(),
+                    new List<string>{"API"}
+                ),
+                new FeatureData(
+                    "Multiplayer",
+                    "Multiplayer description",
+                    EditorCore.CustomEventIcon,
+                    () => { setFeatureIndex(6); },
+                    new List<FeatureAction>
+                    {
+                        new FeatureAction(
+                            FeatureActionType.LinkTo,
+                            "Link to Multiplayer documentation",
+                            () =>
+                            {
+                                Application.OpenURL("https://docs.cognitive3d.com/unity/multiplayer/");
+                            }
+                        )
+                    },
+                    new MultiplayerDetailGUI(),
+                    new List<string>{"Component", "Multiplayer"}
                 ),
                 new FeatureData(
                     "Media and 360 Video",
                     "Media related context",
                     EditorCore.DynamicsIcon,
-                    () => { setFeatureIndex(5); },
+                    () => { setFeatureIndex(7); },
                     new List<FeatureAction>
                     {
                         new FeatureAction(
@@ -135,7 +178,8 @@ namespace Cognitive3D
                             }
                         )
                     },
-                    new MediaDetailGUI()
+                    new MediaDetailGUI(),
+                    new List<string>{"Component", "All-SDKs"}
                 )
             };
         }
@@ -217,7 +261,7 @@ namespace Cognitive3D
 
         internal IFeatureDetailGUI DetailGUI;
 
-        internal FeatureData(string title, string description, Texture2D icon, System.Action onClick, List<FeatureAction> actions, IFeatureDetailGUI detailGUI = null)
+        internal FeatureData(string title, string description, Texture2D icon, System.Action onClick, List<FeatureAction> actions, IFeatureDetailGUI detailGUI = null, List<string> tags = null)
         {
             Title = title;
             Description = description;
@@ -225,6 +269,7 @@ namespace Cognitive3D
             OnClick = onClick;
             Actions = actions ?? new List<FeatureAction>();
             DetailGUI = detailGUI;
+            Tags = tags;
         }
     }
 
