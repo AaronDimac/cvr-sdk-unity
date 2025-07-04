@@ -126,7 +126,30 @@ namespace Cognitive3D
 
             // Draw icon and label
             GUI.DrawTexture(iconRect, featureData.Icon);
-            GUI.Label(labelRect, featureData.Title, EditorStyles.label);
+            GUI.Label(labelRect, featureData.Title, EditorCore.styles.FeatureButtonTitle);
+
+            if (featureData.Tags != null && featureData.Tags.Count > 0)
+            {
+                float tagStartX = labelRect.x;
+                float tagStartY = labelRect.yMax - 35;  // Move closer under the title
+                float tagSpacing = 3;
+
+                for (int i = 0; i < featureData.Tags.Count; i++)
+                {
+                    string tagText = featureData.Tags[i];
+
+                    Vector2 tagSize = EditorCore.styles.tagStyle.CalcSize(new GUIContent(tagText));
+                    Rect tagRect = new Rect(tagStartX, tagStartY, tagSize.x + 6, EditorCore.styles.tagStyle.fixedHeight);
+
+                    if (GUI.Button(tagRect, tagText, EditorCore.styles.tagStyle))
+                    {
+                        Debug.Log($"Tag clicked: {tagText}");
+                        // TODO: Filtering logic
+                    }
+
+                    tagStartX += tagRect.width + tagSpacing;
+                }
+            }
 
             // Draw action buttons (Apply, Upload, LinkTo, etc.)
             if (featureData.Actions != null && featureData.Actions.Count > 0)
