@@ -87,7 +87,7 @@ namespace Cognitive3D
                     new List<string>{"Component", "All-SDKs"}
                 ),
                 new FeatureData(
-                    "Oculus Social",
+                    "Meta (Oculus) Social",
                     "Visualize player journeys and scene engagement metrics in real time.",
                     EditorCore.CustomEventIcon,
                     () => { setFeatureIndex(3); },
@@ -102,7 +102,7 @@ namespace Cognitive3D
                             }
                         )
                     },
-                    new MediaDetailGUI(),
+                    new OculusSocialDetailGUI(),
                     new List<string>{"Component", "Meta (Oculus) SDK"}
                 ),
                 new FeatureData(
