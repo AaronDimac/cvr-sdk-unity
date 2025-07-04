@@ -444,7 +444,7 @@ namespace Cognitive3D
             }
         }
 
-        static System.Action RefreshSceneVersionComplete;
+        internal static System.Action RefreshSceneVersionComplete;
         /// <summary>
         /// make a get request for all scene versions of this scene
         /// </summary>
@@ -576,7 +576,7 @@ namespace Cognitive3D
             }
         }
 
-#region GUI
+        #region GUI
         internal class Styles
         {
             private const float SmallIconSize = 16.0f;
@@ -593,6 +593,122 @@ namespace Cognitive3D
                 padding = new RectOffset(10, 10, 5, 5)
             };
 
+            internal readonly GUIStyle FeatureButtonTitle = new GUIStyle(GUI.skin.label)
+            {
+                fontSize = 14,
+                fontStyle = FontStyle.Bold,
+            };
+
+            internal GUIStyle tagStyle = new GUIStyle(EditorStyles.helpBox)
+            {
+                fixedHeight = 12,
+                fontSize = 8,
+                padding = new RectOffset(4, 4, 0, 0),
+                alignment = TextAnchor.MiddleCenter,
+                normal = { background = ColorExtensions.ToTexture(new Color32(60, 60, 60, 255)) } // Dark Charcoal
+            };
+
+            internal readonly GUIStyle FeatureTitleStyle = new GUIStyle(GUI.skin.label)
+            {
+                fontSize = 16,
+                fontStyle = FontStyle.Bold,
+                alignment = TextAnchor.UpperLeft,
+                padding = new RectOffset(0, 5, 0, 5)
+            };
+
+            internal readonly GUIStyle ContextPadding = new GUIStyle()
+            {
+                padding = new RectOffset(10, 10, 5, 3),
+                margin = new RectOffset(4, 4, 4, 5)
+            };
+
+            internal readonly GUIStyle DescriptionPadding = new GUIStyle(GUI.skin.label)
+            {
+                wordWrap = true,
+                padding = new RectOffset(15, 15, 5, 5)
+            };
+
+            internal readonly GUIStyle HelpBoxPadding = new GUIStyle(EditorStyles.helpBox)
+            {
+                margin = new RectOffset(15, 15, 5, 5)
+            };
+
+            internal readonly GUIStyle HelpBoxLabel = new GUIStyle(GUI.skin.label)
+            {
+                fontSize = 10,
+                wordWrap = true,
+                margin = new RectOffset(0, 0, 15, 0),
+                padding = new RectOffset(0, 0, 0, 0)
+            };
+
+            internal readonly GUIStyle ExternalLinkStyle = new GUIStyle(GUI.skin.label)
+            {
+                fixedWidth = 18,
+                fixedHeight = 18,
+                margin = new RectOffset(0, 0, 12, 4)
+            };
+
+            internal readonly GUIStyle ListBoxPadding = new GUIStyle(GUI.skin.box)
+            {
+                wordWrap = true,
+                margin = new RectOffset(15, 15, 5, 5)
+            };
+
+            internal readonly GUIStyle ListBoxPadding2 = new GUIStyle(GUI.skin.scrollView)
+            {
+                wordWrap = true,
+                margin = new RectOffset(15, 15, 5, 5)
+            };
+
+            internal GUIStyle leftPaddingBoldLabel = new GUIStyle(EditorStyles.boldLabel)
+            {
+                padding = new RectOffset(15, 0, 0, 0)
+            };
+
+            internal GUIStyle leftPaddingLabel = new GUIStyle(GUI.skin.label)
+            {
+                padding = new RectOffset(15, 0, 0, 0),
+                alignment = TextAnchor.MiddleLeft,
+            };
+
+
+            internal GUIStyle buttonStyle = new GUIStyle(GUI.skin.button)
+            {
+                fixedHeight = 100,
+                fontSize = 30,
+                alignment = TextAnchor.MiddleLeft,
+                imagePosition = ImagePosition.ImageLeft,
+                margin = new RectOffset(5, 5, 5, 5)
+            };
+
+            internal GUIStyle applyButtonStyle = new GUIStyle(GUI.skin.button)
+            {
+                fontSize = 30
+            };
+
+            internal GUIStyle completeIconStyle = new GUIStyle()
+            {
+                fixedWidth = 18,
+                fixedHeight = 18,
+                margin = new RectOffset(0, 0, 2, 2),
+                padding = new RectOffset(2, 0, 2, 2),
+            };
+
+            internal GUIStyle incompleteIconStyle = new GUIStyle()
+            {
+                fixedWidth = 18,
+                fixedHeight = 18,
+                margin = new RectOffset(0, 0, 2, 2),
+                padding = new RectOffset(0, 0, 0, 0),
+            };
+
+            internal GUIStyle centeredLabelStyle = new GUIStyle(GUI.skin.label)
+            {
+                alignment = TextAnchor.MiddleCenter
+            };
+
+            internal GUIStyle codeSnippet = new GUIStyle(WizardGUISkin.GetStyle("code_snippet"));
+
             internal readonly GUIStyle ListLabel = new GUIStyle("TV Selection")
             {
                 border = new RectOffset(0, 0, 0, 0),
@@ -606,7 +722,6 @@ namespace Cognitive3D
                 wordWrap = false,
                 stretchWidth = false,
                 fontStyle = FontStyle.Bold,
-                padding = new RectOffset(10, 2, 0, 0)
             };
 
             internal readonly GUIStyle IssuesTitleLabel = new GUIStyle(EditorStyles.label)
@@ -649,7 +764,7 @@ namespace Cognitive3D
 
             internal readonly GUIStyle IconButton = new GUIStyle(EditorStyles.miniButton)
             {
-                margin = new RectOffset(0, 10, 0, 0),
+                margin = new RectOffset(0, 5, 0, 0),
                 fixedWidth = IconButtonWidth,
                 fixedHeight = 25
             };
@@ -777,10 +892,138 @@ namespace Cognitive3D
             get
             {
                 if (_logo == null)
-                    _logo = Resources.Load<Texture2D>("cognitive3d-editorlogo");
+                    _logo = Resources.Load<Texture2D>("C3D-Primary-Logo");
                 return _logo;
             }
         }
+
+        private static Texture2D _logoIcon;
+        public static Texture2D LogoIcon
+        {
+            get
+            {
+                if (_logoIcon == null)
+                    _logoIcon = Resources.Load<Texture2D>("C3D-Icon");
+                return _logoIcon;
+            }
+        }
+
+        private static Texture2D _background;
+        public static Texture2D BackgroundTexture
+        {
+            get
+            {
+                if (_background == null)
+                    _background = Resources.Load<Texture2D>("cognitive3d-background");
+                return _background;
+            }
+        }
+
+        private static Texture2D _plusIcon;
+        public static Texture2D PlusIcon
+        {
+            get
+            {
+                if (_plusIcon == null)
+                    _plusIcon = Resources.Load<Texture2D>("Features/Icons/plus");
+                return _plusIcon;
+            }
+        }
+
+        private static Texture2D _externalLink;
+        public static Texture2D ExternalLink
+        {
+            get
+            {
+                if (_externalLink == null)
+                {
+                    _externalLink = Resources.Load<Texture2D>("Icons/external-link");
+                }
+                return _externalLink;
+            }
+        }
+
+        private static Texture2D _dynamicsIcon;
+        public static Texture2D DynamicsIcon
+        {
+            get
+            {
+                if (_dynamicsIcon == null)
+                    _dynamicsIcon = Resources.Load<Texture2D>("Features/Icons/dynamics");
+                return _dynamicsIcon;
+            }
+        }
+
+        private static Texture2D _customEventIcon;
+        public static Texture2D CustomEventIcon
+        {
+            get
+            {
+                if (_customEventIcon == null)
+                    _customEventIcon = Resources.Load<Texture2D>("Features/Icons/custom-events");
+                return _customEventIcon;
+            }
+        }
+
+        private static Texture2D _exitpollIcon;
+        public static Texture2D ExitpollIcon
+        {
+            get
+            {
+                if (_exitpollIcon == null)
+                    _exitpollIcon = Resources.Load<Texture2D>("Features/Icons/exitpoll");
+                return _exitpollIcon;
+            }
+        }
+
+        private static Texture2D _remoteControlsIcon;
+        public static Texture2D RemoteControlsIcon
+        {
+            get
+            {
+                if (_remoteControlsIcon == null)
+                    _remoteControlsIcon = Resources.Load<Texture2D>("Features/Icons/remote-controls");
+                return _remoteControlsIcon;
+            }
+        }
+
+        private static Texture2D _eyeTrackingIcon;
+        public static Texture2D EyeTrackingIcon
+        {
+            get
+            {
+                if (_eyeTrackingIcon == null)
+                    _eyeTrackingIcon = Resources.Load<Texture2D>("Features/Icons/eye-tracking");
+                return _eyeTrackingIcon;
+            }
+        }
+
+        private static Texture2D _completeCheckmark;
+        public static Texture2D CompleteCheckmark
+        {
+            get
+            {
+                if (_completeCheckmark == null)
+                {
+                    _completeCheckmark = Resources.Load<Texture2D>("Icons/circle-checkmark");
+                }
+                return _completeCheckmark;
+            }
+        }
+
+        private static Texture2D _circleWarning;
+        public static Texture2D CircleWarning
+        {
+            get
+            {
+                if (_circleWarning == null)
+                {
+                    _circleWarning = Resources.Load<Texture2D>("Icons/circle-warning");
+                }
+                return _circleWarning;
+            }
+        }
+
         private static Texture2D _circleCheckmark;
         public static Texture2D CircleCheckmark
         {
@@ -2293,9 +2536,7 @@ namespace Cognitive3D
 
         public static void CheckForExpiredDeveloperKey(string devKey, EditorNetwork.Response callback)
         {
-
             Dictionary<string, string> headers = new Dictionary<string, string>();
-            // Debug.Log(EditorPrefs.GetString("c3d_developerkey"));
             headers.Add("Authorization", "APIKEY:DEVELOPER " + devKey);
             EditorNetwork.Get("https://" + EditorCore.DisplayValue(DisplayKey.GatewayURL) + "/v0/apiKeys/verify", callback, headers, true);
         }
@@ -2554,6 +2795,17 @@ namespace Cognitive3D
         {
             var worldToLocalMatrix = Matrix4x4.TRS(transform.position, transform.rotation, Vector3.one).inverse;
             return worldToLocalMatrix.MultiplyPoint3x4(position);
+        }
+    }
+
+    public static class ColorExtensions
+    {
+        public static Texture2D ToTexture(this Color color)
+        {
+            Texture2D tex = new Texture2D(1, 1);
+            tex.SetPixel(0, 0, color);
+            tex.Apply();
+            return tex;
         }
     }
 }
