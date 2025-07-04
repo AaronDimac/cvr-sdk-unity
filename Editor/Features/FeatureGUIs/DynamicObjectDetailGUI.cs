@@ -127,18 +127,13 @@ namespace Cognitive3D
             EditorGUILayout.Space(5);
 
             EditorGUILayout.BeginVertical(EditorStyles.helpBox);
-
             DrawHeader();
-
             scrollPos = GUILayout.BeginScrollView(scrollPos, GUILayout.Height(300));
             foreach (var obj in dynamicObjects)
             {
                 DrawDynamicObjectRow(obj);
             }
             GUILayout.EndScrollView();
-
-            EditorGUILayout.Space(10);
-
             EditorGUILayout.EndVertical();
 
             // Upload button
@@ -266,7 +261,6 @@ namespace Cognitive3D
         private void DrawDynamicObjectRow(DynamicObjectEntry obj)
         {
             Rect rowRect = EditorGUILayout.BeginHorizontal();
-            GUILayout.Space(4);
 
             EditorGUILayout.BeginVertical(); // Inner padding container
             GUILayout.Space(3); // Top padding
@@ -282,18 +276,17 @@ namespace Cognitive3D
             GUILayout.Label(obj.meshName, GUILayout.Width(100));
 
             GUILayout.Space(5);
-            GUILayout.Label(new GUIContent(obj.objectReference.GetId(), obj.objectReference.GetId()), GUILayout.Width(100));
+            GUILayout.Label(GetDynamicIDContent(obj.objectReference), GUILayout.Width(100));
 
             GUILayout.Space(5);
-            DrawStatusIcon(obj.hasExportedMesh, GUILayout.Width(70));
+            DrawStatusIcon(obj.hasExportedMesh, obj.objectReference.idSource != DynamicObject.IdSourceType.PoolID, GUILayout.Width(70));
 
             GUILayout.Space(5);
-            DrawStatusIcon(obj.hasBeenUploaded, GUILayout.Width(70));
+            DrawStatusIcon(obj.hasBeenUploaded, obj.objectReference.idSource != DynamicObject.IdSourceType.GeneratedID, GUILayout.Width(70));
 
             GUILayout.FlexibleSpace();
 
             EditorGUILayout.EndHorizontal();
-            GUILayout.Space(3); // Bottom padding
             EditorGUILayout.EndVertical();
 
             EditorGUILayout.EndHorizontal();
@@ -306,21 +299,39 @@ namespace Cognitive3D
             }
         }
 
-        private void DrawStatusIcon(bool state, params GUILayoutOption[] options)
+        private GUIContent GetDynamicIDContent(DynamicObject dynamicObject)
         {
-            // var icon = state
-            //     ? new GUIContent(EditorCore.CircleEmpty, "Tooltip text")
-            //     : new GUIContent(EditorCore.CompleteCheckmark, "Tooltip text");
+            switch (dynamicObject.idSource)
+            {
+                case DynamicObject.IdSourceType.CustomID:
+                    return new GUIContent(dynamicObject.GetId(), dynamicObject.GetId());
+                case DynamicObject.IdSourceType.GeneratedID:
+                    return new GUIContent("Generated ID", "ID will be generated at runtime");
+                case DynamicObject.IdSourceType.PoolID:
+                    return new GUIContent("Pool ID", "ID will be generated from pool");
+                default:
+                    return new GUIContent("", "");
+            }
+        }
 
+        private void DrawStatusIcon(bool state, bool drawIcon, params GUILayoutOption[] options)
+        {
             GUILayout.BeginHorizontal(options);
             GUILayout.FlexibleSpace();
-            if (state)
+            if (drawIcon)
             {
-                GUILayout.Label(new GUIContent(EditorCore.CompleteCheckmark, "Tooltip text"), EditorCore.styles.completeIconStyle);
+                if (state)
+                {
+                    GUILayout.Label(EditorCore.CompleteCheckmark, EditorCore.styles.completeIconStyle);
+                }
+                else
+                {
+                    GUILayout.Label(EditorCore.CircleEmpty, EditorCore.styles.incompleteIconStyle);
+                }
             }
             else
             {
-                GUILayout.Label(new GUIContent(EditorCore.CircleEmpty, "Tooltip text"), EditorCore.styles.incompleteIconStyle);
+                GUILayout.Label("", EditorCore.styles.incompleteIconStyle);
             }
             GUILayout.FlexibleSpace();
             GUILayout.EndHorizontal();
