@@ -238,9 +238,20 @@ namespace Cognitive3D
                 DrawFoldout("Scene Upload", statusIcon, () =>
                 {
                     GUILayout.Label("Configure which scenes should be prepared and uploaded.", EditorCore.styles.DescriptionPadding);
-                    GUILayout.BeginHorizontal();
-                    EditorGUILayout.HelpBox("For additive scenes, make sure to follow the setup instructions in the documentation.", MessageType.Warning);
-                    GUILayout.Space(10); // Add right padding
+                    GUILayout.BeginHorizontal(EditorCore.styles.HelpBoxPadding);
+
+                    // Warning icon
+                    GUILayout.Label(EditorGUIUtility.IconContent("console.warnicon"), GUILayout.Width(35), GUILayout.Height(35));
+                    GUILayout.Label(
+                        "For additive scenes, make sure to follow the setup instructions in the documentation.",
+                        EditorCore.styles.HelpBoxLabel
+                    );
+
+                    if (GUILayout.Button(EditorCore.ExternalLink, EditorCore.styles.ExternalLinkStyle))
+                    {
+                        Application.OpenURL("https://docs.cognitive3d.com/unity/scenes/#additive-scene-loading");
+                    }
+                    GUILayout.FlexibleSpace(); // Push content to the left
                     GUILayout.EndHorizontal();
                     EditorGUILayout.BeginVertical(EditorCore.styles.ListBoxPadding);
 
