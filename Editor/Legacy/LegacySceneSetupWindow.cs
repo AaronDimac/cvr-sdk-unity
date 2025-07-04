@@ -102,7 +102,7 @@ namespace Cognitive3D
             }
             if (Cognitive3D_Manager.Instance != null)
             {
-                wantPassthroughEnabled = Cognitive3D_Manager.Instance.GetComponent<OculusPassthrough>();
+                wantPassthroughEnabled = Cognitive3D_Manager.Instance.GetComponent<Passthrough>();
                 wantSocialEnabled = Cognitive3D_Manager.Instance.GetComponent<OculusSocial>();
                 wantSceneApiEnabled = Cognitive3D_Manager.Instance.GetComponent<Cognitive3D_MetaSceneMesh>();
             }
@@ -150,7 +150,7 @@ namespace Cognitive3D
             }
             if (Cognitive3D_Manager.Instance != null)
             {
-                wantPassthroughEnabled = Cognitive3D_Manager.Instance.GetComponent<OculusPassthrough>();
+                wantPassthroughEnabled = Cognitive3D_Manager.Instance.GetComponent<Passthrough>();
                 wantSocialEnabled = Cognitive3D_Manager.Instance.GetComponent<OculusSocial>();
                 wantSceneApiEnabled = Cognitive3D_Manager.Instance.GetComponent<Cognitive3D_MetaSceneMesh>();
             }
@@ -486,7 +486,7 @@ namespace Cognitive3D
                 Debug.LogWarning("OVRManager not found in scene!");
             }
             wantSocialEnabled = Cognitive3D_Manager.Instance.GetComponent<OculusSocial>();
-            wantPassthroughEnabled = Cognitive3D_Manager.Instance.GetComponent<OculusPassthrough>();
+            wantPassthroughEnabled = Cognitive3D_Manager.Instance.GetComponent<Passthrough>();
 
 #elif C3D_VIVEWAVE
             //TODO investigate if automatically detecting vive wave controllers is possible
@@ -1015,15 +1015,15 @@ namespace Cognitive3D
             }
             if (wantPassthroughEnabled)
             {
-                var passthrough = FindObjectOfType<OculusPassthrough>();
+                var passthrough = FindObjectOfType<Passthrough>();
                 if (passthrough == null)
                 {
-                    Cognitive3D_Manager.Instance.gameObject.AddComponent<OculusPassthrough>();
+                    Cognitive3D_Manager.Instance.gameObject.AddComponent<Passthrough>();
                 }
             }
             else
             {
-                var passthrough = FindObjectOfType<OculusPassthrough>();
+                var passthrough = FindObjectOfType<Passthrough>();
                 if (passthrough != null)
                 {
                     DestroyImmediate(passthrough);

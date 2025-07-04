@@ -1,14 +1,16 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System;
+
 #if C3D_OCULUS
 using OVR;
 #endif
+
 namespace Cognitive3D.Components
 {
     [DisallowMultipleComponent]
-    [AddComponentMenu("Cognitive3D/Components/Oculus Passthrough")]
-    public class OculusPassthrough : AnalyticsComponentBase
+    [AddComponentMenu("Cognitive3D/Components/Passthrough")]
+    public class Passthrough : AnalyticsComponentBase
     {
 #if C3D_OCULUS
         private OVRPassthroughLayer passthroughLayerRef;
