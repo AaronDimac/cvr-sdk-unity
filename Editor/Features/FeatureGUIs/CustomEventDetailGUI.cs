@@ -11,7 +11,7 @@ namespace Cognitive3D
         {
             GUILayout.BeginHorizontal();
             {
-                GUILayout.Label("Custom Events", EditorCore.styles.FeatureTitleStyle);
+                GUILayout.Label("Custom Events", EditorCore.styles.FeatureTitle);
 
                 float iconSize = EditorGUIUtility.singleLineHeight;
                 Rect iconRect = GUILayoutUtility.GetRect(iconSize, iconSize, GUILayout.Width(iconSize), GUILayout.Height(iconSize));
@@ -39,16 +39,16 @@ namespace Cognitive3D
             Texture2D bgTexture = new Texture2D(1, 1);
             bgTexture.SetPixel(0, 0, new Color(0.35f, 0.35f, 0.35f));
             bgTexture.Apply();
-            EditorCore.styles.codeSnippet.normal.background = bgTexture;
+            EditorCore.styles.CodeSnippet.normal.background = bgTexture;
 
             Rect rect = GUILayoutUtility.GetRect(
                 new GUIContent(codeSample),
-                EditorCore.styles.codeSnippet,
+                EditorCore.styles.CodeSnippet,
                 GUILayout.ExpandWidth(true),
                 GUILayout.MinHeight(60)
             );
 
-            EditorGUI.SelectableLabel(rect, codeSample, EditorCore.styles.codeSnippet);
+            EditorGUI.SelectableLabel(rect, codeSample, EditorCore.styles.CodeSnippet);
 
             EditorGUILayout.Space(5);
             codeSample = "new Cognitive3D.CustomEvent(\"Event Name\")\n.SetProperty(\"Property Name\", Property Value)\n.Send()";
@@ -58,12 +58,12 @@ namespace Cognitive3D
 
             rect = GUILayoutUtility.GetRect(
                 new GUIContent(codeSample),
-                EditorCore.styles.codeSnippet,
+                EditorCore.styles.CodeSnippet,
                 GUILayout.ExpandWidth(true),
                 GUILayout.MinHeight(90)
             );
 
-            EditorGUI.SelectableLabel(rect, codeSample, EditorCore.styles.codeSnippet);
+            EditorGUI.SelectableLabel(rect, codeSample, EditorCore.styles.CodeSnippet);
         }
     }
 }

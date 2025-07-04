@@ -599,7 +599,7 @@ namespace Cognitive3D
                 fontStyle = FontStyle.Bold,
             };
 
-            internal GUIStyle tagStyle = new GUIStyle(EditorStyles.helpBox)
+            internal readonly GUIStyle Tag = new GUIStyle(EditorStyles.helpBox)
             {
                 fixedHeight = 12,
                 fontSize = 8,
@@ -608,7 +608,7 @@ namespace Cognitive3D
                 normal = { background = ColorExtensions.ToTexture(new Color32(60, 60, 60, 255)) } // Dark Charcoal
             };
 
-            internal readonly GUIStyle FeatureTitleStyle = new GUIStyle(GUI.skin.label)
+            internal readonly GUIStyle FeatureTitle = new GUIStyle(GUI.skin.label)
             {
                 fontSize = 16,
                 fontStyle = FontStyle.Bold,
@@ -641,7 +641,7 @@ namespace Cognitive3D
                 padding = new RectOffset(0, 0, 0, 0)
             };
 
-            internal readonly GUIStyle ExternalLinkStyle = new GUIStyle(GUI.skin.label)
+            internal readonly GUIStyle ExternalLink = new GUIStyle(GUI.skin.label)
             {
                 fixedWidth = 18,
                 fixedHeight = 18,
@@ -660,19 +660,19 @@ namespace Cognitive3D
                 margin = new RectOffset(15, 15, 5, 5)
             };
 
-            internal GUIStyle leftPaddingBoldLabel = new GUIStyle(EditorStyles.boldLabel)
+            internal readonly GUIStyle LeftPaddingBoldLabel = new GUIStyle(EditorStyles.boldLabel)
             {
                 padding = new RectOffset(15, 0, 0, 0)
             };
 
-            internal GUIStyle leftPaddingLabel = new GUIStyle(GUI.skin.label)
+            internal readonly GUIStyle LeftPaddingLabel = new GUIStyle(GUI.skin.label)
             {
                 padding = new RectOffset(15, 0, 0, 0),
                 alignment = TextAnchor.MiddleLeft,
             };
 
 
-            internal GUIStyle buttonStyle = new GUIStyle(GUI.skin.button)
+            internal readonly GUIStyle FeatureButton = new GUIStyle(GUI.skin.button)
             {
                 fixedHeight = 100,
                 fontSize = 30,
@@ -681,12 +681,12 @@ namespace Cognitive3D
                 margin = new RectOffset(5, 5, 5, 5)
             };
 
-            internal GUIStyle applyButtonStyle = new GUIStyle(GUI.skin.button)
+            internal readonly GUIStyle FeatureSmallButton = new GUIStyle(GUI.skin.button)
             {
                 fontSize = 30
             };
 
-            internal GUIStyle completeIconStyle = new GUIStyle()
+            internal readonly GUIStyle CompleteIcon = new GUIStyle()
             {
                 fixedWidth = 18,
                 fixedHeight = 18,
@@ -694,7 +694,7 @@ namespace Cognitive3D
                 padding = new RectOffset(2, 0, 2, 2),
             };
 
-            internal GUIStyle incompleteIconStyle = new GUIStyle()
+            internal readonly GUIStyle IncompleteIcon = new GUIStyle()
             {
                 fixedWidth = 18,
                 fixedHeight = 18,
@@ -702,12 +702,12 @@ namespace Cognitive3D
                 padding = new RectOffset(0, 0, 0, 0),
             };
 
-            internal GUIStyle centeredLabelStyle = new GUIStyle(GUI.skin.label)
+            internal readonly GUIStyle CenteredLabel = new GUIStyle(GUI.skin.label)
             {
                 alignment = TextAnchor.MiddleCenter
             };
 
-            internal GUIStyle codeSnippet = new GUIStyle(WizardGUISkin.GetStyle("code_snippet"));
+            internal readonly GUIStyle CodeSnippet = new GUIStyle(WizardGUISkin.GetStyle("code_snippet"));
 
             internal readonly GUIStyle ListLabel = new GUIStyle("TV Selection")
             {

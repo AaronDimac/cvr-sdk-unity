@@ -18,7 +18,7 @@ namespace Cognitive3D
         {
             GUILayout.BeginHorizontal();
             {
-                GUILayout.Label("Scene Media", EditorCore.styles.FeatureTitleStyle);
+                GUILayout.Label("Scene Media", EditorCore.styles.FeatureTitle);
 
                 float iconSize = EditorGUIUtility.singleLineHeight;
                 Rect iconRect = GUILayoutUtility.GetRect(iconSize, iconSize, GUILayout.Width(iconSize), GUILayout.Height(iconSize));
@@ -39,7 +39,7 @@ namespace Cognitive3D
 
             EditorGUILayout.Space(10);
 
-            GUILayout.Label("1. Create Media", EditorCore.styles.FeatureTitleStyle);
+            GUILayout.Label("1. Create Media", EditorCore.styles.FeatureTitle);
             GUILayout.Label("Create and manage your media assets in the Dashboard.", EditorStyles.wordWrappedLabel);
 
             if (GUILayout.Button("Open Dashboard Media Manager", GUILayout.Height(30)) && FeatureLibrary.projectID > 0)
@@ -49,7 +49,7 @@ namespace Cognitive3D
 
             EditorGUILayout.Space(10);
 
-            GUILayout.Label("2.Add Media Component", EditorCore.styles.FeatureTitleStyle);
+            GUILayout.Label("2.Add Media Component", EditorCore.styles.FeatureTitle);
             GUILayout.Label("Select a GameObject in your scene and click below to add the Media component.", EditorStyles.wordWrappedLabel);
 
             if (GUILayout.Button("Add Media to Selected", GUILayout.Height(30)))
@@ -59,7 +59,7 @@ namespace Cognitive3D
 
             EditorGUILayout.Space(10);
 
-            GUILayout.Label("3. (Optional) Build Media", EditorCore.styles.FeatureTitleStyle);
+            GUILayout.Label("3. (Optional) Build Media", EditorCore.styles.FeatureTitle);
             GUILayout.Label("Use the tool below to build media interactively. Components will be added automatically.", EditorStyles.wordWrappedLabel);
 
             GUILayout.Space(10);

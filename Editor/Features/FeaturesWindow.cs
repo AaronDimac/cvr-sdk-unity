@@ -87,7 +87,7 @@ namespace Cognitive3D
             GUILayout.Space(10); // spacing between logo and text
 
             GUILayout.BeginVertical();
-            GUILayout.Label("Welcome to the Feature Builder", EditorCore.styles.FeatureTitleStyle);
+            GUILayout.Label("Welcome to the Feature Builder", EditorCore.styles.FeatureTitle);
             GUILayout.Label(
                 "Explore the features of our platform. Each feature unlocks powerful capabilities you can use in your experience—from analytics to live control and more.",
                 EditorStyles.wordWrappedLabel
@@ -112,7 +112,7 @@ namespace Cognitive3D
             // Reserve the button area
             Rect buttonRect = GUILayoutUtility.GetRect(
                 new GUIContent(featureData.Title, featureData.Icon),
-                EditorCore.styles.buttonStyle,
+                EditorCore.styles.FeatureButton,
                 GUILayout.ExpandWidth(true),
                 GUILayout.Height(100)
             );
@@ -122,7 +122,7 @@ namespace Cognitive3D
             Rect labelRect = new Rect(iconRect.xMax + 20, buttonRect.y, buttonRect.width - 180, buttonRect.height);
 
             // Draw background of main button
-            GUI.Box(buttonRect, GUIContent.none, EditorCore.styles.buttonStyle);
+            GUI.Box(buttonRect, GUIContent.none, EditorCore.styles.FeatureButton);
 
             // Draw icon and label
             GUI.DrawTexture(iconRect, featureData.Icon);
@@ -138,10 +138,10 @@ namespace Cognitive3D
                 {
                     string tagText = featureData.Tags[i];
 
-                    Vector2 tagSize = EditorCore.styles.tagStyle.CalcSize(new GUIContent(tagText));
-                    Rect tagRect = new Rect(tagStartX, tagStartY, tagSize.x + 6, EditorCore.styles.tagStyle.fixedHeight);
+                    Vector2 tagSize = EditorCore.styles.Tag.CalcSize(new GUIContent(tagText));
+                    Rect tagRect = new Rect(tagStartX, tagStartY, tagSize.x + 6, EditorCore.styles.Tag.fixedHeight);
 
-                    if (GUI.Button(tagRect, tagText, EditorCore.styles.tagStyle))
+                    if (GUI.Button(tagRect, tagText, EditorCore.styles.Tag))
                     {
                         Debug.Log($"Tag clicked: {tagText}");
                         // TODO: Filtering logic
@@ -165,7 +165,7 @@ namespace Cognitive3D
                     Rect actionRect = new Rect(x, buttonRect.y + yOffset, buttonWidth, buttonRect.height - 60);
 
                     // Draw the button
-                    if (GUI.Button(actionRect, new GUIContent(EditorCore.ExternalIcon, action.Tooltip), EditorCore.styles.applyButtonStyle))
+                    if (GUI.Button(actionRect, new GUIContent(EditorCore.ExternalIcon, action.Tooltip), EditorCore.styles.FeatureSmallButton))
                     {
                         action.OnClick?.Invoke();
                         Event.current.Use();

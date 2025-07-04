@@ -11,7 +11,7 @@ namespace Cognitive3D
         {
             GUILayout.BeginHorizontal();
             {
-                GUILayout.Label("Remote Controls", EditorCore.styles.FeatureTitleStyle);
+                GUILayout.Label("Remote Controls", EditorCore.styles.FeatureTitle);
 
                 float iconSize = EditorGUIUtility.singleLineHeight;
                 Rect iconRect = GUILayoutUtility.GetRect(iconSize, iconSize, GUILayout.Width(iconSize), GUILayout.Height(iconSize));
@@ -32,7 +32,7 @@ namespace Cognitive3D
 
             EditorGUILayout.Space(10);
 
-            GUILayout.Label("1. Create Remote Variables", EditorCore.styles.FeatureTitleStyle);
+            GUILayout.Label("1. Create Remote Variables", EditorCore.styles.FeatureTitle);
 
             GUILayout.Label(
                 "Set up a Remote variable in the Dashboard to fetch in your project.",
@@ -46,7 +46,7 @@ namespace Cognitive3D
 
             EditorGUILayout.Space(10);
 
-            GUILayout.Label("2. Add to Cognitive3D_Manager prefab", EditorCore.styles.FeatureTitleStyle);
+            GUILayout.Label("2. Add to Cognitive3D_Manager prefab", EditorCore.styles.FeatureTitle);
             GUILayout.Label("Adds the Remote Controls component to the Cognitive3D_Manager prefab to fetch remote variables in your scene.", EditorStyles.wordWrappedLabel);
 
             var btnLabel = FeatureLibrary.TryGetComponent<Cognitive3D.Components.RemoteControls>() ? "Remove Remote Controls" : "Add Remote Controls";

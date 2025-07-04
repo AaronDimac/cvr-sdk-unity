@@ -247,7 +247,7 @@ namespace Cognitive3D
                         EditorCore.styles.HelpBoxLabel
                     );
 
-                    if (GUILayout.Button(EditorCore.ExternalLink, EditorCore.styles.ExternalLinkStyle))
+                    if (GUILayout.Button(EditorCore.ExternalLink, EditorCore.styles.ExternalLink))
                     {
                         Application.OpenURL("https://docs.cognitive3d.com/unity/scenes/#additive-scene-loading");
                     }
@@ -269,9 +269,9 @@ namespace Cognitive3D
                     DrawColumnSeparator();
 
                     // Column Headers
-                    GUILayout.Label("Scene Name", EditorCore.styles.leftPaddingBoldLabel, GUILayout.Width(185));
+                    GUILayout.Label("Scene Name", EditorCore.styles.LeftPaddingBoldLabel, GUILayout.Width(185));
                     DrawColumnSeparator();
-                    GUILayout.Label("Version Number", EditorCore.styles.leftPaddingBoldLabel);
+                    GUILayout.Label("Version Number", EditorCore.styles.LeftPaddingBoldLabel);
 
                     // Flexible space to push icon to the right
                     GUILayout.FlexibleSpace();
@@ -305,9 +305,9 @@ namespace Cognitive3D
                         sceneEntries[i].selected = EditorGUILayout.Toggle(sceneEntries[i].selected, GUILayout.Width(40));
 
                         GUILayout.Space(5);
-                        GUILayout.Label(sceneName, EditorCore.styles.leftPaddingLabel, GUILayout.Width(185));
+                        GUILayout.Label(sceneName, EditorCore.styles.LeftPaddingLabel, GUILayout.Width(185));
 
-                        GUILayout.Label(sceneEntries[i].versionNumber.ToString(), EditorCore.styles.leftPaddingLabel);
+                        GUILayout.Label(sceneEntries[i].versionNumber.ToString(), EditorCore.styles.LeftPaddingLabel);
                         EditorGUILayout.EndHorizontal();
                     }
 

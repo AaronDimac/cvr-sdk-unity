@@ -11,7 +11,7 @@ namespace Cognitive3D
         {
             GUILayout.BeginHorizontal();
             {
-                GUILayout.Label("Meta (Oculus) Social", EditorCore.styles.FeatureTitleStyle);
+                GUILayout.Label("Meta (Oculus) Social", EditorCore.styles.FeatureTitle);
 
                 float iconSize = EditorGUIUtility.singleLineHeight;
                 Rect iconRect = GUILayoutUtility.GetRect(iconSize, iconSize, GUILayout.Width(iconSize), GUILayout.Height(iconSize));
@@ -32,7 +32,7 @@ namespace Cognitive3D
 
             EditorGUILayout.Space(10);
 
-            GUILayout.Label("1. Prepare Your Oculus App (Meta Developer Portal)", EditorCore.styles.FeatureTitleStyle);
+            GUILayout.Label("1. Prepare Your Oculus App (Meta Developer Portal)", EditorCore.styles.FeatureTitle);
 
             GUILayout.Label(
                 "Set up your Oculus App ID on the Developer Dashboard, enable user data permissions, publish the app, and add the App ID in Unity under Oculus > Platform > Edit Settings.",
@@ -41,7 +41,7 @@ namespace Cognitive3D
 
             EditorGUILayout.Space(10);
 
-            GUILayout.Label("2. Add to Cognitive3D_Manager prefab", EditorCore.styles.FeatureTitleStyle);
+            GUILayout.Label("2. Add to Cognitive3D_Manager prefab", EditorCore.styles.FeatureTitle);
             GUILayout.Label("Adds the Oculus Social component to the Cognitive3D_Manager prefab to record Oculus user data.", EditorStyles.wordWrappedLabel);
 
             var btnLabel = FeatureLibrary.TryGetComponent<Cognitive3D.Components.OculusSocial>() ? "Remove Oculus Social" : "Add Oculus Social";

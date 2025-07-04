@@ -11,7 +11,7 @@ namespace Cognitive3D
         {
             GUILayout.BeginHorizontal();
             {
-                GUILayout.Label("ExitPoll Survey", EditorCore.styles.FeatureTitleStyle);
+                GUILayout.Label("ExitPoll Survey", EditorCore.styles.FeatureTitle);
 
                 float iconSize = EditorGUIUtility.singleLineHeight;
                 Rect iconRect = GUILayoutUtility.GetRect(iconSize, iconSize, GUILayout.Width(iconSize), GUILayout.Height(iconSize));
@@ -32,7 +32,7 @@ namespace Cognitive3D
 
             EditorGUILayout.Space(10);
 
-            GUILayout.Label("1. Create Hook", EditorCore.styles.FeatureTitleStyle);
+            GUILayout.Label("1. Create Hook", EditorCore.styles.FeatureTitle);
             GUILayout.Label("Set up an ExitPoll hook in the Dashboard to trigger surveys.", EditorStyles.wordWrappedLabel);
 
             if (GUILayout.Button("Open Dashboard Hook Manager", GUILayout.Height(30)) && FeatureLibrary.projectID > 0)
@@ -42,7 +42,7 @@ namespace Cognitive3D
 
             EditorGUILayout.Space(10);
 
-            GUILayout.Label("2. Create Questions", EditorCore.styles.FeatureTitleStyle);
+            GUILayout.Label("2. Create Questions", EditorCore.styles.FeatureTitle);
             GUILayout.Label("Build your question set that will be shown in the survey.", EditorStyles.wordWrappedLabel);
 
             if (GUILayout.Button("Open Dashboard ExitPoll Manager", GUILayout.Height(30)) && FeatureLibrary.projectID > 0)
@@ -52,7 +52,7 @@ namespace Cognitive3D
 
             EditorGUILayout.Space(10);
 
-            GUILayout.Label("3. Import & Configure", EditorCore.styles.FeatureTitleStyle);
+            GUILayout.Label("3. Import & Configure", EditorCore.styles.FeatureTitle);
             GUILayout.Label("Import the ExitPoll sample and optionally assign your hook ID.", EditorStyles.wordWrappedLabel);
 
             GUILayout.BeginHorizontal();

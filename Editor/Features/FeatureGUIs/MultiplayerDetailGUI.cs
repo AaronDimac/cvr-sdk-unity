@@ -11,7 +11,7 @@ namespace Cognitive3D
         {
             GUILayout.BeginHorizontal();
             {
-                GUILayout.Label("Multiplayer", EditorCore.styles.FeatureTitleStyle);
+                GUILayout.Label("Multiplayer", EditorCore.styles.FeatureTitle);
 
                 float iconSize = EditorGUIUtility.singleLineHeight;
                 Rect iconRect = GUILayoutUtility.GetRect(iconSize, iconSize, GUILayout.Width(iconSize), GUILayout.Height(iconSize));
@@ -32,7 +32,7 @@ namespace Cognitive3D
 
             EditorGUILayout.Space(10);
 
-            GUILayout.Label("Add to Cognitive3D_Manager prefab", EditorCore.styles.FeatureTitleStyle);
+            GUILayout.Label("Add to Cognitive3D_Manager prefab", EditorCore.styles.FeatureTitle);
             GUILayout.Label("Adds the necessary components to the Cognitive3D_Manager prefab.", EditorStyles.wordWrappedLabel);
 
 #if PHOTON_UNITY_NETWORKING

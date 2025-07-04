@@ -68,7 +68,7 @@ namespace Cognitive3D
 
             GUILayout.BeginHorizontal();
             {
-                GUILayout.Label("Dynamic Objects", EditorCore.styles.FeatureTitleStyle);
+                GUILayout.Label("Dynamic Objects", EditorCore.styles.FeatureTitle);
 
                 float iconSize = EditorGUIUtility.singleLineHeight;
                 Rect iconRect = GUILayoutUtility.GetRect(iconSize, iconSize, GUILayout.Width(iconSize), GUILayout.Height(iconSize));
@@ -90,7 +90,7 @@ namespace Cognitive3D
             EditorGUILayout.Space(10);
 
             #region Add DynamicObject Components
-            GUILayout.Label("1. Add Dynamic Object Component", EditorCore.styles.FeatureTitleStyle);
+            GUILayout.Label("1. Add Dynamic Object Component", EditorCore.styles.FeatureTitle);
 
             GUILayout.Label(
                 "Select GameObjects in the scene that you want to track, then click the button below to add the Dynamic Object component.",
@@ -107,7 +107,7 @@ namespace Cognitive3D
             EditorGUILayout.Space(20);
 
             #region View and Upload Dynamic Objects
-            GUILayout.Label("2. Manage and Upload", EditorCore.styles.FeatureTitleStyle);
+            GUILayout.Label("2. Manage and Upload", EditorCore.styles.FeatureTitle);
 
             GUILayout.Label(
                 "These are all Dynamic Objects currently in the scene. Select all or the ones you want to upload.",
@@ -198,10 +198,10 @@ namespace Cognitive3D
             GUILayout.Label("Dynamic ID", GUILayout.Width(100));
             DrawColumnSeparator();
 
-            GUILayout.Label("Exported", EditorCore.styles.centeredLabelStyle, GUILayout.Width(70));
+            GUILayout.Label("Exported", EditorCore.styles.CenteredLabel, GUILayout.Width(70));
             DrawColumnSeparator();
 
-            GUILayout.Label("Uploaded", EditorCore.styles.centeredLabelStyle, GUILayout.Width(70));
+            GUILayout.Label("Uploaded", EditorCore.styles.CenteredLabel, GUILayout.Width(70));
 
             GUILayout.FlexibleSpace();
 
@@ -322,16 +322,16 @@ namespace Cognitive3D
             {
                 if (state)
                 {
-                    GUILayout.Label(EditorCore.CompleteCheckmark, EditorCore.styles.completeIconStyle);
+                    GUILayout.Label(EditorCore.CompleteCheckmark, EditorCore.styles.CompleteIcon);
                 }
                 else
                 {
-                    GUILayout.Label(EditorCore.CircleEmpty, EditorCore.styles.incompleteIconStyle);
+                    GUILayout.Label(EditorCore.CircleEmpty, EditorCore.styles.IncompleteIcon);
                 }
             }
             else
             {
-                GUILayout.Label("", EditorCore.styles.incompleteIconStyle);
+                GUILayout.Label("", EditorCore.styles.IncompleteIcon);
             }
             GUILayout.FlexibleSpace();
             GUILayout.EndHorizontal();
