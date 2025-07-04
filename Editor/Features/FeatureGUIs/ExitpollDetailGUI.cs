@@ -56,7 +56,7 @@ namespace Cognitive3D
             GUILayout.Label("Import the ExitPoll sample and optionally assign your hook ID.", EditorStyles.wordWrappedLabel);
 
             GUILayout.BeginHorizontal();
-            if (GUILayout.Button("Import Sample", GUILayout.Height(30)) && FeatureLibrary.projectID > 0)
+            if (GUILayout.Button("Import ExitPoll Customization Sample", GUILayout.Height(30)) && FeatureLibrary.projectID > 0)
             {
                 ImportExitPollSampleWithOptionalPrefab(false);
             }
