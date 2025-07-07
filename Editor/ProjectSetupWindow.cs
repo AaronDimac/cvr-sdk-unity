@@ -113,7 +113,7 @@ namespace Cognitive3D
                 completenessStatus = !string.IsNullOrEmpty(developerKey) && !string.IsNullOrEmpty(apiKey);
                 statusIcon = GetStatusIcon(completenessStatus);
 
-                DrawFoldout("Developer and App Keys", statusIcon, () =>
+                DrawFoldout("Developer and App Keys", statusIcon, true, () =>
                 {
                     GUILayout.Label("Enter your developer key:", EditorCore.styles.DescriptionPadding);
                     developerKey = EditorGUILayout.TextField("Developer Key", developerKey);
@@ -156,7 +156,7 @@ namespace Cognitive3D
                 completenessStatus = autoSelectXR;
                 statusIcon = GetStatusIcon(completenessStatus);
 
-                DrawFoldout("XR SDK Setup", statusIcon, () =>
+                DrawFoldout("XR SDK Setup", statusIcon, keysSet, () =>
                 {
                     GUILayout.Label(
                     "By default, XR plugins are auto-detected, and features are enabled based on the packages present in the project.",
@@ -187,7 +187,7 @@ namespace Cognitive3D
                 completenessStatus = EditorCore.GetPreferences().AutoPlayerSetup;
                 statusIcon = GetStatusIcon(completenessStatus);
 
-                DrawFoldout("Player Setup", statusIcon, () =>
+                DrawFoldout("Player Setup", statusIcon, keysSet, () =>
                 {
                     GUILayout.Label(
                     "By default, key player objects, including the camera (HMD), tracking space, and controllers are automatically detected and tracked.",
@@ -235,7 +235,7 @@ namespace Cognitive3D
                 completenessStatus = Cognitive3D_Preferences.Instance.sceneSettings.Count > 0;
                 statusIcon = GetStatusIcon(completenessStatus);
                 
-                DrawFoldout("Scene Upload", statusIcon, () =>
+                DrawFoldout("Scene Upload", statusIcon, keysSet, () =>
                 {
                     GUILayout.Label("Configure which scenes should be prepared and uploaded.", EditorCore.styles.DescriptionPadding);
                     GUILayout.BeginHorizontal(EditorCore.styles.HelpBoxPadding);
@@ -342,42 +342,28 @@ namespace Cognitive3D
             DrawFooter(footerRect);            
         }
 
-        private Dictionary<string, bool> foldoutStates = new Dictionary<string, bool>();
-
-        private void DrawFoldout(string title, Texture2D icon, Action drawContent)
+        private void DrawFoldout(string title, Texture2D icon, bool foldout, Action drawContent)
         {
-            if (!foldoutStates.ContainsKey(title))
+            using (var scope = new EditorGUILayout.VerticalScope(EditorCore.styles.List))
             {
-                if (title == "Developer and App Keys")
+                GUILayout.BeginHorizontal();
+                EditorGUILayout.Foldout(foldout, title, true);
+                if (icon != null)
                 {
-                    foldoutStates[title] = true;
+                    GUILayout.Label(icon, EditorCore.styles.InlinedIconStyle);
                 }
-                else
+                GUILayout.EndHorizontal();
+
+                if (foldout)
                 {
-                    foldoutStates[title] = keysSet;
+                    using (new EditorGUILayout.VerticalScope(EditorCore.styles.ListLabel))
+                    {
+                        EditorGUI.indentLevel++;
+                        drawContent?.Invoke();
+                        EditorGUI.indentLevel--;
+                    }
                 }
             }
-
-            using (var scope = new EditorGUILayout.VerticalScope(EditorCore.styles.List))
-                {
-                    GUILayout.BeginHorizontal();
-                    foldoutStates[title] = EditorGUILayout.Foldout(foldoutStates[title], title, true);
-                    if (icon != null)
-                    {
-                        GUILayout.Label(icon, EditorCore.styles.InlinedIconStyle);
-                    }
-                    GUILayout.EndHorizontal();
-
-                    if (foldoutStates[title])
-                    {
-                        using (new EditorGUILayout.VerticalScope(EditorCore.styles.ListLabel))
-                        {
-                            EditorGUI.indentLevel++;
-                            drawContent?.Invoke();
-                            EditorGUI.indentLevel--;
-                        }
-                    }
-                }
         }
 
         Texture2D GetStatusIcon(bool condition)
