@@ -414,18 +414,25 @@ namespace Cognitive3D
             return "Finish";
         }
 
+        private bool xrSdkPendingAfterUpload = false;
+
         private void HandleFooterButtonClick(bool hasScenesToUpload, bool xrSdkNeedsUpdate, List<SceneEntry> selectedScenes)
         {
             if (hasScenesToUpload)
             {
+                if (xrSdkNeedsUpdate && !xrSdkPendingAfterUpload)
+                {
+                    // Wait until upload is complete before setting XRSDK
+                    xrSdkPendingAfterUpload = true;
+                    UploadTools.OnUploadScenesComplete += ApplyXRSDKAndWaitForCompile;
+                }
+
                 UploadTools.UploadScenes(selectedScenes);
             }
-
-            if (xrSdkNeedsUpdate)
+            else if (xrSdkNeedsUpdate)
             {
-                SetXRSDK();
-                compileStartTime = -1; // Reset timer for new compile
-                EditorApplication.update += WaitForCompileAndUpload;
+                // No scenes to upload, set XR SDK
+                ApplyXRSDKAndWaitForCompile();
             }
         }
         #endregion
@@ -505,6 +512,11 @@ namespace Cognitive3D
                         return true;
                     }
                 }
+            }
+
+            if (!EditorCore.HasC3DDefine())
+            {
+                return true;
             }
             return false;
         }
@@ -594,19 +606,28 @@ namespace Cognitive3D
             return;
         }
 
-        void WaitForCompileAndUpload()
+        private void ApplyXRSDKAndWaitForCompile()
+        {
+            UploadTools.OnUploadScenesComplete -= ApplyXRSDKAndWaitForCompile;
+            xrSdkPendingAfterUpload = false;
+
+            SetXRSDK();
+            compileStartTime = EditorApplication.timeSinceStartup;
+            EditorApplication.update += MonitorCompileAfterXRSDKChange;
+        }
+
+        private void MonitorCompileAfterXRSDKChange()
         {
             if (EditorApplication.isCompiling)
             {
-                // Simulate progress based on elapsed time
                 float elapsed = (float)(EditorApplication.timeSinceStartup - compileStartTime);
                 float progress = Mathf.Clamp(Mathf.Log10(elapsed + 1), 0.05f, 0.95f);
-                EditorUtility.DisplayProgressBar("Compiling", $"Setting player definition...", progress);
+                EditorUtility.DisplayProgressBar("Compiling", "Setting player definition...", progress);
                 return;
             }
 
-            // Done compiling
-            EditorApplication.update -= WaitForCompileAndUpload;
+            // Compilation finished
+            EditorApplication.update -= MonitorCompileAfterXRSDKChange;
             EditorUtility.ClearProgressBar();
             compileStartTime = -1;
         }
