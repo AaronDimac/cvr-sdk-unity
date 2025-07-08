@@ -29,7 +29,7 @@ namespace Cognitive3D
     [DefaultExecutionOrder(-50)]
     public class Cognitive3D_Manager : MonoBehaviour
     {
-        public static readonly string SDK_VERSION = "1.9.0";
+        public static readonly string SDK_VERSION = "1.9.1";
     
         private static Cognitive3D_Manager instance;
         public static Cognitive3D_Manager Instance
@@ -349,7 +349,11 @@ namespace Cognitive3D
 
         private void SendHardwareDataAsSessionProperty()
         {
+#if UNITY_WEBGL && !UNITY_EDITOR
+            SetSessionProperty("c3d.device.type", "Web");
+#else
             SetSessionProperty("c3d.device.type", SystemInfo.deviceType.ToString());
+#endif
             SetSessionProperty("c3d.device.cpu", SystemInfo.processorType);
             SetSessionProperty("c3d.device.model", SystemInfo.deviceModel);
             SetSessionProperty("c3d.device.gpu", SystemInfo.graphicsDeviceName);
@@ -432,7 +436,7 @@ namespace Cognitive3D
             //DO NOT FLUSH DYNAMICS because dynamics from the next scene are already loaded
             if (!string.IsNullOrEmpty(TrackingSceneId))
             {
-                CoreInterface.FlushSceneChange(true);
+                CoreInterface.FlushSceneChange(true, false);
             }
 
             // upload session properties to new scene
@@ -464,7 +468,8 @@ namespace Cognitive3D
             // Flush recorded data when scene unloads
             if (TrackingScene != null)
             {
-                CoreInterface.FlushSceneChange(true);
+                DynamicManager.ForceProcessDynamicObjects();
+                CoreInterface.FlushSceneChange(true, true);
             }
 
             // upload session properties to new scene

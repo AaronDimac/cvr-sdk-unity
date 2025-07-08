@@ -1942,6 +1942,7 @@ namespace Cognitive3D
                     // ExportUtility displays an error popup, so don't need to do other UI here
                     currentPage = Page.SceneUpload;
                 }
+                ProjectValidation.RegenerateItems();
             };
 
             //third upload scene

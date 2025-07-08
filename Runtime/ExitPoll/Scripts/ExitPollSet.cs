@@ -362,7 +362,7 @@ namespace Cognitive3D
                     new Cognitive3D.CustomEvent("c3d.ExitPoll detected no microphones")
                         .SetProperty("Panel ID", tempPanelID)
                         .Send();
-                    OnPanelClosed(tempPanelID, "Answer" + tempPanelID, short.MinValue);
+                    OnPanelClosed(tempPanelID, short.MinValue);
                     return;
                 }
 #else

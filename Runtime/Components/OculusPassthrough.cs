@@ -47,7 +47,7 @@ namespace Cognitive3D.Components
                         // Send event on state change
                         if (isPassthroughEnabled != passthroughLayerRef.isActiveAndEnabled)
                         {
-                            new CustomEvent("Passthrough Layer Changed")
+                            new CustomEvent("c3d.passthrough_layer_changed")
                                 .SetProperties(new Dictionary<string, object>
                                 {
                                     {"Duration of Previous State",  Time.time - lastEventTime},
