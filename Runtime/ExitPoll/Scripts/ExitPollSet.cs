@@ -79,7 +79,7 @@ namespace Cognitive3D
                     break;
 
                 case ExitPollManager.PointerType.ControllersAndHands:
-                    ExitPollPointer.SetupControllerAsPointer(parameters.PointerControllerPrefab, parameters.PointerActivationButton, parameters.PointerLineWidth, parameters.PointerGradient);
+                    ExitPollPointer.SetupControllerAsPointer(parameters.PointerControllerPrefab, parameters.PointerActivationButton, parameters.PointerLineWidth, parameters.PointerPositionOffset, parameters.PointerRotationOffset, parameters.PointerGradient);
                     break;
 
                 case ExitPollManager.PointerType.Custom:
