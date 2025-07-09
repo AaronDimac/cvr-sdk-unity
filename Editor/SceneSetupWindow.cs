@@ -436,7 +436,7 @@ namespace Cognitive3D
             
 #if C3D_STEAMVR2
             //interaction system setup
-            var player = FindObjectOfType<Valve.VR.InteractionSystem.Player>();
+            var player = FindFirstObjectByType<Valve.VR.InteractionSystem.Player>();
             if (player)
             {
                 leftcontroller = player.hands[0].gameObject;
@@ -445,7 +445,7 @@ namespace Cognitive3D
             }
             else
             {
-                var playArea = FindObjectOfType<SteamVR_PlayArea>();
+                var playArea = FindFirstObjectByType<SteamVR_PlayArea>();
                 if (playArea != null)
                 {
                     var controllers = playArea.GetComponentsInChildren<SteamVR_Behaviour_Pose>();
@@ -492,7 +492,7 @@ namespace Cognitive3D
             //TODO investigate if automatically detecting vive wave controllers is possible
             if (trackingSpace == null)
             {
-                var waveRig = FindObjectOfType<WaveRig>();
+                var waveRig = FindFirstObjectByType<WaveRig>();
                 if (waveRig != null)
                 {
                     trackingSpace = waveRig.CameraOffset;
@@ -500,7 +500,7 @@ namespace Cognitive3D
             }
 #elif C3D_PICOVR
             //basic setup
-            var manager = FindObjectOfType<Pvr_Controller>();
+            var manager = FindFirstObjectByType<Pvr_Controller>();
             if (manager != null)
             {
                 if (manager.controller0 != null)
@@ -1046,12 +1046,12 @@ namespace Cognitive3D
             {
 #if !COGNITIVE3D_INCLUDE_META_CORE_65_OR_NEWER
                 // Do not modify OVRManager permissions
-                var sceneApi = FindObjectOfType<Cognitive3D_MetaSceneMesh>();
+                var sceneApi = FindFirstObjectByType<Cognitive3D_MetaSceneMesh>();
                 if (sceneApi == null)
                 {
                     Cognitive3D_Manager.Instance.gameObject.AddComponent<Cognitive3D_MetaSceneMesh>();
                 }
-                GameObject sceneManager = FindObjectOfType<OVRSceneManager>()?.gameObject;
+                GameObject sceneManager = FindFirstObjectByType<OVRSceneManager>()?.gameObject;
                 if (sceneManager == null)
                 {
                     sceneManager = new GameObject(SCENE_MANAGER_NAME);
