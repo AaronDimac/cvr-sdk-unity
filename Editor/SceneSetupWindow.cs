@@ -552,7 +552,7 @@ namespace Cognitive3D
                 return;
             }
 #if COGNITIVE3D_INCLUDE_COREUTILITIES
-            var xrRig = FindObjectOfType<XROrigin>();
+            var xrRig = FindFirstObjectByType<XROrigin>();
             if (xrRig != null)
             {
                 trackingSpace = xrRig.gameObject;
@@ -645,7 +645,7 @@ namespace Cognitive3D
                     SegmentAnalytics.TrackEvent("EnabledAutoInputSetup_PlayerSetupPage", "SceneSetupPlayerSetupPage");
 
                     // Remove the controllers/hands DynamicObject components (if they exist)
-                    var dynamics = FindObjectsOfType<DynamicObject>();
+                    var dynamics = FindObjectsByType<DynamicObject>(FindObjectsSortMode.None);
                     foreach (var dynamic in dynamics)
                     {
                         if (dynamic.IsController)
