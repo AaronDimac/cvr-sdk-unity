@@ -131,7 +131,7 @@ namespace Cognitive3D
             {
                 EditorGUILayout.LabelField("Current Scene: " + v.SceneName + "     Version: " + v.VersionNumber);
             }
-            if (GUILayout.Button(new GUIContent("Refresh Loaded Scene Versions", "Get the latest versionnumber and versionid for this scene"))) //ask scene explorer for all the versions of this active scene. happens automatically post scene upload
+            if (GUILayout.Button(new GUIContent("Refresh Loaded Scene Versions", "Gets the latest version number and ID for the scenes"))) //ask scene explorer for all the versions of this active scene. happens automatically post scene upload
             {
                 EditorCore.RefreshAllScenesVersion(null);
             }
