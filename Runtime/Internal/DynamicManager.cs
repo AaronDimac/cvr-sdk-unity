@@ -35,6 +35,18 @@ namespace Cognitive3D
         }
 
         /// <summary>
+        /// Immediately processes all active dynamic objects in the array,
+        /// bypassing the normal update loop. This is used during
+        /// scene unloads or special cases where dynamic object state needs
+        /// to be flushed before the next frame.
+        /// </summary>
+        internal static void ForceProcessDynamicObjects()
+        {
+            int numTicks = 0;
+            ProcessDynamicArray(ref ActiveDynamicObjectsArray, 0, ref numTicks);
+        }
+
+        /// <summary>
         /// Resets content of Dynamic Manager to avoid carrying internally stored data between game states when no session is active
         /// Intended only for in-app editor tooling
         /// </summary>
@@ -357,7 +369,7 @@ namespace Cognitive3D
 #region Controllers and Hands Manager
         private static DynamicData[] ActiveInputsArray = new DynamicData[24];
 
-        internal static void RegisterController(XRNode controller, bool isRight, string registerId = "")
+        internal static void RegisterController(XRNode controller, bool isRight, InputUtil.ControllerType displayTypeFallback, string registerId = "")
         {
             InputUtil.TryGetInputDevice(controller, out InputDevice controllerDevice);
             InputUtil.TryGetControllerPosition(controller, out Vector3 pos);
@@ -365,6 +377,12 @@ namespace Cognitive3D
 
             var controllerDisplayType = InputUtil.GetControllerPopupName(controllerDevice.name, isRight);
             var commonDynamicMesh = InputUtil.GetControllerMeshName(controllerDevice.name, isRight);
+
+            if (controllerDisplayType == InputUtil.ControllerDisplayType.unknown || commonDynamicMesh == InputUtil.CommonDynamicMesh.Unknown)
+            {
+                InputUtil.SetControllerFromFallback(displayTypeFallback, isRight, out controllerDisplayType, out commonDynamicMesh);
+            }
+
             var registerMeshName = commonDynamicMesh.ToString();
             var data = new DynamicData(controllerDevice.name, registerId, registerMeshName, pos, rot, 0.01f, 0.1f, 0.1f, InputUtil.InputType.Controller.ToString(), controllerDisplayType.ToString(), isRight);
 
@@ -407,7 +425,7 @@ namespace Cognitive3D
 
         internal static void RegisterController(DynamicData data)
         {
-            //check for duplicate ids in all data
+            // check for duplicate ids in all data
             for (int i = 0; i < ActiveDynamicObjectsArray.Length; i++)
             {
                 if (ActiveDynamicObjectsArray[i].active && data.Id == ActiveDynamicObjectsArray[i].Id)

@@ -42,6 +42,7 @@ namespace Cognitive3D
             AddProjectValidationItems();
             ProjectValidation.SetIgnoredItemsFromLog();
             ProjectValidation.ResetGUI();
+            ProjectValidation.InvokeProjectValidationUpdateEvent();
         }
 
         /// <summary>
@@ -163,6 +164,51 @@ namespace Cognitive3D
             }
 
             ProjectValidation.AddItem(
+                level: ProjectValidation.ItemLevel.Required,
+                category: CATEGORY,
+                actionType: ProjectValidation.ItemAction.Fix,
+                message: "Room Tracking Space and Controller Dynamic objects should not be present when auto player setup is enabled.",
+                fixmessage: "Player setup is complete. Auto setup is enabled.",
+                checkAction: () =>
+                {
+                    // Check if auto player setup is enabled and validate the absence of tracking space and controllers
+                    if (Cognitive3D_Manager.autoInitializePlayerSetup)
+                    {
+                        return !ProjectValidation.FindComponentInActiveScene<RoomTrackingSpace>() 
+                            && !ProjectValidation.TryGetControllers(out var controllerNamesList);
+                    }
+                    return true;
+                },
+                fixAction: () =>
+                {
+                    // Remove RoomTrackingSpace components if present
+                    ProjectValidation.FindComponentInActiveScene<RoomTrackingSpace>(out var trackingSpaces);
+                    foreach (var space in trackingSpaces)
+                    {
+                        var trackingSpaceComponent = space.GetComponent<RoomTrackingSpace>();
+                        if (trackingSpaceComponent != null)
+                        {
+                            Object.DestroyImmediate(trackingSpaceComponent as Object, true);
+                        }
+                    }
+
+                    // Remove DynamicObject components for controllers if present
+                    ProjectValidation.FindComponentInActiveScene<DynamicObject>(out var controllers);
+                    foreach (var controller in controllers)
+                    {
+                        if (controller.IsController)
+                        {
+                            var dynamicObjectComponent = controller.GetComponent<DynamicObject>();
+                            if (dynamicObjectComponent != null)
+                            {
+                                Object.DestroyImmediate(dynamicObjectComponent as Object, true);
+                            }
+                        }
+                    }
+                }
+            );
+
+            ProjectValidation.AddItem(
                 level: ProjectValidation.ItemLevel.Required, 
                 category: CATEGORY,
                 actionType: ProjectValidation.ItemAction.Edit,
@@ -170,13 +216,16 @@ namespace Cognitive3D
                 fixmessage: "Tracking space is configured",
                 checkAction: () =>
                 {
+                    if (Cognitive3D_Manager.autoInitializePlayerSetup)
+                        return true;
+
                     return ProjectValidation.FindComponentInActiveScene<RoomTrackingSpace>();
                 },
                 fixAction: () =>
                 {
                     SceneSetupWindow.Init(SceneSetupWindow.Page.PlayerSetup);
                 }
-                );
+            );
             
             ProjectValidation.AddItem(
                 level: ProjectValidation.ItemLevel.Required, 
@@ -332,7 +381,7 @@ namespace Cognitive3D
                 fixmessage: "Controllers are correctly set up in current scene",
                 checkAction: () =>
                 {
-                    if (Cognitive3D_Manager.autoInitializeInput)
+                    if (Cognitive3D_Manager.autoInitializePlayerSetup)
                         return true;
 
                     return ProjectValidation.TryGetControllers(out var _controllerNamesList) && _controllerNamesList.Count >= 2;
@@ -456,39 +505,6 @@ namespace Cognitive3D
                     }
 
                     OVRProjectConfig.CommitProjectConfig(projectConfig);
-                }
-            );
-
-            ProjectValidation.AddItem(
-                level: ProjectValidation.ItemLevel.Recommended, 
-                category: CATEGORY,
-                actionType: ProjectValidation.ItemAction.Apply,
-                message: "Recording Oculus user data like username, id, and display name is disabled. Enable recording Oculus User Data?",
-                fixmessage: "Recording Oculus user data like username, id, and display name is enabled",
-                checkAction: () =>
-                {
-                    ProjectValidation.FindComponentInActiveScene<OculusSocial>(out var oculusSocial);
-                    if (oculusSocial != null && oculusSocial.Count != 0)
-                    {
-                        return oculusSocial[0].GetRecordOculusUserData();
-                    }
-                    return false;
-                },
-                fixAction: () =>
-                {
-                    ProjectValidation.FindComponentInActiveScene<OculusSocial>(out var oculusSocial);
-                    if (oculusSocial != null && oculusSocial.Count != 0)
-                    {
-                        oculusSocial[0].SetRecordOculusUserData(true);
-                        return;
-                    }
-
-                    Cognitive3D_Manager.Instance.gameObject.AddComponent<OculusSocial>();
-                    ProjectValidation.FindComponentInActiveScene<OculusSocial>(out oculusSocial);
-                    if (oculusSocial != null && oculusSocial.Count != 0)
-                    {
-                        oculusSocial[0].SetRecordOculusUserData(true);
-                    }
                 }
             );
 #elif C3D_PICOXR
@@ -841,6 +857,41 @@ namespace Cognitive3D
             }
     #endif
 
+#endif
+
+#if COGNITIVE3D_META_PLATFORM
+            ProjectValidation.AddItem(
+                level: ProjectValidation.ItemLevel.Recommended,
+                category: CATEGORY,
+                actionType: ProjectValidation.ItemAction.Apply,
+                message: "Recording Oculus user data like username, id, and display name is disabled. Enable recording Oculus User Data?",
+                fixmessage: "Recording Oculus user data like username, id, and display name is enabled",
+                checkAction: () =>
+                {
+                    ProjectValidation.FindComponentInActiveScene<OculusSocial>(out var oculusSocial);
+                    if (oculusSocial != null && oculusSocial.Count != 0)
+                    {
+                        return oculusSocial[0].GetRecordOculusUserData();
+                    }
+                    return false;
+                },
+                fixAction: () =>
+                {
+                    ProjectValidation.FindComponentInActiveScene<OculusSocial>(out var oculusSocial);
+                    if (oculusSocial != null && oculusSocial.Count != 0)
+                    {
+                        oculusSocial[0].SetRecordOculusUserData(true);
+                        return;
+                    }
+
+                    Cognitive3D_Manager.Instance.gameObject.AddComponent<OculusSocial>();
+                    ProjectValidation.FindComponentInActiveScene<OculusSocial>(out oculusSocial);
+                    if (oculusSocial != null && oculusSocial.Count != 0)
+                    {
+                        oculusSocial[0].SetRecordOculusUserData(true);
+                    }
+                }
+            );  
 #endif
 
 #region Multiplayer Support

@@ -133,7 +133,11 @@ namespace Cognitive3D
 
         void StopRecording()
         {
+#if UNITY_WEBGL
+            return; // Microphone not supported on WebGL
+#else
             Microphone.End(null);
+#endif
             byte[] bytes;
             Cognitive3D.MicrophoneUtility.Save(clip, out bytes);
             string encodedWav = MicrophoneUtility.EncodeWav(bytes);

@@ -525,6 +525,39 @@ namespace Cognitive3D
         #endregion
 
         #region Icons and Textures
+        private static Texture2D _logoDone;
+        public static Texture2D LogoDone
+        {
+            get
+            {
+                if (_logoDone == null)
+                    _logoDone = Resources.Load<Texture2D>("Icons/logo-done");
+                return _logoDone;
+            }
+        }
+
+        private static Texture2D _logoWarning;
+        public static Texture2D LogoWarning
+        {
+            get
+            {
+                if (_logoWarning == null)
+                    _logoWarning = Resources.Load<Texture2D>("Icons/logo-warning");
+                return _logoWarning;
+            }
+        }
+
+        private static Texture2D _logoError;
+        public static Texture2D LogoError
+        {
+            get
+            {
+                if (_logoError == null)
+                    _logoError = Resources.Load<Texture2D>("Icons/logo-error");
+                return _logoError;
+            }
+        }
+
         private static Texture2D _logo;
         public static Texture2D LogoTexture
         {

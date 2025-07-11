@@ -20,7 +20,7 @@ namespace Cognitive3D.Serialization
         #endregion
 
 
-        internal static void FlushSceneChange(bool copyToCache)
+        internal static void FlushSceneChange(bool copyToCache, bool flushDynamics)
         {
             if (!IsInitialized) { return; }
 
@@ -29,7 +29,7 @@ namespace Cognitive3D.Serialization
             SerializeSensors(copyToCache);
             SerializeFixations(copyToCache);
             SerializeBoundaryShapes(copyToCache);
-            SerializeDynamicImmediate(copyToCache);
+            if (flushDynamics) SerializeDynamicImmediate(copyToCache);
         }
 
         internal static void Flush(bool copyToCache)

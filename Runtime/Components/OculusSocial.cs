@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections;
-#if C3D_OCULUS
+#if COGNITIVE3D_META_PLATFORM
 using Oculus.Platform;
 using Oculus.Platform.Models;
 #endif
@@ -14,7 +14,7 @@ namespace Cognitive3D.Components
     public class OculusSocial : AnalyticsComponentBase
     {
 
-#if C3D_OCULUS
+#if COGNITIVE3D_META_PLATFORM
         [Tooltip("Used to record user data like username, id, and display name. Sessions will be named as users' display name in the session list. Allows tracking users across different sessions.")]
         [SerializeField]
         private bool RecordOculusUserData = true;
@@ -238,7 +238,7 @@ namespace Cognitive3D.Components
             return ((DateTimeOffset) DateTime.Parse(timeString)).ToUnixTimeSeconds();
         }
 
-#if C3D_OCULUS
+#if COGNITIVE3D_META_PLATFORM
         public override string GetDescription()
         {
             return "Set a property for the user's Oculus ID and display name";
@@ -252,7 +252,7 @@ namespace Cognitive3D.Components
             return false;
         }
 
-#else //not C3D_OCULUS
+#else //not COGNITIVE3D_META_PLATFORM
 
         /// <summary>
         /// Description to display in inspector
