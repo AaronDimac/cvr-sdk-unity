@@ -30,7 +30,7 @@ namespace Cognitive3D
             p.EnableDevLogging = EditorGUILayout.Toggle("Enable Development Logging", p.EnableDevLogging);
 
             EditorGUILayout.Space();
-            EditorGUILayout.LabelField("Player Tracking",EditorStyles.boldLabel);
+            EditorGUILayout.LabelField("Player Tracking", EditorStyles.boldLabel);
             p.EnableGaze = EditorGUILayout.Toggle(new GUIContent("Record Gaze", "Use a raycast to find the gaze point in world space.\nDisabling this will still record HMD position and rotation"), p.EnableGaze);
             p.DynamicObjectSearchInParent = EditorGUILayout.Toggle(new GUIContent("Dynamic Object Search in Parent", "When capturing gaze on a Dynamic Object, also search in the collider's parent for the dynamic object component"), p.DynamicObjectSearchInParent);
 
@@ -69,7 +69,7 @@ namespace Cognitive3D
 
             p.AutomaticSendTimer = EditorGUILayout.IntField(new GUIContent("Automatic Send Timer", "The time (in seconds) to automatically send any outstanding Data"), p.AutomaticSendTimer);
             p.AutomaticSendTimer = Mathf.Clamp(p.AutomaticSendTimer, 1, 60);
-            p.GazeSnapshotCount = Mathf.Clamp(EditorGUILayout.IntField(new GUIContent("Gaze Snapshot Batch Size","The number of Gaze datapoints to record before automatically sending a web request to the dashboard"), p.GazeSnapshotCount),64,1500);
+            p.GazeSnapshotCount = Mathf.Clamp(EditorGUILayout.IntField(new GUIContent("Gaze Snapshot Batch Size", "The number of Gaze datapoints to record before automatically sending a web request to the dashboard"), p.GazeSnapshotCount), 64, 1500);
             p.EventDataThreshold = Mathf.Clamp(EditorGUILayout.IntField(new GUIContent("Event Snapshot Batch Size", "The number of Events to record before automatically sending a web request to the dashboard"), p.EventDataThreshold), 1, 1000);
             p.DynamicSnapshotCount = Mathf.Clamp(EditorGUILayout.IntField(new GUIContent("Dynamic Snapshot Batch Size", "The number of Dynamic snapshots and manifest entries to record before automatically sending a web request to the dashboard"), p.DynamicSnapshotCount), 16, 1500);
             p.SensorSnapshotCount = Mathf.Clamp(EditorGUILayout.IntField(new GUIContent("Sensor Snapshot Batch Size", "The number of Sensor datapoints to record before automatically sending a web request to the dashboard"), p.SensorSnapshotCount), 64, 1500);
@@ -112,7 +112,7 @@ namespace Cognitive3D
             GUILayout.BeginHorizontal();
             p.LocalDataCacheSize = EditorGUILayout.LongField("Cache Size", p.LocalDataCacheSize);
             if (p.LocalDataCacheSize < 1048576) { p.LocalDataCacheSize = 1048576; } //at least 1mb of storage (1048576 bytes)
-            EditorGUILayout.LabelField(EditorUtility.FormatBytes(p.LocalDataCacheSize),GUILayout.Width(100));
+            EditorGUILayout.LabelField(EditorUtility.FormatBytes(p.LocalDataCacheSize), GUILayout.Width(100));
             GUILayout.EndHorizontal();
             EditorGUI.EndDisabledGroup();
 
@@ -137,7 +137,98 @@ namespace Cognitive3D
             }
 
 
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("sceneSettings"),true);
+            EditorGUILayout.LabelField("Scene Settings", EditorStyles.boldLabel);
+            SerializedProperty sceneSettings = serializedObject.FindProperty("sceneSettings");
+
+            for (int i = 0; i < sceneSettings.arraySize; i++)
+            {
+                SerializedProperty element = sceneSettings.GetArrayElementAtIndex(i);
+
+                EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+
+                // Draws all the children properties of the current element
+                EditorGUI.indentLevel++;
+                EditorGUILayout.PropertyField(element, true);
+                EditorGUI.indentLevel--;
+
+                EditorGUILayout.BeginHorizontal();
+
+                // Export button
+                if (GUILayout.Button(new GUIContent("Export", "Exports the current open (active scene)")))
+                {
+                    if (string.IsNullOrEmpty(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name))
+                    {
+                        if (EditorUtility.DisplayDialog("Export Paused", "Cannot export scene that is not saved.\n\nDo you want to save now?", "Save", "Cancel"))
+                        {
+                            if (!UnityEditor.SceneManagement.EditorSceneManager.SaveOpenScenes())
+                                return;
+                        }
+                        else return;
+                    }
+
+                    ExportUtility.ExportGLTFScene(true);
+
+                    string fullName = UnityEditor.SceneManagement.EditorSceneManager.GetActiveScene().name;
+                    string path = EditorCore.GetSubDirectoryPath(fullName);
+
+                    ExportUtility.GenerateSettingsFile(path, fullName);
+                    DebugInformationWindow.WriteDebugToFile(path + "debug.log");
+
+                    EditorUtility.SetDirty(EditorCore.GetPreferences());
+                    UnityEditor.AssetDatabase.SaveAssets();
+                    EditorCore.RefreshSceneVersion(null);
+                }
+
+                // Upload button
+                if (GUILayout.Button(new GUIContent("Upload", "Uploads the current open (active scene)")))
+                {
+                    if (string.IsNullOrEmpty(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name))
+                    {
+                        if (EditorUtility.DisplayDialog("Upload Paused", "Cannot upload scene that is not saved.\n\nDo you want to save now?", "Save", "Cancel"))
+                        {
+                            if (UnityEditor.SceneManagement.EditorSceneManager.SaveOpenScenes())
+                            {
+                                UploadTools.UploadSceneAndDynamics(true, true, true, true, true);
+                            }
+                            else return;
+                        }
+                        else return;
+                    }
+                    else
+                    {
+                        UploadTools.UploadSceneAndDynamics(true, true, true, true, true);
+                    }
+                }
+
+                // Open on Dashboard button
+                if (GUILayout.Button("Open Scene on Dashboard"))
+                {
+                    string sceneId = element.FindPropertyRelative("SceneId").stringValue;
+                    int sceneVersionNumber = element.FindPropertyRelative("VersionNumber").intValue;
+                    if (!string.IsNullOrEmpty(sceneId) && sceneVersionNumber > 0)
+                        Application.OpenURL(CognitiveStatics.GetSceneUrl(sceneId, sceneVersionNumber));
+                }
+
+                // Remove scene from list
+                GUI.enabled = sceneSettings.arraySize > 1;
+                if (GUILayout.Button(new GUIContent("−", "Remove this entry"), GUILayout.Width(24)))
+                {
+                    sceneSettings.DeleteArrayElementAtIndex(i);
+                    break; // break to avoid layout error after deletion
+                }
+                GUI.enabled = true;
+
+                EditorGUILayout.EndHorizontal();
+                EditorGUILayout.EndVertical();
+            }
+
+            // Add scene
+            EditorGUILayout.Space(5);
+            if (GUILayout.Button(new GUIContent("+ Add Scene Setting", "Add a new scene entry")))
+            {
+                sceneSettings.InsertArrayElementAtIndex(sceneSettings.arraySize);
+            }
+
             serializedObject.ApplyModifiedProperties();
             serializedObject.Update();
 

@@ -1279,7 +1279,7 @@ namespace Cognitive3D
                     SegmentAnalytics.TrackEvent("ExportingSceneGreater500MB_SceneExportPage", "SceneSetupSceneExportPage");
                 }
 
-                ExportUtility.ExportGLTFScene();
+                ExportUtility.ExportGLTFScene(false);
 
                 string fullName = UnityEditor.SceneManagement.EditorSceneManager.GetActiveScene().name;
                 string path = EditorCore.GetSubDirectoryPath(fullName);

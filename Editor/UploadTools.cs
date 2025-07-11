@@ -180,7 +180,7 @@ namespace Cognitive3D
                         if (currentSettings == null)
                             Cognitive3D_Preferences.AddSceneSettings(UnityEngine.SceneManagement.SceneManager.GetActiveScene());
 
-                        ExportUtility.ExportGLTFScene();
+                        ExportUtility.ExportGLTFScene(false);
 
                         string fullName = UnityEditor.SceneManagement.EditorSceneManager.GetActiveScene().name;
                         string path = EditorCore.GetSubDirectoryPath(fullName);
