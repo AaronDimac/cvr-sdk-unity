@@ -14,11 +14,11 @@ namespace Cognitive3D
         {
             using (new EditorGUILayout.VerticalScope(EditorCore.styles.DetailContainer))
             {
-                GUILayout.Label("Data Upload Tool", EditorStyles.boldLabel);
+                GUILayout.Space(5);
+                GUILayout.Label("Upload offline (cached) data by selecting the folder where the session files are stored. This includes both read and write files.", EditorStyles.wordWrappedLabel);
 
-                EditorGUILayout.Space();
-
-                EditorGUILayout.LabelField("Select Folder to Upload", EditorStyles.boldLabel);
+                GUILayout.Space(10);
+                EditorGUILayout.LabelField("Target Folder", EditorStyles.boldLabel);
 
                 using (new GUILayout.HorizontalScope())
                 {
@@ -34,13 +34,17 @@ namespace Cognitive3D
                     }
                 }
 
-                GUILayout.Space(20);
+                GUILayout.Space(5);
+
+                deleteData = EditorGUILayout.ToggleLeft("Delete data from disk after successful upload", deleteData);
+
+                GUILayout.Space(10);
 
                 using (new GUILayout.HorizontalScope())
                 {
                     GUILayout.FlexibleSpace();
 
-                    if (GUILayout.Button("Upload Data", GUILayout.Width(120)))
+                    if (GUILayout.Button("Upload Data", GUILayout.Width(140)))
                     {
                         UploadData(folderPath);
                     }
@@ -51,6 +55,7 @@ namespace Cognitive3D
         }
         
         ICache ic;
+        bool deleteData;
 
         private void UploadData(string path)
         {
@@ -63,10 +68,10 @@ namespace Cognitive3D
             if (ic != null)
             {
                 Clear();
-            } 
+            }
 
             ic = new DualFileCache(path + "/");
-            
+
             try
             {
                 if (ic.HasContent())
@@ -140,7 +145,20 @@ namespace Cognitive3D
 
                 if (responseCode == 200)
                 {
-                    ic.PopContent();
+                    if (deleteData)
+                    {
+                        ic.PopContent();
+                    }
+                    else
+                    {
+                        string destination = string.Empty;
+                        string content = string.Empty;
+                        if (ic.PeekContent(ref destination, ref content))
+                        {
+                            ic.PopContent();
+                            ic.WriteContent(destination, content);
+                        }
+                    }
                 }
                 else
                 {
