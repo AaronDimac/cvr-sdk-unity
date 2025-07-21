@@ -63,7 +63,7 @@ namespace Cognitive3D
             { "MRTK", "C3D_MRTK" },
             { "Default", "C3D_DEFAULT" }
         };
-        
+
         GameObject hmd;
         GameObject trackingSpace;
         GameObject rightController;
@@ -234,7 +234,7 @@ namespace Cognitive3D
                 #region Scene Upload
                 completenessStatus = Cognitive3D_Preferences.Instance.sceneSettings.Count > 0;
                 statusIcon = GetStatusIcon(completenessStatus);
-                
+
                 DrawFoldout("Scene Upload", statusIcon, keysSet, () =>
                 {
                     GUILayout.Label("Configure which scenes should be prepared and uploaded.", EditorCore.styles.DescriptionPadding);
@@ -339,7 +339,7 @@ namespace Cognitive3D
 
             // Sticky footer button
             Rect footerRect = new Rect(0, position.height - footerHeight, position.width, footerHeight);
-            DrawFooter(footerRect);            
+            DrawFooter(footerRect);
         }
 
         private void DrawFoldout(string title, Texture2D icon, bool foldout, Action drawContent)
@@ -777,24 +777,7 @@ namespace Cognitive3D
                     }
                     else
                     {
-                        long expiration = organizationDetails.subscriptions[0].expiration;
-                        int daysRemaining = GetDaysUntilExpiry(expiration);
-
-                        if (expiration == 0)
-                        {
-                            devKeyStatusType = MessageType.Info;
-                            devKeyStatusMessage += "\nDeveloper key is valid and does not expire.";
-                        }
-                        else if (daysRemaining < 0)
-                        {
-                            devKeyStatusType = MessageType.Error;
-                            devKeyStatusMessage += "\nDeveloper key has expired.";
-                        }
-                        else
-                        {
-                            devKeyStatusType = daysRemaining < 7 ? MessageType.Warning : MessageType.Info;
-                            devKeyStatusMessage += $"\nDeveloper key valid. Expires in {daysRemaining} day(s).";
-                        }
+                        EditorCore.GetUserData(developerKey, GetUserResponse);
                     }
                 }
             }
@@ -804,6 +787,37 @@ namespace Cognitive3D
                 return;
             }
         }
+
+        private void GetUserResponse(int responseCode, string error, string text)
+        {
+            var userdata = JsonUtility.FromJson<EditorCore.UserData>(text);
+            if (responseCode != 200)
+            {
+                Util.logDevelopment("Failed to retrieve user data" + responseCode + "  " + error);
+            }
+
+            if (responseCode == 200 && userdata != null)
+            {
+                long expiration = userdata.keyExpiresAt;
+                int daysRemaining = GetDaysUntilExpiry(expiration);
+
+                if (expiration == 0)
+                {
+                    devKeyStatusType = MessageType.Info;
+                    devKeyStatusMessage += "\nDeveloper key is valid and does not expire.";
+                }
+                else if (daysRemaining < 0)
+                {
+                    devKeyStatusType = MessageType.Error;
+                    devKeyStatusMessage += "\nDeveloper key has expired.";
+                }
+                else
+                {
+                    devKeyStatusType = daysRemaining < 7 ? MessageType.Warning : MessageType.Info;
+                    devKeyStatusMessage += $"\nDeveloper key valid. Expires in {daysRemaining} day(s).";
+                }
+            }
+        }
 #endregion
-    }
+        }
 }

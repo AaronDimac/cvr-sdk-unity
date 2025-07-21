@@ -2607,6 +2607,7 @@ namespace Cognitive3D
             public string projectName;
             public int organizationId;
             public string organizationName;
+            public long keyExpiresAt;
         }
 
         [System.Serializable]
