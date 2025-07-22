@@ -136,7 +136,7 @@ namespace Cognitive3D
                     {
                         EditorCore.CheckForExpiredDeveloperKey(developerKey, GetDevKeyResponse);
                         EditorCore.CheckForApplicationKey(developerKey, GetApplicationKeyResponse);
-                        EditorCore.CheckSubscription(developerKey, GetSubscriptionResponse);
+                        EditorCore.GetUserData(developerKey, GetUserResponse);
 
                         forceUpdateApiKey = true;
                     }
@@ -447,7 +447,7 @@ namespace Cognitive3D
             {
                 EditorCore.CheckForExpiredDeveloperKey(developerKey, GetDevKeyResponse);
                 EditorCore.CheckForApplicationKey(developerKey, GetApplicationKeyResponse);
-                EditorCore.CheckSubscription(developerKey, GetSubscriptionResponse);
+                EditorCore.GetUserData(developerKey, GetUserResponse);
 
                 keysSet = true;
             }
@@ -750,34 +750,43 @@ namespace Cognitive3D
             }
         }
 
-        private void GetSubscriptionResponse(int responseCode, string error, string text)
+        private void GetUserResponse(int responseCode, string error, string text)
         {
             if (responseCode != 200)
             {
-                Debug.LogError("GetSubscriptionResponse response code: " + responseCode + " error: " + error);
-                return;
+                Util.logDevelopment("Failed to retrieve user data" + responseCode + "  " + error);
             }
 
-            // Check if response data is valid
             try
             {
-                EditorCore.OrganizationData organizationDetails = JsonUtility.FromJson<EditorCore.OrganizationData>(text);
+                var userdata = JsonUtility.FromJson<EditorCore.UserData>(text);
+                if (responseCode == 200 && userdata != null)
+                {
+                    devKeyStatusMessage = $"Organization name: {userdata.organizationName}";
+                    long expiration = userdata.keyExpiresAt;
+                    int daysRemaining = GetDaysUntilExpiry(expiration);
 
-                if (organizationDetails == null)
-                {
-                    Debug.LogError("GetSubscriptionResponse data is null or invalid. Please get in touch");
-                }
-                else
-                {
-                    devKeyStatusMessage = $"Organization name: {organizationDetails.organizationName}";
-                    devKeyStatusType = MessageType.Info;
-                    if (organizationDetails.subscriptions.Length == 0)
+                    if (string.IsNullOrEmpty(userdata.organizationName))
                     {
                         devKeyStatusMessage += "\nCurrent Subscription Plan: No Subscription";
                     }
                     else
                     {
-                        EditorCore.GetUserData(developerKey, GetUserResponse);
+                        if (expiration == 0)
+                        {
+                            devKeyStatusType = MessageType.Info;
+                            devKeyStatusMessage += "\nDeveloper key is valid and does not expire.";
+                        }
+                        else if (daysRemaining < 0)
+                        {
+                            devKeyStatusType = MessageType.Error;
+                            devKeyStatusMessage += "\nDeveloper key has expired.";
+                        }
+                        else
+                        {
+                            devKeyStatusType = daysRemaining < 7 ? MessageType.Warning : MessageType.Info;
+                            devKeyStatusMessage += $"\nDeveloper key valid. Expires in {daysRemaining} day(s).";
+                        }
                     }
                 }
             }
@@ -785,37 +794,6 @@ namespace Cognitive3D
             {
                 Debug.LogError("Invalid JSON response");
                 return;
-            }
-        }
-
-        private void GetUserResponse(int responseCode, string error, string text)
-        {
-            var userdata = JsonUtility.FromJson<EditorCore.UserData>(text);
-            if (responseCode != 200)
-            {
-                Util.logDevelopment("Failed to retrieve user data" + responseCode + "  " + error);
-            }
-
-            if (responseCode == 200 && userdata != null)
-            {
-                long expiration = userdata.keyExpiresAt;
-                int daysRemaining = GetDaysUntilExpiry(expiration);
-
-                if (expiration == 0)
-                {
-                    devKeyStatusType = MessageType.Info;
-                    devKeyStatusMessage += "\nDeveloper key is valid and does not expire.";
-                }
-                else if (daysRemaining < 0)
-                {
-                    devKeyStatusType = MessageType.Error;
-                    devKeyStatusMessage += "\nDeveloper key has expired.";
-                }
-                else
-                {
-                    devKeyStatusType = daysRemaining < 7 ? MessageType.Warning : MessageType.Info;
-                    devKeyStatusMessage += $"\nDeveloper key valid. Expires in {daysRemaining} day(s).";
-                }
             }
         }
 #endregion
