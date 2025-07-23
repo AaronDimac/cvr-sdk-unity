@@ -145,12 +145,20 @@ namespace Cognitive3D.Components
 
         void INetworkRunnerCallbacks.OnShutdown(NetworkRunner runner, ShutdownReason reason)
         {
-
+            if (runner == null) return;
+            
+            new CustomEvent("c3d.multiplayer.sessionShutdown")
+                .SetProperty("Shutdown reason", reason.ToString())
+                .Send();
         }
 
         void INetworkRunnerCallbacks.OnDisconnectedFromServer(NetworkRunner runner, NetDisconnectReason reason)
         {
+            if (runner == null) return;
 
+            new CustomEvent("c3d.multiplayer.disconnectedFromServer")
+                .SetProperty("Disconnect reason", reason.ToString())
+                .Send();
         }
 
         public void OnPlayerJoined(NetworkRunner runner, PlayerRef player)
