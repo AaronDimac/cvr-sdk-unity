@@ -82,5 +82,10 @@ namespace Cognitive3D
         {
             EditorCore.ForceCheckUpdates();
         }
+        [MenuItem("Cognitive3D/Open Discord Server...", priority = 120)]
+        static void CognitiveDiscordServer()
+        {
+            Application.OpenURL("https://discord.gg/x38sNUdDRH");
+        }
     }
 }
