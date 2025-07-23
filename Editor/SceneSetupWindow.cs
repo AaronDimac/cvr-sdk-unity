@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 using Cognitive3D.Components;
@@ -73,7 +73,7 @@ namespace Cognitive3D
 
             ExportUtility.ClearUploadSceneSettings();
 
-            var found = Object.FindObjectOfType<Cognitive3D_Manager>();
+            var found = Object.FindFirstObjectByType<Cognitive3D_Manager>();
             if (found == null) //add Cognitive3D_manager
             {
                 GameObject c3dManagerPrefab = Resources.Load<GameObject>("Cognitive3D_Manager");
@@ -87,14 +87,14 @@ namespace Cognitive3D
 #if C3D_OCULUS
             // Get the current state of these components: are they already enabled?
             // This is so the checkbox can accurately display the status of the components instead of defaulting to false
-            OVRManager ovrManager = Object.FindObjectOfType<OVRManager>();
+            OVRManager ovrManager = Object.FindFirstObjectByType<OVRManager>();
             if (ovrManager != null )
             {
                 var fi = typeof(OVRManager).GetField("requestEyeTrackingPermissionOnStartup", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
                 var requestingEyeTracking = fi.GetValue(ovrManager);
                 fi = typeof(OVRManager).GetField("requestFaceTrackingPermissionOnStartup", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
                 var requestingFaceTracking = fi.GetValue(ovrManager);
-                var faceExpressions = FindObjectOfType<OVRFaceExpressions>();
+                var faceExpressions = FindFirstObjectByType<OVRFaceExpressions>();
                 if (faceExpressions != null)
                 {
                     wantEyeTrackingEnabled = (bool) requestingEyeTracking && (bool) requestingFaceTracking && faceExpressions;
@@ -121,7 +121,7 @@ namespace Cognitive3D
 
             ExportUtility.ClearUploadSceneSettings();
 
-            var found = Object.FindObjectOfType<Cognitive3D_Manager>();
+            var found = Object.FindFirstObjectByType<Cognitive3D_Manager>();
             if (found == null) //add Cognitive3D_manager
             {
                 GameObject c3dManagerPrefab = Resources.Load<GameObject>("Cognitive3D_Manager");
@@ -135,14 +135,14 @@ namespace Cognitive3D
 #if C3D_OCULUS
             // Get the current state of these components: are they already enabled?
             // This is so the checkbox can accurately display the status of the components instead of defaulting to false
-            OVRManager ovrManager = Object.FindObjectOfType<OVRManager>();
+            OVRManager ovrManager = Object.FindFirstObjectByType<OVRManager>();
             if (ovrManager != null )
             {
                 var fi = typeof(OVRManager).GetField("requestEyeTrackingPermissionOnStartup", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
                 var requestingEyeTracking = fi.GetValue(ovrManager);
                 fi = typeof(OVRManager).GetField("requestFaceTrackingPermissionOnStartup", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic);
                 var requestingFaceTracking = fi.GetValue(ovrManager);
-                var faceExpressions = FindObjectOfType<OVRFaceExpressions>();
+                var faceExpressions = FindFirstObjectByType<OVRFaceExpressions>();
                 if (faceExpressions != null)
                 {
                     wantEyeTrackingEnabled = (bool) requestingEyeTracking && (bool) requestingFaceTracking && faceExpressions;
@@ -278,7 +278,7 @@ namespace Cognitive3D
                 Application.OpenURL("https://vimeo.com/749278322");
             }
 
-            var found = Object.FindObjectOfType<Cognitive3D_Manager>();
+            var found = Object.FindFirstObjectByType<Cognitive3D_Manager>();
             if (found == null) //add Cognitive3D_manager
             {
                 GameObject c3dManagerPrefab = Resources.Load<GameObject>("Cognitive3D_Manager");
@@ -404,7 +404,7 @@ namespace Cognitive3D
                 mainCameraObject = camera.gameObject;
             }
 
-            foreach(var dyn in FindObjectsOfType<DynamicObject>())
+            foreach(var dyn in FindObjectsByType<DynamicObject>(FindObjectsSortMode.None))
             {
                 if (dyn.IsController && dyn.IsRight)
                 {
@@ -420,7 +420,7 @@ namespace Cognitive3D
             EditorCore.SetControllers(true, rightcontroller);
             EditorCore.SetControllers(false, leftcontroller);
 
-            RoomTrackingSpace trackingSpaceInScene = FindObjectOfType<RoomTrackingSpace>();
+            RoomTrackingSpace trackingSpaceInScene = FindFirstObjectByType<RoomTrackingSpace>();
             if (trackingSpaceInScene != null)
             {
                 trackingSpace = trackingSpaceInScene.gameObject;
@@ -436,7 +436,7 @@ namespace Cognitive3D
             
 #if C3D_STEAMVR2
             //interaction system setup
-            var player = FindObjectOfType<Valve.VR.InteractionSystem.Player>();
+            var player = FindFirstObjectByType<Valve.VR.InteractionSystem.Player>();
             if (player)
             {
                 leftcontroller = player.hands[0].gameObject;
@@ -445,7 +445,7 @@ namespace Cognitive3D
             }
             else
             {
-                var playArea = FindObjectOfType<SteamVR_PlayArea>();
+                var playArea = FindFirstObjectByType<SteamVR_PlayArea>();
                 if (playArea != null)
                 {
                     var controllers = playArea.GetComponentsInChildren<SteamVR_Behaviour_Pose>();
@@ -465,7 +465,7 @@ namespace Cognitive3D
             }
 #elif C3D_OCULUS
             //basic setup
-            var manager = FindObjectOfType<OVRCameraRig>();
+            var manager = FindFirstObjectByType<OVRCameraRig>();
             if (manager != null && manager.leftHandAnchor != null && manager.rightHandAnchor != null && manager.trackingSpace != null)
             {
                 leftcontroller = manager.leftHandAnchor.gameObject;
@@ -473,7 +473,7 @@ namespace Cognitive3D
                 trackingSpace = manager.trackingSpace.gameObject;
             }
 
-            OVRManager ovrManager = Object.FindObjectOfType<OVRManager>();
+            OVRManager ovrManager = Object.FindFirstObjectByType<OVRManager>();
             OVRProjectConfig.CachedProjectConfig.eyeTrackingSupport = OVRProjectConfig.FeatureSupport.Required;
             if (ovrManager != null)
             {
@@ -492,7 +492,7 @@ namespace Cognitive3D
             //TODO investigate if automatically detecting vive wave controllers is possible
             if (trackingSpace == null)
             {
-                var waveRig = FindObjectOfType<WaveRig>();
+                var waveRig = FindFirstObjectByType<WaveRig>();
                 if (waveRig != null)
                 {
                     trackingSpace = waveRig.CameraOffset;
@@ -500,7 +500,7 @@ namespace Cognitive3D
             }
 #elif C3D_PICOVR
             //basic setup
-            var manager = FindObjectOfType<Pvr_Controller>();
+            var manager = FindFirstObjectByType<Pvr_Controller>();
             if (manager != null)
             {
                 if (manager.controller0 != null)
@@ -518,7 +518,7 @@ namespace Cognitive3D
             }
 
             //find tracked pose drivers in scene
-            var trackedPoseDrivers = FindObjectsOfType<UnityEngine.SpatialTracking.TrackedPoseDriver>();
+            var trackedPoseDrivers = FindObjectsByType<UnityEngine.SpatialTracking.TrackedPoseDriver>(FindObjectsSortMode.None);
             foreach (var driver in trackedPoseDrivers)
             {
                 if (driver.deviceType == UnityEngine.SpatialTracking.TrackedPoseDriver.DeviceType.GenericXRController && driver.poseSource == UnityEngine.SpatialTracking.TrackedPoseDriver.TrackedPose.RightPose)
@@ -535,7 +535,7 @@ namespace Cognitive3D
 
             // if tracking space and controllers not found yet, look for it in other ways
 #if COGNITIVE3D_INCLUDE_LEGACYINPUTHELPERS
-            var cameraOffset = FindObjectOfType<CameraOffset>();
+            var cameraOffset = FindFirstObjectByType<CameraOffset>();
             if (cameraOffset != null)
             {
                 trackingSpace = cameraOffset.gameObject;
@@ -552,7 +552,7 @@ namespace Cognitive3D
                 return;
             }
 #if COGNITIVE3D_INCLUDE_COREUTILITIES
-            var xrRig = FindObjectOfType<XROrigin>();
+            var xrRig = FindFirstObjectByType<XROrigin>();
             if (xrRig != null)
             {
                 trackingSpace = xrRig.gameObject;
@@ -643,6 +643,11 @@ namespace Cognitive3D
                 }
                 else if (mainCameraObject.CompareTag("MainCamera") == false)
                 {
+                    SegmentAnalytics.TrackEvent("EnabledAutoInputSetup_PlayerSetupPage", "SceneSetupPlayerSetupPage");
+
+                    // Remove the controllers/hands DynamicObject components (if they exist)
+                    var dynamics = FindObjectsByType<DynamicObject>(FindObjectsSortMode.None);
+                    foreach (var dynamic in dynamics)
                     GUI.Label(hmdAlertRect, new GUIContent(EditorCore.Alert, "Selected Camera is not tagged 'MainCamera'"), "image_centered");
                 }
                 else
@@ -1015,7 +1020,7 @@ namespace Cognitive3D
             }
             if (wantPassthroughEnabled)
             {
-                var passthrough = FindObjectOfType<OculusPassthrough>();
+                var passthrough = FindFirstObjectByType<OculusPassthrough>();
                 if (passthrough == null)
                 {
                     Cognitive3D_Manager.Instance.gameObject.AddComponent<OculusPassthrough>();
@@ -1023,7 +1028,7 @@ namespace Cognitive3D
             }
             else
             {
-                var passthrough = FindObjectOfType<OculusPassthrough>();
+                var passthrough = FindFirstObjectByType<OculusPassthrough>();
                 if (passthrough != null)
                 {
                     DestroyImmediate(passthrough);
@@ -1031,7 +1036,7 @@ namespace Cognitive3D
             }
             if (wantSocialEnabled)
             {
-                var social = FindObjectOfType<OculusSocial>();
+                var social = FindFirstObjectByType<OculusSocial>();
                 if (social == null)
                 {
                     Cognitive3D_Manager.Instance.gameObject.AddComponent<OculusSocial>();
@@ -1039,7 +1044,7 @@ namespace Cognitive3D
             }
             else
             {
-                var social = FindObjectOfType<OculusSocial>();
+                var social = FindFirstObjectByType<OculusSocial>();
                 if (social != null)
                 {
                     DestroyImmediate(social);
@@ -1050,12 +1055,12 @@ namespace Cognitive3D
             {
 #if !COGNITIVE3D_INCLUDE_META_CORE_65_OR_NEWER
                 // Do not modify OVRManager permissions
-                var sceneApi = FindObjectOfType<Cognitive3D_MetaSceneMesh>();
+                var sceneApi = FindFirstObjectByType<Cognitive3D_MetaSceneMesh>();
                 if (sceneApi == null)
                 {
                     Cognitive3D_Manager.Instance.gameObject.AddComponent<Cognitive3D_MetaSceneMesh>();
                 }
-                GameObject sceneManager = FindObjectOfType<OVRSceneManager>()?.gameObject;
+                GameObject sceneManager = FindFirstObjectByType<OVRSceneManager>()?.gameObject;
                 if (sceneManager == null)
                 {
                     sceneManager = new GameObject(SCENE_MANAGER_NAME);
@@ -1092,7 +1097,7 @@ namespace Cognitive3D
                     sceneManagerComponent.VolumePrefab = volumePrefab.GetComponent<OVRSceneAnchor>();
                 }
 #elif COGNITIVE3D_INCLUDE_META_XR_UTILITY
-                var mruk = FindObjectOfType<MRUK>()?.gameObject;
+                var mruk = FindFirstObjectByType<MRUK>()?.gameObject;
                 if (mruk == null)
                 {
                     mruk = new GameObject(MRUK_NAME);
@@ -1106,7 +1111,7 @@ namespace Cognitive3D
                 // Do not modify OVRManager permissions
                 
                 // Component in C3D_Manager prefab
-                var sceneApi = FindObjectOfType<Cognitive3D_MetaSceneMesh>();
+                var sceneApi = FindFirstObjectByType<Cognitive3D_MetaSceneMesh>();
                 if (sceneApi != null)
                 {
                     DestroyImmediate(sceneApi);
@@ -1142,7 +1147,7 @@ namespace Cognitive3D
 
         void SetEyeTrackingState(bool state)
         {
-            OVRManager ovrManager = Object.FindObjectOfType<OVRManager>();
+            OVRManager ovrManager = Object.FindFirstObjectByType<OVRManager>();
 
             if (state)
             {
@@ -1155,7 +1160,7 @@ namespace Cognitive3D
                     EditorUtility.SetDirty(ovrManager);
                 }
 
-                var faceExpressions = FindObjectOfType<OVRFaceExpressions>();
+                var faceExpressions = FindFirstObjectByType<OVRFaceExpressions>();
                 if (faceExpressions == null)
                 {
                     // Face Expressions
@@ -1184,9 +1189,9 @@ namespace Cognitive3D
                 }
 
                 // Destroy Face Expressions component
-                if (GameObject.FindObjectOfType<OVRFaceExpressions>())
+                if (GameObject.FindFirstObjectByType<OVRFaceExpressions>())
                 {
-                    DestroyImmediate(GameObject.FindObjectOfType<OVRFaceExpressions>());
+                    DestroyImmediate(GameObject.FindFirstObjectByType<OVRFaceExpressions>());
                 }
 
                 // Face Tracking
@@ -1474,7 +1479,7 @@ namespace Cognitive3D
             // Go through all dynamic objects in scene
             // See if it has been exported already (use mesh name as an identifier)
             // IGNORE CONTROLLERS
-            dynamicObjectsInScene = FindObjectsOfType<DynamicObject>();
+            dynamicObjectsInScene = FindObjectsByType<DynamicObject>(FindObjectsSortMode.None);
 
             foreach (var dynamicObject in dynamicObjectsInScene)
             {
@@ -1699,10 +1704,9 @@ namespace Cognitive3D
                             }
                         };
                     }
-                #endif
-
+#endif
                     // Always update light count
-                    onclick += () => { numberOfLightsInScene = FindObjectsOfType<Light>().Length; };
+                    onclick += () => { numberOfLightsInScene = FindObjectsByType<Light>(FindObjectsSortMode.None).Length; };
                     break;
                 case Page.QuestProSetup:
 #if C3D_OCULUS
@@ -1807,7 +1811,7 @@ namespace Cognitive3D
             // This array HAS TO BE reinitialized here because
             // this function can be from other places and
             // we cannot guarantee that it has been initialized
-            dynamicObjectsInScene = FindObjectsOfType<DynamicObject>();
+            dynamicObjectsInScene = FindObjectsByType<DynamicObject>(FindObjectsSortMode.None);
             foreach (var dyn in dynamicObjectsInScene)
             {
                 dynsInSceneList.Add(dyn);
@@ -1878,7 +1882,7 @@ namespace Cognitive3D
 
         static List<DynamicObject> GetDynamicObjectsInScene()
         {
-            return new List<DynamicObject>(GameObject.FindObjectsOfType<DynamicObject>());
+            return new List<DynamicObject>(GameObject.FindObjectsByType<DynamicObject>(FindObjectsSortMode.None));
         }
 
         /// <summary>
