@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Collections;
 using Fusion;
 using Fusion.Sockets;
+using Fusion.Photon.Realtime;
 
 namespace Cognitive3D.Components
 {
@@ -91,20 +92,27 @@ namespace Cognitive3D.Components
         /// <summary>
         /// Sets session properties for multiplayer related details
         /// </summary>
-        private void SetMultiplayerSessionProperties(NetworkRunner runner)
+        private void SetMultiplayerSessionProperties(NetworkRunner runner, PhotonAppSettings globalSettings)
         {
-            int playerPhotonActorNumber = runner.LocalPlayer.PlayerId;
-            string photonPhotonUserId = runner.UserId;
-            string photonRoomName = runner.SessionInfo.Name;
-            string serverAddress = globalSettings.AppSettings.Server;
-            int port = globalSettings.AppSettings.Port;
-            Cognitive3D_Manager.SetSessionProperty("c3d.multiplayer.photonPlayerId", playerPhotonActorNumber);
-            Cognitive3D_Manager.SetSessionProperty("c3d.multiplayer.photonUserId", photonPhotonUserId);
-            Cognitive3D_Manager.SetSessionProperty("c3d.multiplayer.photonRoomName", photonRoomName);
-            Cognitive3D_Manager.SetSessionProperty("c3d.multiplayer.photonServerAddress", serverAddress);
-            Cognitive3D_Manager.SetSessionProperty("c3d.multiplayer.port", port);
+            if (runner)
+            {
+                Cognitive3D_Manager.SetSessionProperty("c3d.multiplayer.photonPlayerId", runner.LocalPlayer.PlayerId);
+                Cognitive3D_Manager.SetSessionProperty("c3d.multiplayer.photonUserId", runner.UserId);
+                Cognitive3D_Manager.SetSessionProperty("c3d.multiplayer.photonRoomName", runner.SessionInfo.Name);
+            }
+
+            if (globalSettings)
+            {
+                Cognitive3D_Manager.SetSessionProperty("c3d.multiplayer.photonAppId", globalSettings.AppSettings.AppIdFusion);
+                Cognitive3D_Manager.SetSessionProperty("c3d.multiplayer.photonServerAddress", globalSettings.AppSettings.Server);
+                Cognitive3D_Manager.SetSessionProperty("c3d.multiplayer.port", globalSettings.AppSettings.Port);
+            }  
         }
 
+        /// <summary>
+        /// Waits for the shared LobbyId to be available (set by the host).
+        /// If the LobbyId isn't set within the timeout window, logs an error and exits early.
+        /// </summary>
         private IEnumerator WaitForLobbyIdThenContinue()
         {
             float timeout = 10f;
@@ -160,7 +168,8 @@ namespace Cognitive3D.Components
 
             runner.StartCoroutine(WaitForLobbyIdThenContinue());
 
-            SetMultiplayerSessionProperties(runner);
+            SetMultiplayerSessionProperties(runner, globalSettings);
+
             if (runner.SessionInfo != null && !string.IsNullOrEmpty(runner.SessionInfo.Name))
             {
                 if (player.PlayerId == runner.LocalPlayer.PlayerId)
@@ -173,8 +182,12 @@ namespace Cognitive3D.Components
                 }
 
                 if (PhotonFusionLobbySession.Instance == null) return;
-                PhotonFusionLobbySession.Instance.RPC_SendCustomEventOnJoin(player.PlayerId);
-                PhotonFusionLobbySession.Instance.RPC_CalculateNumberConnections();
+                // Only the StateAuthority is allowed to call this RPC
+                if (PhotonFusionLobbySession.Instance.HasStateAuthority)
+                {
+                    PhotonFusionLobbySession.Instance.RPC_SendCustomEventOnJoin(player.PlayerId);
+                    PhotonFusionLobbySession.Instance.RPC_CalculateNumberConnections();
+                }
             }
         }
 
@@ -191,7 +204,11 @@ namespace Cognitive3D.Components
                 }
 
                 if (PhotonFusionLobbySession.Instance == null) return;
-                PhotonFusionLobbySession.Instance.RPC_SendCustomEventOnLeave(player.PlayerId);
+                // Only the StateAuthority is allowed to call this RPC
+                if (PhotonFusionLobbySession.Instance.HasStateAuthority)
+                {
+                    PhotonFusionLobbySession.Instance.RPC_SendCustomEventOnLeave(player.PlayerId);
+                }
             }
         }
 
@@ -232,14 +249,13 @@ namespace Cognitive3D.Components
 
         void INetworkRunnerCallbacks.OnConnectedToServer(NetworkRunner runner)
         {
-            // GenerateAndSetLobbyIDForAllClients();
             Fusion.Photon.Realtime.PhotonAppSettings.TryGetGlobal(out globalSettings);
             if (globalSettings)
             {
                 string photonAppID = globalSettings.AppSettings.AppIdFusion;
                 Cognitive3D_Manager.SetSessionProperty("c3d.multiplayer.photonAppId", photonAppID);
             }
-            SetMultiplayerSessionProperties(runner);
+            SetMultiplayerSessionProperties(runner, globalSettings);
         }
 
         public void OnSessionListUpdated(NetworkRunner runner, List<SessionInfo> sessionList)

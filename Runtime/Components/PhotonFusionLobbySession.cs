@@ -33,7 +33,7 @@ namespace Cognitive3D.Components
         }
 
         #region RPC
-        [Rpc(sources: RpcSources.All, targets: RpcTargets.All)]
+        [Rpc(sources: RpcSources.StateAuthority, targets: RpcTargets.All)]
         public void RPC_SendCustomEventOnJoin(int actorNumber)
         {
             if (activeRunner == null) return;
@@ -46,11 +46,10 @@ namespace Cognitive3D.Components
                 .SetProperty("Player ID", actorNumber)
                 .SetProperty("Number of players in room", activeRunner.SessionInfo.PlayerCount)
                 .Send();
-
             }
         }
 
-        [Rpc(sources: RpcSources.All, targets: RpcTargets.All)]
+        [Rpc(sources: RpcSources.StateAuthority, targets: RpcTargets.All)]
         public void RPC_SendCustomEventOnLeave(int actorNumber)
         {
             if (activeRunner == null) return;
@@ -64,11 +63,9 @@ namespace Cognitive3D.Components
                 .SetProperty("Number of players in room", activeRunner.SessionInfo.PlayerCount)
                 .Send();
             }
-
-            Cognitive3D_Manager.SetSessionProperty("c3d.multiplayer.maxNumberConnections", maxPlayerPhotonActorConnected);
         }
 
-        [Rpc(sources: RpcSources.All, targets: RpcTargets.All)]
+        [Rpc(sources: RpcSources.StateAuthority, targets: RpcTargets.All)]
         public void RPC_CalculateNumberConnections()
         {
             if (activeRunner == null) return;
@@ -78,6 +75,7 @@ namespace Cognitive3D.Components
             if (currentPlayerPhotonActorConnected > maxPlayerPhotonActorConnected)
             {
                 maxPlayerPhotonActorConnected = currentPlayerPhotonActorConnected;
+                Cognitive3D_Manager.SetSessionProperty("c3d.multiplayer.maxNumberConnections", maxPlayerPhotonActorConnected);
             }
         }
         #endregion
