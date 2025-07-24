@@ -9,7 +9,7 @@ namespace Cognitive3D.Components
     {
         // We are using very high flag values to indicate that we need to do a custom instantiate
         // Values lower than this will fall through the default instantiation handling.
-        internal const int C3D_PREFAB_FLAG = 100000;
+        internal const int C3D_PREFAB_FLAG = 200000;
 
         // The NetworkObjectBaker class can be reused and is Runner independent.
         private static NetworkObjectBaker _baker;
