@@ -1,4 +1,5 @@
 using UnityEngine;
+# if FUSION2
 using Fusion;
 
 namespace Cognitive3D.Components
@@ -81,3 +82,4 @@ namespace Cognitive3D.Components
         #endregion
     }
 }
+#endif

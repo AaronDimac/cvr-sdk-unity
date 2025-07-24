@@ -2,6 +2,8 @@ using UnityEngine;
 using System;
 using System.Collections.Generic;
 using System.Collections;
+
+# if FUSION2
 using Fusion;
 using Fusion.Sockets;
 using Fusion.Photon.Realtime;
@@ -11,17 +13,14 @@ namespace Cognitive3D.Components
     [DisallowMultipleComponent]
     public class PhotonFusionMultiplayer : MonoBehaviour, INetworkRunnerCallbacks
     {
-        private NetworkObject lobbySyncPrefab;
         private const float PHOTON_SENSOR_RECORDING_INTERVAL_IN_SECONDS = 1.0f;
         private float currentTime = 0;
-        private Fusion.Photon.Realtime.PhotonAppSettings globalSettings;
+        private PhotonAppSettings globalSettings;
         NetworkRunner activeRunner;
 
         // Start is called once before the first execution of Update after the MonoBehaviour is created
         void Start()
         {
-            lobbySyncPrefab = Resources.Load<NetworkObject>("Cognitive3D_FusionLobbySync");
-
             activeRunner = FindFirstObjectByType<NetworkRunner>();
             if (activeRunner == null)
             {
@@ -29,6 +28,7 @@ namespace Cognitive3D.Components
                 activeRunner = gameObject.AddComponent<NetworkRunner>();
             }
 
+            activeRunner.gameObject.AddComponent<PhotonFusionNetworkObjectProvider>();
             activeRunner.AddCallbacks(this);
 
             Cognitive3D_Manager.OnSessionBegin += OnSessionBegin;
@@ -38,7 +38,7 @@ namespace Cognitive3D.Components
 
         private void OnSessionBegin()
         {
-            Fusion.Photon.Realtime.PhotonAppSettings.TryGetGlobal(out globalSettings);
+            PhotonAppSettings.TryGetGlobal(out globalSettings);
             if (globalSettings)
             {
                 string photonAppID = globalSettings.AppSettings.AppIdFusion;
@@ -165,9 +165,16 @@ namespace Cognitive3D.Components
         {
             bool isAuthoritative = runner.IsServer || runner.IsSharedModeMasterClient;
 
-            if (isAuthoritative && PhotonFusionLobbySession.Instance == null && lobbySyncPrefab != null)
+            if (isAuthoritative && PhotonFusionLobbySession.Instance == null)
             {
-                NetworkObject spawned = runner.Spawn(lobbySyncPrefab, Vector3.zero, Quaternion.identity);
+                NetworkObject spawned = runner.Spawn(
+                    typeId: NetworkPrefabId.FromRaw(PhotonFusionNetworkObjectProvider.C3D_PREFAB_FLAG),
+                    position: Vector3.zero,
+                    rotation: Quaternion.identity,
+                    inputAuthority: null,
+                    onBeforeSpawned: null,
+                    flags: NetworkSpawnFlags.SharedModeStateAuthMasterClient
+                );
                 PhotonFusionLobbySession lobbySession = spawned.GetComponent<PhotonFusionLobbySession>();
                 lobbySession.activeRunner = runner;
                 lobbySession.LobbyId = System.Guid.NewGuid().ToString();
@@ -293,3 +300,4 @@ namespace Cognitive3D.Components
         #endregion
     }
 }
+#endif
