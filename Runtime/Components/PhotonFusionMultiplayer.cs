@@ -143,6 +143,18 @@ namespace Cognitive3D.Components
             Util.logDebug($"Received shared lobbyId: {lobbyId}");
         }
 
+        /// <summary>
+        /// Waits for a specified delay (in seconds) before invoking the provided callback action
+        /// </summary>
+        /// <param name="callback"></param>
+        /// <param name="delay"></param>
+        /// <returns></returns>
+        private IEnumerator DelayCoroutine(Action callback, float delay)
+        {
+            yield return new WaitForSeconds(delay);
+            callback?.Invoke();
+        }
+
         #region Network Callbacks
         void INetworkRunnerCallbacks.OnConnectedToServer(NetworkRunner runner)
         {
@@ -228,7 +240,9 @@ namespace Cognitive3D.Components
                 // Only the StateAuthority is allowed to call this RPC
                 if (PhotonFusionLobbySession.Instance.HasStateAuthority)
                 {
-                    PhotonFusionLobbySession.Instance.RPC_SendCustomEventOnLeave(player.PlayerId);
+                    // Added a 1-second delay before sending the leave event 
+                    // to ensure the player count is correctly updated after a player leaves the session.
+                    StartCoroutine(DelayCoroutine(() => PhotonFusionLobbySession.Instance.RPC_SendCustomEventOnLeave(player.PlayerId), 1));
                 }
             }
         }
