@@ -15,7 +15,6 @@ namespace Cognitive3D.Components
     {
         private const float PHOTON_SENSOR_RECORDING_INTERVAL_IN_SECONDS = 1.0f;
         private float currentTime = 0;
-        private PhotonAppSettings globalSettings;
         NetworkRunner activeRunner;
 
         // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -80,7 +79,7 @@ namespace Cognitive3D.Components
                 }
             }
 
-            Util.LogOnce("No active NetworkRunner instance found.", UnityEngine.LogType.Error);
+            Util.LogOnce("No active NetworkRunner instance found.", UnityEngine.LogType.Warning);
             return false;
         }
 
@@ -91,7 +90,7 @@ namespace Cognitive3D.Components
         {
             // Time from my device to server and back
             // AKA latency
-            if (activeRunner.IsRunning && activeRunner.IsConnectedToServer)
+            if (activeRunner.IsRunning && (activeRunner.IsConnectedToServer || activeRunner.IsServer))
             {
                 double rtt = activeRunner.GetPlayerRtt(activeRunner.LocalPlayer);
                 int roundTripTimeInMilliseconds = (int)(rtt * 1000f);
@@ -102,7 +101,7 @@ namespace Cognitive3D.Components
         /// <summary>
         /// Sets session properties for multiplayer related details
         /// </summary>
-        private void SetMultiplayerSessionProperties(NetworkRunner runner, PhotonAppSettings globalSettings)
+        private void SetMultiplayerSessionProperties(NetworkRunner runner)
         {
             if (runner)
             {
@@ -111,6 +110,7 @@ namespace Cognitive3D.Components
                 Cognitive3D_Manager.SetSessionProperty("c3d.multiplayer.photonRoomName", runner.SessionInfo.Name);
             }
 
+            PhotonAppSettings.TryGetGlobal(out var globalSettings);
             if (globalSettings)
             {
                 Cognitive3D_Manager.SetSessionProperty("c3d.multiplayer.photonAppId", globalSettings.AppSettings.AppIdFusion);
@@ -145,13 +145,7 @@ namespace Cognitive3D.Components
         #region Network Callbacks
         void INetworkRunnerCallbacks.OnConnectedToServer(NetworkRunner runner)
         {
-            PhotonAppSettings.TryGetGlobal(out globalSettings);
-            if (globalSettings)
-            {
-                string photonAppID = globalSettings.AppSettings.AppIdFusion;
-                Cognitive3D_Manager.SetSessionProperty("c3d.multiplayer.photonAppId", photonAppID);
-            }
-            SetMultiplayerSessionProperties(runner, globalSettings);
+            SetMultiplayerSessionProperties(runner);
         }
 
         void INetworkRunnerCallbacks.OnShutdown(NetworkRunner runner, ShutdownReason reason)
@@ -194,7 +188,7 @@ namespace Cognitive3D.Components
 
             runner.StartCoroutine(WaitForLobbyIdThenContinue());
 
-            SetMultiplayerSessionProperties(runner, globalSettings);
+            SetMultiplayerSessionProperties(runner);
 
             if (runner.SessionInfo != null && !string.IsNullOrEmpty(runner.SessionInfo.Name))
             {
