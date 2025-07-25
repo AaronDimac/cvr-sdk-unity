@@ -108,6 +108,7 @@ namespace Cognitive3D.Components
                 Cognitive3D_Manager.SetSessionProperty("c3d.multiplayer.photonPlayerId", runner.LocalPlayer.PlayerId);
                 Cognitive3D_Manager.SetSessionProperty("c3d.multiplayer.photonUserId", runner.UserId);
                 Cognitive3D_Manager.SetSessionProperty("c3d.multiplayer.photonRoomName", runner.SessionInfo.Name);
+                Cognitive3D_Manager.SetSessionProperty("c3d.multiplayer.photonGameMode", runner.GameMode);
             }
 
             PhotonAppSettings.TryGetGlobal(out var globalSettings);
