@@ -1160,6 +1160,66 @@ namespace Cognitive3D
 
         #endregion
 
+        #region Assembly Definition
+        /// <summary>
+        /// Checks if 'allowUnsafeCode' is enabled in the Cognitive3D.asmdef file.
+        /// Logs an error if the asmdef file cannot be found.
+        /// </summary>
+        internal static bool IsUnsafeCodeEnabled()
+        {
+            string path = "Packages/com.cognitive3d.c3d-sdk/Runtime/Cognitive3D.asmdef";
+
+            if (!File.Exists(path))
+            {
+                Util.LogOnce($"ASMDEF not found at {path}", LogType.Error);
+                return false;
+            }
+
+            string json = File.ReadAllText(path);
+
+            // Check if allowUnsafeCode is explicitly set to true
+            return json.Contains("\"allowUnsafeCode\": true");
+        }
+
+        /// <summary>
+        /// Enables 'allowUnsafeCode' in the Cognitive3D.asmdef file by either updating its value
+        /// or inserting the property if it does not already exist. 
+        /// Triggers AssetDatabase refresh after modification. 
+        /// Logs an error if the asmdef file cannot be found.
+        /// </summary>
+        internal static void EnableUnsafeCode()
+        {
+            string path = "Packages/com.cognitive3d.c3d-sdk/Runtime/Cognitive3D.asmdef";
+
+            if (!File.Exists(path))
+            {
+                Util.LogOnce($"ASMDEF not found at {path}", LogType.Error);
+                return;
+            }
+
+            string json = File.ReadAllText(path);
+
+            // Use regex to replace or insert the allowUnsafeCode field
+            if (json.Contains("\"allowUnsafeCode\""))
+            {
+                json = System.Text.RegularExpressions.Regex.Replace(json, "\"allowUnsafeCode\"\\s*:\\s*(false|true)", "\"allowUnsafeCode\": true");
+            }
+            else
+            {
+                // insert before the final closing }
+                int insertIndex = json.LastIndexOf('}');
+                if (insertIndex > 0)
+                {
+                    // Add a comma before inserting if not already at the end of an object
+                    json = json.Insert(insertIndex, ",\n  \"allowUnsafeCode\": true\n");
+                }
+            }
+
+            File.WriteAllText(path, json);
+            AssetDatabase.Refresh();
+        }
+        #endregion
+
         #region SDK Updates
         //data about the last sdk release on github
         public class ReleaseInfo
