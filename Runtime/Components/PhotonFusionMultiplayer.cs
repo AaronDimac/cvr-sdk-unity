@@ -19,36 +19,21 @@ namespace Cognitive3D.Components
         NetworkRunner activeRunner;
 
         // Start is called once before the first execution of Update after the MonoBehaviour is created
-        void Start()
+        void Awake()
         {
-            activeRunner = FindFirstObjectByType<NetworkRunner>();
-            if (activeRunner == null)
-            {
-                Util.logError("No NetworkRunner found to register callbacks. Adding one to Cognitive3D_Manager");
-                activeRunner = gameObject.AddComponent<NetworkRunner>();
-            }
-
-            activeRunner.gameObject.AddComponent<PhotonFusionNetworkObjectProvider>();
-            activeRunner.AddCallbacks(this);
-
-            Cognitive3D_Manager.OnSessionBegin += OnSessionBegin;
+            TryGetNetworkRunner();
             Cognitive3D_Manager.OnUpdate += Cognitive3D_Manager_OnUpdate;
             Cognitive3D_Manager.OnPreSessionEnd += OnPreSessionEnd;
         }
 
-        private void OnSessionBegin()
+        private void OnDestroy()
         {
-            PhotonAppSettings.TryGetGlobal(out globalSettings);
-            if (globalSettings)
-            {
-                string photonAppID = globalSettings.AppSettings.AppIdFusion;
-                Cognitive3D_Manager.SetSessionProperty("c3d.multiplayer.photonAppId", photonAppID);
-            }
+            Cognitive3D_Manager.OnUpdate -= Cognitive3D_Manager_OnUpdate;
+            Cognitive3D_Manager.OnPreSessionEnd -= OnPreSessionEnd;
         }
 
         private void OnPreSessionEnd()
         {
-            Cognitive3D_Manager.OnSessionBegin -= OnSessionBegin;
             Cognitive3D_Manager.OnUpdate -= Cognitive3D_Manager_OnUpdate;
             Cognitive3D_Manager.OnPreSessionEnd -= OnPreSessionEnd;
         }
@@ -61,6 +46,8 @@ namespace Cognitive3D.Components
             if (isActiveAndEnabled)
             {
                 if (!Cognitive3D_Manager.IsInitialized) { return; }
+                if (!TryGetNetworkRunner()) { return; }
+
                 currentTime += deltaTime;
                 if (currentTime > PHOTON_SENSOR_RECORDING_INTERVAL_IN_SECONDS)
                 {
@@ -70,8 +57,31 @@ namespace Cognitive3D.Components
             }
             else
             {
-                Debug.LogWarning("Photon Multiplayer component is disabled. Please enable in inspector.");
+                Debug.LogWarning("Photon Fusion Multiplayer component is disabled. Please enable in inspector.");
             }
+        }
+
+        private bool TryGetNetworkRunner()
+        {
+            if (activeRunner != null)
+                return true;
+
+            foreach (var instance in NetworkRunner.Instances)
+            {
+                if (instance.IsStarting)
+                {
+                    activeRunner = instance;
+
+                    if (activeRunner.GetComponent<PhotonFusionNetworkObjectProvider>() == null)
+                        activeRunner.gameObject.AddComponent<PhotonFusionNetworkObjectProvider>();
+
+                    activeRunner.AddCallbacks(this);
+                    return true;
+                }
+            }
+
+            Util.LogOnce("No active NetworkRunner instance found.", UnityEngine.LogType.Error);
+            return false;
         }
 
         /// <summary>
@@ -133,14 +143,15 @@ namespace Cognitive3D.Components
         }
 
         #region Network Callbacks
-        public void OnObjectExitAOI(NetworkRunner runner, NetworkObject player, PlayerRef playerRef)
+        void INetworkRunnerCallbacks.OnConnectedToServer(NetworkRunner runner)
         {
-
-        }
-
-        public void OnObjectEnterAOI(NetworkRunner runner, NetworkObject player, PlayerRef playerRef)
-        {
-
+            PhotonAppSettings.TryGetGlobal(out globalSettings);
+            if (globalSettings)
+            {
+                string photonAppID = globalSettings.AppSettings.AppIdFusion;
+                Cognitive3D_Manager.SetSessionProperty("c3d.multiplayer.photonAppId", photonAppID);
+            }
+            SetMultiplayerSessionProperties(runner, globalSettings);
         }
 
         void INetworkRunnerCallbacks.OnShutdown(NetworkRunner runner, ShutdownReason reason)
@@ -227,76 +238,33 @@ namespace Cognitive3D.Components
             }
         }
 
-        void INetworkRunnerCallbacks.OnConnectRequest(NetworkRunner runner, NetworkRunnerCallbackArgs.ConnectRequest request, byte[] token)
-        {
+        public void OnObjectExitAOI(NetworkRunner runner, NetworkObject player, PlayerRef playerRef) { }
 
-        }
+        public void OnObjectEnterAOI(NetworkRunner runner, NetworkObject player, PlayerRef playerRef)  { }
 
-        void INetworkRunnerCallbacks.OnConnectFailed(NetworkRunner runner, NetAddress remoteAddress, NetConnectFailedReason reason)
-        {
+        void INetworkRunnerCallbacks.OnConnectRequest(NetworkRunner runner, NetworkRunnerCallbackArgs.ConnectRequest request, byte[] token) { }
 
-        }
+        void INetworkRunnerCallbacks.OnConnectFailed(NetworkRunner runner, NetAddress remoteAddress, NetConnectFailedReason reason) { }
 
-        public void OnUserSimulationMessage(NetworkRunner runner, SimulationMessagePtr message)
-        {
+        public void OnUserSimulationMessage(NetworkRunner runner, SimulationMessagePtr message) { }
 
-        }
+        public void OnReliableDataReceived(NetworkRunner runner, PlayerRef player, ReliableKey key, ArraySegment<byte> data) { }
 
-        public void OnReliableDataReceived(NetworkRunner runner, PlayerRef player, ReliableKey key, ArraySegment<byte> data)
-        {
+        public void OnReliableDataProgress(NetworkRunner runner, PlayerRef player, ReliableKey key, float progress) { }
 
-        }
+        public void OnInput(NetworkRunner runner, NetworkInput input) { }
 
-        public void OnReliableDataProgress(NetworkRunner runner, PlayerRef player, ReliableKey key, float progress)
-        {
+        public void OnInputMissing(NetworkRunner runner, PlayerRef player, NetworkInput input) { }
 
-        }
+        public void OnSessionListUpdated(NetworkRunner runner, List<SessionInfo> sessionList) { }
 
-        public void OnInput(NetworkRunner runner, NetworkInput input)
-        {
+        public void OnCustomAuthenticationResponse(NetworkRunner runner, Dictionary<string, object> data) { }
 
-        }
+        public void OnHostMigration(NetworkRunner runner, HostMigrationToken hostMigrationToken) { }
 
-        public void OnInputMissing(NetworkRunner runner, PlayerRef player, NetworkInput input)
-        {
+        void INetworkRunnerCallbacks.OnSceneLoadDone(NetworkRunner runner) { }
 
-        }
-
-        void INetworkRunnerCallbacks.OnConnectedToServer(NetworkRunner runner)
-        {
-            Fusion.Photon.Realtime.PhotonAppSettings.TryGetGlobal(out globalSettings);
-            if (globalSettings)
-            {
-                string photonAppID = globalSettings.AppSettings.AppIdFusion;
-                Cognitive3D_Manager.SetSessionProperty("c3d.multiplayer.photonAppId", photonAppID);
-            }
-            SetMultiplayerSessionProperties(runner, globalSettings);
-        }
-
-        public void OnSessionListUpdated(NetworkRunner runner, List<SessionInfo> sessionList)
-        {
-
-        }
-
-        public void OnCustomAuthenticationResponse(NetworkRunner runner, Dictionary<string, object> data)
-        {
-
-        }
-
-        public void OnHostMigration(NetworkRunner runner, HostMigrationToken hostMigrationToken)
-        {
-
-        }
-
-        void INetworkRunnerCallbacks.OnSceneLoadDone(NetworkRunner runner)
-        {
-
-        }
-
-        public void OnSceneLoadStart(NetworkRunner runner)
-        {
-
-        }
+        public void OnSceneLoadStart(NetworkRunner runner) { }
         #endregion
     }
 }
