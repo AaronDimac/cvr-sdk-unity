@@ -27,7 +27,8 @@
         "Unity.Netcode.Runtime",
         "Unity.XR.Hands",
         "VIVE.OpenXR",
-        "Unity.XR.OpenXR"
+        "Unity.XR.OpenXR",
+        "Fusion.Unity"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
