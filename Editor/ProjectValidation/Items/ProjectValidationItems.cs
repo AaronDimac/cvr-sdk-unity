@@ -933,7 +933,7 @@ namespace Cognitive3D
 
 #if FUSION2
             ProjectValidation.AddItem(
-                level: ProjectValidation.ItemLevel.Recommended, 
+                level: ProjectValidation.ItemLevel.Recommended,
                 category: CATEGORY,
                 actionType: ProjectValidation.ItemAction.Fix,
                 message: "\"Allow unsafe code\" is not enabled in Cognitive3D.asmdef. This is required for Photon Fusion 2 support.",
@@ -947,6 +947,32 @@ namespace Cognitive3D
                     EditorCore.EnableUnsafeCode();
                 }
             );
+
+            if (Fusion.NetworkProjectConfig.Global != null)
+            {
+                ProjectValidation.AddItem(
+                    level: ProjectValidation.ItemLevel.Recommended,
+                    category: CATEGORY,
+                    actionType: ProjectValidation.ItemAction.None,
+                    message: "Cognitive3D.asmdef is not included in the Photon Fusion 'Assemblies to Weave' list. This is required for Photon Fusion 2 support. You can add it via Tools > Fusion > Network Project Config, under the Weaver Settings section.",
+                    fixmessage: "Cognitive3D.asmdef has been added to the Photon Fusion 'Assemblies to Weave' list for Photon Fusion 2 support.",
+                    checkAction: () =>
+                    {
+                        foreach (var asm in Fusion.NetworkProjectConfig.Global.AssembliesToWeave)
+                        {
+                            if (asm != null && asm.Contains("Cognitive3D"))
+                            {
+                                return true;
+                            }
+                        }
+                        return false;
+                    },
+                    fixAction: () =>
+                    {
+                        
+                    }
+                );
+            }
 #endif
 
 #if C3D_NETCODE
@@ -1047,7 +1073,7 @@ namespace Cognitive3D
 #endif
 #endif
 
-            #endregion
-        }
+                #endregion
+            }
     }
 }
