@@ -17,8 +17,7 @@ namespace Cognitive3D.Components
         private float currentTime = 0;
         NetworkRunner activeRunner;
 
-        // Start is called once before the first execution of Update after the MonoBehaviour is created
-        void Awake()
+        void Start()
         {
             TryGetNetworkRunner();
             Cognitive3D_Manager.OnUpdate += Cognitive3D_Manager_OnUpdate;
