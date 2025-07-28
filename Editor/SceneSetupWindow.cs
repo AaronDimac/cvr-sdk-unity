@@ -287,9 +287,9 @@ namespace Cognitive3D
             }
 #if PHOTON_UNITY_NETWORKING
     #if C3D_PHOTON
-                if (Cognitive3D_Manager.Instance.gameObject.GetComponent<PhotonMultiplayer>() == null)
+                if (Cognitive3D_Manager.Instance.gameObject.GetComponent<PhotonPunMultiplayer>() == null)
                 {
-                    Cognitive3D_Manager.Instance.gameObject.AddComponent<PhotonMultiplayer>();
+                    Cognitive3D_Manager.Instance.gameObject.AddComponent<PhotonPunMultiplayer>();
                 }
                 if (Cognitive3D_Manager.Instance.gameObject.GetComponent<PhotonView>() == null)
                 {
