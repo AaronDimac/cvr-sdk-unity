@@ -59,19 +59,19 @@ namespace Cognitive3D
         /// If true, export dynamics from the scenes too <br/>
         /// Otherwise, just export the scenes
         /// </summary>
-        static bool exportDynamics = false;
+        static bool exportDynamics;
 
         /// <summary>
         /// Set to false until user clicks export button <br/>
         /// User's click sets it to true <br/>
         /// Once export complete, this variable is set back to false
         /// </summary>
-        static bool isExporting = false;
+        static bool isExporting;
 
         /// <summary>
         /// Used to track the current scene in the Update FSM
         /// </summary>
-        static int sceneIndex = 0;
+        static int sceneIndex;
 
         internal static SceneManagementUploadState sceneUploadState = SceneManagementUploadState.Init;
 
@@ -81,7 +81,7 @@ namespace Cognitive3D
         /// </summary>
         internal static event onUploadScenesComplete OnUploadScenesComplete;
         private static void InvokeUploadScenesCompleteEvent() { if (OnUploadScenesComplete != null) { OnUploadScenesComplete.Invoke(); } }
-        private static bool completedUpload = false;
+        private static bool completedUpload;
         internal static bool CompletedUpload { get => completedUpload; set => completedUpload = value; }
 
         internal static List<SceneEntry> GetSelectedScenes(List<SceneEntry> sceneEntries)
@@ -203,7 +203,7 @@ namespace Cognitive3D
 
                 case SceneManagementUploadState.StartUpload:
                     CompletedUpload = false;
-                    UploadSceneAndDynamics(exportDynamics, exportDynamics, true, true, false);
+                    UploadSceneAndDynamics(exportDynamics, exportDynamics, true, true);
                     sceneUploadState = SceneManagementUploadState.Uploading;
                     return;
 
@@ -438,7 +438,6 @@ namespace Cognitive3D
                 }
             }
 
-            // CompletedUpload = false;
             EditorCore.RefreshSceneVersion(OnSceneVersionRefreshed);
         }
 
