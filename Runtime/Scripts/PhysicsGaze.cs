@@ -18,7 +18,26 @@ namespace Cognitive3D
         public static event onGazeTick OnGazeTick;
         private static void InvokeGazeTickEvent() { if (OnGazeTick != null) { OnGazeTick(); } }
 
-        public bool experimentalCanvasGaze;
+        public bool DrawDebugLines = false;
+
+        public bool enableCanvasGaze;
+        public enum CanvasRefreshBehaviour
+        {
+            FindObjects,
+            TrimList,
+        }
+        public CanvasRefreshBehaviour canvasRefreshBehaviour;
+
+        public enum CanvasCacheBehaviour
+        {
+            FindObjectsAlways,
+            ListOfCanvases,
+            FindEachSceneLoad
+        }
+        public CanvasCacheBehaviour canvasCacheBehaviour;
+
+        public List<Canvas> overrideTargetCanvases;
+        RectTransform[] cachedCanvasRectTransforms = new RectTransform[0];
 
         public override void Initialize()
         {
@@ -26,6 +45,19 @@ namespace Cognitive3D
             if (GameplayReferences.HMD == null) { Cognitive3D.Util.logWarning("HMD is null! Physics Gaze needs a camera to function"); }
             StartCoroutine(Tick());
             Cognitive3D_Manager.OnPreSessionEnd += OnEndSessionEvent;
+
+            if (enableCanvasGaze && canvasCacheBehaviour == CanvasCacheBehaviour.FindEachSceneLoad)
+            {
+                Cognitive3D_Manager.OnLevelLoaded += Cognitive3D_Manager_OnLevelLoaded;
+                var canvases = FindObjectsOfType<Canvas>();
+                RefreshCanvasTransforms(canvases);
+            }
+        }
+
+        private void Cognitive3D_Manager_OnLevelLoaded(UnityEngine.SceneManagement.Scene scene, UnityEngine.SceneManagement.LoadSceneMode mode, bool newSceneId)
+        {
+            var canvases = FindObjectsOfType<Canvas>();
+            RefreshCanvasTransforms(canvases);
         }
 
         IEnumerator Tick()
@@ -49,17 +81,17 @@ namespace Cognitive3D
 
                 //do this once here, so we don't need to iterate over canvases twice (once for world, once for dynamics)
                 float canvasDistance = 0;
-                Canvas canvasHit = null;
+                RectTransform canvasRectHit = null;
                 Vector3 canvasHitWorldPosition = Vector3.zero;
                 bool didHitCanvas = false;
                 DynamicObject canvasDynamic = null;
 
-                if (experimentalCanvasGaze)
+                if (enableCanvasGaze)
                 {
-                    didHitCanvas = RaycastToCanvas(ray.origin, ray.direction, out canvasDistance, out canvasHit, out canvasHitWorldPosition);
+                    didHitCanvas = RaycastToCanvas(ray.origin, ray.direction, out canvasDistance, out canvasRectHit, out canvasHitWorldPosition);
                     if (didHitCanvas)
                     {
-                        canvasDynamic = canvasHit.GetComponent<DynamicObject>();
+                        canvasDynamic = canvasRectHit.GetComponent<DynamicObject>();
                     }
                 }
 
@@ -71,7 +103,7 @@ namespace Cognitive3D
 
                         if (canvasDynamic != null) //dynamic canvas
                         {
-                            var canvasLocal = canvasHit.transform.InverseTransformPoint(canvasHitWorldPosition);
+                            var canvasLocal = canvasRectHit.InverseTransformPoint(canvasHitWorldPosition);
                             GazeCore.RecordGazePoint(Util.Timestamp(Time.frameCount), canvasDynamic.GetId(), canvasLocal, ray.origin, GameplayReferences.HMD.rotation);
                         }
                         else //world canvas that is closer
@@ -107,7 +139,7 @@ namespace Cognitive3D
                     {
                         if (canvasDynamic != null) //dynamic canvas
                         {
-                            var canvasLocal = canvasHit.transform.InverseTransformPoint(canvasHitWorldPosition);
+                            var canvasLocal = canvasRectHit.InverseTransformPoint(canvasHitWorldPosition);
                             GazeCore.RecordGazePoint(Util.Timestamp(Time.frameCount), canvasDynamic.GetId(), canvasLocal, ray.origin, GameplayReferences.HMD.rotation);
                         }
                         else //world canvas that is closer
@@ -137,7 +169,7 @@ namespace Cognitive3D
                     {
                         if (canvasDynamic != null) //dynamic canvas
                         {
-                            var canvasLocal = canvasHit.transform.InverseTransformPoint(canvasHitWorldPosition);
+                            var canvasLocal = canvasRectHit.InverseTransformPoint(canvasHitWorldPosition);
                             GazeCore.RecordGazePoint(Util.Timestamp(Time.frameCount), canvasDynamic.GetId(), canvasLocal, ray.origin, GameplayReferences.HMD.rotation);
                         }
                         else //world canvas that is closer
@@ -154,7 +186,7 @@ namespace Cognitive3D
                         GazeCore.RecordGazePoint(Util.Timestamp(Time.frameCount), pos, rot);
 
                         //debugging
-                        if (DrawLines)
+                        if (DrawDebugLines)
                             Debug.DrawRay(pos, displayPosition, Color.cyan, 0.1f);
 
                         //active session view
@@ -189,7 +221,7 @@ namespace Cognitive3D
 
         void DrawGazePoint(Vector3 start, Vector3 worldPoint,Color color)
         {
-            if (!DrawLines) { return; }
+            if (!DrawDebugLines) { return; }
             Debug.DrawLine(start, worldPoint, color, 0.1f);
             Debug.DrawRay(worldPoint, Vector3.right, Color.red, 10);
             Debug.DrawRay(worldPoint, Vector3.forward, Color.blue, 10);
@@ -199,92 +231,91 @@ namespace Cognitive3D
         private void OnEndSessionEvent()
         {
             Cognitive3D_Manager.OnPreSessionEnd -= OnEndSessionEvent;
+            Cognitive3D_Manager.OnLevelLoaded -= Cognitive3D_Manager_OnLevelLoaded;
             Destroy(this);
         }
 
-        public bool DrawLines = false;
 
-        RectTransform[] rts = new RectTransform[0];
-
-        //option to check against pre-set canvases rather than finding them every frame
-        public bool useOverrideCanvases;
-        public List<Canvas> overrideTargetCanvases;
-
-        bool RaycastToCanvas(Vector3 position, Vector3 forward, out float distance, out Canvas hit, out Vector3 worldPosition)
+        void RefreshCanvasTransforms(Canvas[] canvases)
         {
-            if (useOverrideCanvases)
+            //remove empty canvases
+            List<RectTransform> tempRectTransforms = new List<RectTransform>();
+            for (int i = 0; i < canvases.Length; i++)
             {
-                //get canvases every frame, but cache rect transform references
-                if (overrideTargetCanvases.Count != rts.Length)
+                if (canvases[i] != null)
                 {
-                    rts = new RectTransform[overrideTargetCanvases.Count];
-                    for (int i = 0; i < overrideTargetCanvases.Count; i++)
-                    {
-                        //TODO handle null canvases in list
-                        rts[i] = overrideTargetCanvases[i].GetComponent<RectTransform>();
-                    }
-                }
-
-                Canvas hitCanvas = null;
-                float hitDistance = 99999;
-                for (int i = 0; i < rts.Length; i++)
-                {
-                    float tempDistance;
-                    bool didHitCanvas = DrawDebugRect(position, forward, rts[i], out tempDistance);
-                    if (didHitCanvas && tempDistance < hitDistance)
-                    {
-                        hitDistance = tempDistance;
-                        hitCanvas = overrideTargetCanvases[i];
-                    }
-                }
-
-                if (hitCanvas != null)
-                {
-                    if (DrawLines)
-                    {
-                        Debug.DrawLine(position, position + forward * hitDistance, Color.green);
-                    }
-                    worldPosition = position + forward * hitDistance;
-                    hit = hitCanvas;
-                    distance = hitDistance;
-                    return true;
+                    tempRectTransforms.Add(canvases[i].GetComponent<RectTransform>());
                 }
             }
-            else
+
+            cachedCanvasRectTransforms = tempRectTransforms.ToArray();
+        }
+
+        bool RaycastToCanvas(Vector3 position, Vector3 forward, out float distance, out RectTransform hit, out Vector3 worldPosition)
+        {
+            if (canvasCacheBehaviour == CanvasCacheBehaviour.ListOfCanvases || canvasCacheBehaviour == CanvasCacheBehaviour.FindEachSceneLoad)
             {
-                //get canvases every tick, but cache rect transform references
+                //check for null transforms in the list, refresh if changed
+                if (overrideTargetCanvases.Count != cachedCanvasRectTransforms.Length)
+                {
+                    if (canvasRefreshBehaviour == CanvasRefreshBehaviour.TrimList)
+                    {
+                        RefreshCanvasTransforms(overrideTargetCanvases.ToArray());
+
+                        //remove null canvases from overrideTargetCanvases list
+                        for (int i = overrideTargetCanvases.Count - 1; i >= 0; i--)
+                        {
+                            if (overrideTargetCanvases[i] == null)
+                            {
+                                overrideTargetCanvases.RemoveAt(i);
+                            }
+                        }
+                    }
+                    else if (canvasRefreshBehaviour == CanvasRefreshBehaviour.FindObjects)
+                    {
+                        var canvases = FindObjectsOfType<Canvas>();
+                        RefreshCanvasTransforms(canvases);
+                        overrideTargetCanvases.Clear();
+                        overrideTargetCanvases.AddRange(canvases);
+                    }
+                }
+            }
+            else if (canvasCacheBehaviour == CanvasCacheBehaviour.FindObjectsAlways)
+            {
                 var canvases = FindObjectsOfType<Canvas>();
-                if (canvases.Length != rts.Length)
+                if (canvases.Length != cachedCanvasRectTransforms.Length)
                 {
-                    rts = new RectTransform[canvases.Length];
-                    for (int i = 0; i < canvases.Length; i++)
-                        rts[i] = canvases[i].GetComponent<RectTransform>();
+                    RefreshCanvasTransforms(canvases);
+                    overrideTargetCanvases.Clear();
+                    overrideTargetCanvases.AddRange(canvases);
                 }
+            }
 
-                Canvas hitCanvas = null;
-                float hitDistance = 99999;
-                for (int i = 0; i < rts.Length; i++)
-                {
-                    float tempDistance;
-                    bool didHitCanvas = DrawDebugRect(position, forward, rts[i], out tempDistance);
-                    if (didHitCanvas && tempDistance < hitDistance)
-                    {
-                        hitDistance = tempDistance;
-                        hitCanvas = canvases[i];
-                    }
-                }
+            RectTransform hitCanvasRect = null;
+            float hitDistance = 99999;
+            for (int i = 0; i < cachedCanvasRectTransforms.Length; i++)
+            {
+                if (overrideTargetCanvases[i].enabled == false || overrideTargetCanvases[i].gameObject.activeInHierarchy == false) { continue; }
 
-                if (hitCanvas != null)
+                float tempDistance;
+                bool didHitCanvas = CheckCanvasHit(position, forward, cachedCanvasRectTransforms[i], out tempDistance);
+                if (didHitCanvas && tempDistance < hitDistance)
                 {
-                    if (DrawLines)
-                    {
-                        Debug.DrawLine(position, position + forward * hitDistance, Color.green);
-                    }
-                    worldPosition = position + forward * hitDistance;
-                    hit = hitCanvas;
-                    distance = hitDistance;
-                    return true;
+                    hitDistance = tempDistance;
+                    hitCanvasRect = cachedCanvasRectTransforms[i];
                 }
+            }
+
+            if (hitCanvasRect != null)
+            {
+                if (DrawDebugLines)
+                {
+                    Debug.DrawLine(position, position + forward * hitDistance, Color.green);
+                }
+                worldPosition = position + forward * hitDistance;
+                hit = hitCanvasRect;
+                distance = hitDistance;
+                return true;
             }
 
             worldPosition = Vector3.zero;
@@ -293,7 +324,7 @@ namespace Cognitive3D
             return false;
         }
 
-        bool DrawDebugRect(Vector3 pos, Vector3 forward, RectTransform rt, out float hitDistance)
+        bool CheckCanvasHit(Vector3 pos, Vector3 forward, RectTransform rt, out float hitDistance)
         {
             var halfsize0 = rt.sizeDelta[0] / 2;
             var halfsize1 = rt.sizeDelta[1] / 2;
@@ -324,7 +355,7 @@ namespace Cognitive3D
                 Vector3 twoDPoint = rt.InverseTransformPoint(worldHitPosition);
                 bool inPolygon = IsPointInPolygon4(bottomLeft, bottomRight, topRight, topLeft, twoDPoint);
 
-                if (DrawLines)
+                if (DrawDebugLines)
                 {
                     Debug.DrawRay(twoDPoint, Vector3.forward, Color.blue);
                     Debug.DrawLine(bottomLeft, bottomRight, inPolygon ? Color.green : Color.red);
