@@ -28,7 +28,7 @@ namespace Cognitive3D
 
         /// <summary>
         /// Describes how canvases are cached
-        /// FindObjects searches the scene every tick. Most expensive, but very flexible when spawning canvas prefabs
+        /// FindObjectsAlways searches the scene every tick. Most expensive, but very flexible when spawning canvas prefabs
         /// ListOfCanvases searches through all canvases in 'targetCanvases'. Spawned canvases will have to be added manually
         /// FindEachSceneLoad finds all canvases in the scene once on each scene load, then uses the results each tick. Spawned canvases will have to be added manually
         /// </summary>
@@ -38,6 +38,7 @@ namespace Cognitive3D
             ListOfCanvases,
             FindEachSceneLoad
         }
+        [Tooltip("Describes how canvases are cached. FindObjectsAlways gets canvases in the scene each tick, ListOfCanvases only calculates hits on specific canvases, FindEachSceneLoad finds canvases in the scene once on each scene load")]
         public CanvasCacheBehaviour canvasCacheBehaviour;
 
         /// <summary>
@@ -50,6 +51,7 @@ namespace Cognitive3D
             FindObjects,
             TrimList,
         }
+        [Tooltip("Used with FindObjectsAlways and ListOfCanvases behaviours. When a canvas is destroyed, optionally find objects in the scene, or trim the removed canvas from the cached list")]
         public CanvasRefreshBehaviour canvasRefreshBehaviour;
 
         public List<Canvas> targetCanvases;
