@@ -42,11 +42,13 @@ namespace Cognitive3D
                 slideProgress += Time.deltaTime * slideSpeed * (slidingForward ? 1 : -1);
                 slideProgress = Mathf.Clamp01(slideProgress);
 
-                if (slideProgress == 1f)
+                float epsilon = 0.0001f;
+
+                if (Mathf.Abs(slideProgress - 1f) < epsilon)
                 {
                     slidingForward = false;
                 }
-                else if (slideProgress == 0f)
+                else if (Mathf.Abs(slideProgress - 0f) < epsilon)
                 {
                     slidingBackward = false;
                 }
