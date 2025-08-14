@@ -81,11 +81,11 @@ namespace Cognitive3D
                     if (!sample.isImported)
                     {
                         sample.Import();
-                        Debug.Log($"Imported sample: {sample.displayName}");
+                        Util.logDebug($"Imported sample: {sample.displayName}");
                     }
                     else
                     {
-                        Debug.LogWarning($"{sample.displayName} sample already imported. Path: {sample.importPath}");
+                        Util.logWarning($"{sample.displayName} sample already imported. Path: {sample.importPath}");
                     }
 
                     if (addPrefab && GameObject.FindAnyObjectByType<ExitPollHolder>() == null)
@@ -96,7 +96,7 @@ namespace Cognitive3D
                         fullPath = fullPath.Replace("\\", "/");
 
                         // Find where "Assets" starts in the full path
-                        int assetsIndex = fullPath.IndexOf("Assets/");
+                        int assetsIndex = fullPath.IndexOf("Assets/", System.StringComparison.OrdinalIgnoreCase);
                         if (assetsIndex == -1)
                         {
                             Debug.LogError("Could not find 'Assets/' in path: " + fullPath);

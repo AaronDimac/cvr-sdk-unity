@@ -89,7 +89,7 @@ namespace Cognitive3D
             GUILayout.BeginVertical();
             GUILayout.Label("Welcome to the Feature Builder", EditorCore.styles.FeatureTitle);
             GUILayout.Label(
-                "Explore the features of our platform. Each feature unlocks powerful capabilities you can use in your experience—from analytics to live control and more.",
+                "Explore the features of our platform. Each feature unlocks powerful capabilities you can use in your experience, from analytics to live control and more.",
                 EditorStyles.wordWrappedLabel
             );
             GUILayout.EndVertical();
