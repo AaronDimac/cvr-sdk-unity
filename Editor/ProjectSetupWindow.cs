@@ -9,7 +9,7 @@ namespace Cognitive3D
     [InitializeOnLoad]
     public class ProjectSetupWindow : EditorWindow
     {
-        bool keysSet = false;
+        bool keysSet;
         private string developerKey;
         private string apiKey;
         private string devKeyStatusMessage = "";
@@ -45,13 +45,13 @@ namespace Cognitive3D
 
         private Vector2 mainScroll;
 
-        private bool forceUpdateApiKey = false;
+        private bool forceUpdateApiKey;
         private string apiKeyFromDashboard = "";
 
         bool autoSelectXR = true;
-        bool previousAutoSelectXR = false;
-        int selectedSDKIndex = 0;
-        Dictionary<string, string> availableXrSdks = new Dictionary<string, string>
+        bool previousAutoSelectXR;
+        int selectedSDKIndex;
+        readonly Dictionary<string, string> availableXrSdks = new Dictionary<string, string>
         {
             { "MetaXR", "C3D_OCULUS" },
             { "PicoXR", "C3D_PICOXR" },
@@ -72,7 +72,7 @@ namespace Cognitive3D
         private Vector2 scrollPos;
 
         private bool selectAll;
-        private List<SceneEntry> sceneEntries = new List<SceneEntry>();
+        private readonly List<SceneEntry> sceneEntries = new List<SceneEntry>();
 
         private void OnGUI()
         {
@@ -414,7 +414,7 @@ namespace Cognitive3D
             return "Finish";
         }
 
-        private bool xrSdkPendingAfterUpload = false;
+        private bool xrSdkPendingAfterUpload;
 
         private void HandleFooterButtonClick(bool hasScenesToUpload, bool xrSdkNeedsUpdate, List<SceneEntry> selectedScenes)
         {
@@ -521,10 +521,10 @@ namespace Cognitive3D
             return false;
         }
 
-        string packageName;
         void OnGetPackages(UnityEditor.PackageManager.PackageCollection packages)
         {
             //search from specific sdks (single headset support) to general runtimes (openvr, etc)
+            string packageName;
             var XrSdks = availableXrSdks.Keys.ToArray();
             foreach (var package in packages)
             {

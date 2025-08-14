@@ -869,19 +869,19 @@ namespace Cognitive3D
 #if C3D_PHOTON
         bool wantPhotonPunSupport = true;
 #else
-        bool wantPhotonPunSupport = false;
+        bool wantPhotonPunSupport;
 #endif
 
 #if C3D_NETCODE
         bool wantNetcodeSupport = true;
 #else
-        bool wantNetcodeSupport = false;
+        bool wantNetcodeSupport;
 #endif
 
 #if C3D_NORMCORE
         bool wantNormcoreSupport = true;
 #else
-        bool wantNormcoreSupport = false;
+        bool wantNormcoreSupport;
 #endif
         void MultiplayerSetup()
         {
