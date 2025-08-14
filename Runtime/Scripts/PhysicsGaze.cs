@@ -20,14 +20,18 @@ namespace Cognitive3D
 
         public bool DrawDebugLines = false;
 
+        /// <summary>
+        /// Enables recording gaze on active canvas rects without requiring colliders
+        /// </summary>
+        [Tooltip("Enables recording gaze on active canvas rects without requiring colliders")]
         public bool enableCanvasGaze;
-        public enum CanvasRefreshBehaviour
-        {
-            FindObjects,
-            TrimList,
-        }
-        public CanvasRefreshBehaviour canvasRefreshBehaviour;
 
+        /// <summary>
+        /// Describes how canvases are cached
+        /// FindObjects searches the scene every tick. Most expensive, but very flexible when spawning canvas prefabs
+        /// ListOfCanvases searches through all canvases in 'targetCanvases'. Spawned canvases will have to be added manually
+        /// FindEachSceneLoad finds all canvases in the scene once on each scene load, then uses the results each tick. Spawned canvases will have to be added manually
+        /// </summary>
         public enum CanvasCacheBehaviour
         {
             FindObjectsAlways,
@@ -36,7 +40,19 @@ namespace Cognitive3D
         }
         public CanvasCacheBehaviour canvasCacheBehaviour;
 
-        public List<Canvas> overrideTargetCanvases;
+        /// <summary>
+        /// Used with FindObjectsAlways and ListOfCanvases canvas cache behaviours. Used when a canvas is destroyed or removed from the cache list
+        /// FindObjects finds all canvases in the scene and updates the list
+        /// TrimList only removes canvases from the cache list
+        /// </summary>
+        public enum CanvasRefreshBehaviour
+        {
+            FindObjects,
+            TrimList,
+        }
+        public CanvasRefreshBehaviour canvasRefreshBehaviour;
+
+        public List<Canvas> targetCanvases;
         RectTransform[] cachedCanvasRectTransforms = new RectTransform[0];
 
         public override void Initialize()
@@ -127,7 +143,8 @@ namespace Cognitive3D
                         }
 
                         //debugging
-                        DrawGazePoint(GameplayReferences.HMD.position, hitWorld, new Color(1, 0, 1, 0.5f));
+                        if (DrawDebugLines)
+                            DrawGazePoint(GameplayReferences.HMD.position, hitWorld, new Color(1, 0, 1, 0.5f));
 
                         //active session view
                         AddGazeToDisplay(hitWorld, hitLocal, hitDynamic);
@@ -235,17 +252,29 @@ namespace Cognitive3D
             Destroy(this);
         }
 
-
+        /// <summary>
+        /// canvases to iterate through. This must not include null objects
+        /// </summary>
+        /// <param name="canvases"></param>
         void RefreshCanvasTransforms(Canvas[] canvases)
         {
             //remove empty canvases
-            List<RectTransform> tempRectTransforms = new List<RectTransform>();
+            List<RectTransform> tempRectTransforms = new List<RectTransform>(canvases.Length);
             for (int i = 0; i < canvases.Length; i++)
             {
-                if (canvases[i] != null)
-                {
-                    tempRectTransforms.Add(canvases[i].GetComponent<RectTransform>());
-                }
+                tempRectTransforms.Add(canvases[i].GetComponent<RectTransform>());
+            }
+
+            cachedCanvasRectTransforms = tempRectTransforms.ToArray();
+        }
+
+        void RefreshCanvasTransforms(List<Canvas> canvases)
+        {
+            //remove empty canvases
+            List<RectTransform> tempRectTransforms = new List<RectTransform>(canvases.Count);
+            for (int i = 0; i < canvases.Count; i++)
+            {
+                tempRectTransforms.Add(canvases[i].GetComponent<RectTransform>());
             }
 
             cachedCanvasRectTransforms = tempRectTransforms.ToArray();
@@ -253,49 +282,53 @@ namespace Cognitive3D
 
         bool RaycastToCanvas(Vector3 position, Vector3 forward, out float distance, out RectTransform hit, out Vector3 worldPosition)
         {
+            //add canvases to the cache list from different behaviours
             if (canvasCacheBehaviour == CanvasCacheBehaviour.ListOfCanvases || canvasCacheBehaviour == CanvasCacheBehaviour.FindEachSceneLoad)
             {
-                //check for null transforms in the list, refresh if changed
-                if (overrideTargetCanvases.Count != cachedCanvasRectTransforms.Length)
+                //check for null transforms in the list, indicating a change
+                if (targetCanvases.Count != cachedCanvasRectTransforms.Length)
                 {
+                    //remove null canvas from list then update cache
                     if (canvasRefreshBehaviour == CanvasRefreshBehaviour.TrimList)
                     {
-                        RefreshCanvasTransforms(overrideTargetCanvases.ToArray());
-
                         //remove null canvases from overrideTargetCanvases list
-                        for (int i = overrideTargetCanvases.Count - 1; i >= 0; i--)
+                        for (int i = targetCanvases.Count - 1; i >= 0; i--)
                         {
-                            if (overrideTargetCanvases[i] == null)
+                            if (targetCanvases[i] == null)
                             {
-                                overrideTargetCanvases.RemoveAt(i);
+                                targetCanvases.RemoveAt(i);
                             }
                         }
+                        RefreshCanvasTransforms(targetCanvases);
                     }
                     else if (canvasRefreshBehaviour == CanvasRefreshBehaviour.FindObjects)
                     {
+                        //find objects in the scene scene
                         var canvases = FindObjectsOfType<Canvas>();
+                        targetCanvases.Clear();
+                        targetCanvases.AddRange(canvases);
                         RefreshCanvasTransforms(canvases);
-                        overrideTargetCanvases.Clear();
-                        overrideTargetCanvases.AddRange(canvases);
                     }
                 }
             }
             else if (canvasCacheBehaviour == CanvasCacheBehaviour.FindObjectsAlways)
             {
+                //find all canvases and update cache of rect transforms if different
                 var canvases = FindObjectsOfType<Canvas>();
                 if (canvases.Length != cachedCanvasRectTransforms.Length)
                 {
+                    targetCanvases.Clear();
+                    targetCanvases.AddRange(canvases);
                     RefreshCanvasTransforms(canvases);
-                    overrideTargetCanvases.Clear();
-                    overrideTargetCanvases.AddRange(canvases);
                 }
             }
 
+            //check raycast hits on each canvas, finding the closest one
             RectTransform hitCanvasRect = null;
             float hitDistance = 99999;
             for (int i = 0; i < cachedCanvasRectTransforms.Length; i++)
             {
-                if (overrideTargetCanvases[i].enabled == false || overrideTargetCanvases[i].gameObject.activeInHierarchy == false) { continue; }
+                if (targetCanvases[i].enabled == false || targetCanvases[i].gameObject.activeInHierarchy == false) { continue; }
 
                 float tempDistance;
                 bool didHitCanvas = CheckCanvasHit(position, forward, cachedCanvasRectTransforms[i], out tempDistance);
@@ -306,6 +339,7 @@ namespace Cognitive3D
                 }
             }
 
+            //return hit info
             if (hitCanvasRect != null)
             {
                 if (DrawDebugLines)
@@ -375,7 +409,7 @@ namespace Cognitive3D
             return false;
         }
 
-        //only marginally faster than constructing a plane and using that
+        //marginally faster than constructing a plane and using that
         public bool FastRaycast(Vector3 pos, Vector3 forward, Vector3 normal, float distance, out float enter)
         {
             float num = Vector3.Dot(forward, normal);
