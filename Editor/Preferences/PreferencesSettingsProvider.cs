@@ -31,11 +31,6 @@ namespace Cognitive3D
             };
         }
 
-        public override void OnActivate(string searchContext, VisualElement rootElement)
-        {
-
-        }
-
         public override void OnGUI(string searchContext)
         {
             base.OnGUI(searchContext);

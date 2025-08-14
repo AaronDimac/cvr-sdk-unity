@@ -27,11 +27,6 @@ namespace Cognitive3D
             return new DataUploaderSettingsProvider(SettingsPath, SettingsScope.Project);
         }
 
-        public override void OnActivate(string searchContext, VisualElement rootElement)
-        {
-
-        }
-
         public override void OnGUI(string searchContext)
         {
             base.OnGUI(searchContext);
