@@ -89,7 +89,7 @@ namespace Cognitive3D
                 new FeatureData(
                     "Meta (Oculus) Social",
                     "Visualize player journeys and scene engagement metrics in real time.",
-                    EditorCore.CustomEventIcon,
+                    EditorCore.OculusSocialIcon,
                     () => { setFeatureIndex(3); },
                     new List<FeatureAction>
                     {
@@ -165,7 +165,7 @@ namespace Cognitive3D
                 new FeatureData(
                     "Media and 360 Video",
                     "Media related context",
-                    EditorCore.DynamicsIcon,
+                    EditorCore.MediaIcon,
                     () => { setFeatureIndex(7); },
                     new List<FeatureAction>
                     {

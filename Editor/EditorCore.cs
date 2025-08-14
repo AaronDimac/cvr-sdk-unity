@@ -987,14 +987,25 @@ namespace Cognitive3D
             }
         }
 
-        private static Texture2D _eyeTrackingIcon;
-        public static Texture2D EyeTrackingIcon
+        private static Texture2D _oculusSocialIcon;
+        public static Texture2D OculusSocialIcon
         {
             get
             {
-                if (_eyeTrackingIcon == null)
-                    _eyeTrackingIcon = Resources.Load<Texture2D>("Features/Icons/eye-tracking");
-                return _eyeTrackingIcon;
+                if (_oculusSocialIcon == null)
+                    _oculusSocialIcon = Resources.Load<Texture2D>("Features/Icons/oculus-social");
+                return _oculusSocialIcon;
+            }
+        }
+
+        private static Texture2D _mediaIcon;
+        public static Texture2D MediaIcon
+        {
+            get
+            {
+                if (_mediaIcon == null)
+                    _mediaIcon = Resources.Load<Texture2D>("Features/Icons/media");
+                return _mediaIcon;
             }
         }
 
