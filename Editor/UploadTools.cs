@@ -220,6 +220,10 @@ namespace Cognitive3D
                     sceneUploadState = SceneManagementUploadState.Init;
                     sceneIndex++;
                     return;
+                default:
+                    Util.logWarning($"Unexpected sceneUploadState: {sceneUploadState}. Resetting to Init.");
+                    sceneUploadState = SceneManagementUploadState.Init;
+                    break;
             }
         }
 
