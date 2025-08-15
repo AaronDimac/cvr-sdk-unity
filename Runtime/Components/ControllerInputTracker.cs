@@ -42,7 +42,7 @@ namespace Cognitive3D.Components
 
             string rightHandId = "";
             string rightControllerDisplay = "";
-            if (!Cognitive3D_Manager.autoInitializePlayerSetup)
+            if (!Cognitive3D_Manager.Instance.autoInitializePlayerSetup)
             {
                 TryGetControllerData(false, out leftHandId, out leftControllerDisplay);
                 TryGetControllerData(true, out rightHandId, out rightControllerDisplay);
@@ -728,7 +728,7 @@ namespace Cognitive3D.Components
                 }
                 CurrentRightButtonStates.Clear();
 
-                if (Cognitive3D_Manager.autoInitializePlayerSetup)
+                if (Cognitive3D_Manager.Instance.autoInitializePlayerSetup)
                     DynamicManager.RecordControllerEvent(true, copy);
                 else
                     DynamicManager.RecordControllerEvent(RightHandDynamicObject.GetId(), copy);
@@ -742,7 +742,7 @@ namespace Cognitive3D.Components
                 }
                 CurrentLeftButtonStates.Clear();
 
-                if (Cognitive3D_Manager.autoInitializePlayerSetup)
+                if (Cognitive3D_Manager.Instance.autoInitializePlayerSetup)
                     DynamicManager.RecordControllerEvent(false, copy);
                 else
                     DynamicManager.RecordControllerEvent(LeftHandDynamicObject.GetId(), copy);

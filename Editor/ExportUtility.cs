@@ -217,7 +217,7 @@ namespace Cognitive3D
         /// <summary>
         /// export all geometry for the active scene. will NOT delete existing files in this directory
         /// </summary>
-        public static void ExportGLTFScene()
+        public static void ExportGLTFScene(bool showSuccessPopup)
         {
             var activeScene = UnityEditor.SceneManagement.EditorSceneManager.GetActiveScene();
             List<GameObject> allRootObjects = new List<GameObject>();
@@ -284,6 +284,12 @@ namespace Cognitive3D
                 foreach (var tempgameobject in deleteCustomRenders)
                 {
                     UnityEngine.Object.DestroyImmediate(tempgameobject);
+                }
+
+                if (showSuccessPopup)
+                {
+                    EditorUtility.ClearProgressBar();
+                    EditorUtility.DisplayDialog("Export Complete", "Scene exported successfully!", "OK");
                 }
             }
         }
