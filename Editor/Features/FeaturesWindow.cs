@@ -74,28 +74,33 @@ namespace Cognitive3D
 
         private void DrawMainPage()
         {
-            GUILayout.Space(20);
-            GUILayout.BeginHorizontal();
-
-            if (EditorCore.LogoIcon != null)
+            // Header background and logo
+            if (EditorCore.LogoTexture != null)
             {
-                GUILayout.Label(EditorCore.LogoIcon, GUILayout.Width(100), GUILayout.Height(80));
+                float bgHeight = 100f;
+
+                Rect bgRect = new Rect(0, 0, position.width, bgHeight);
+                GUI.DrawTexture(bgRect, EditorCore.BackgroundTexture, ScaleMode.ScaleAndCrop);
+
+                float logoWidth = EditorCore.LogoTexture.width / 3f;
+                float logoHeight = EditorCore.LogoTexture.height / 3f;
+                float logoX = (position.width - logoWidth) / 2f;
+                float logoY = (bgHeight - logoHeight) / 2f;
+
+                GUI.DrawTexture(new Rect(logoX, logoY, logoWidth, logoHeight), EditorCore.LogoTexture, ScaleMode.ScaleToFit);
+
+                GUILayout.Space(bgHeight);
             }
-            else
+
+            using (new EditorGUILayout.VerticalScope(EditorCore.styles.ContextPadding))
             {
-                EditorGUILayout.HelpBox("Logo texture not found", MessageType.Warning);
+                GUILayout.Space(5); // spacing between logo and text
+                GUILayout.Label("Welcome to the Feature Builder", EditorCore.styles.FeatureTitle);
+                GUILayout.Label(
+                    "Explore the features of our platform. Each feature unlocks powerful capabilities you can use in your experience, from analytics to live control and more.",
+                    EditorStyles.wordWrappedLabel
+                );
             }
-
-            GUILayout.Space(10); // spacing between logo and text
-
-            GUILayout.BeginVertical();
-            GUILayout.Label("Welcome to the Feature Builder", EditorCore.styles.FeatureTitle);
-            GUILayout.Label(
-                "Explore the features of our platform. Each feature unlocks powerful capabilities you can use in your experience, from analytics to live control and more.",
-                EditorStyles.wordWrappedLabel
-            );
-            GUILayout.EndVertical();
-            GUILayout.EndHorizontal();
 
             GUILayout.Space(10);
 
@@ -120,44 +125,24 @@ namespace Cognitive3D
             );
 
             // Define sub-rects
+            // Define sub-rects
             Rect iconRect = new Rect(buttonRect.x, buttonRect.y + 1, 98, 98);
-            Rect labelRect = new Rect(iconRect.xMax + 20, buttonRect.y, buttonRect.width - 180, buttonRect.height);
+            Rect titleRect = new Rect(iconRect.xMax + 15, buttonRect.y + 30, buttonRect.width - 180, 20); // Title area
+            Rect descriptionRect = new Rect(iconRect.xMax + 15, titleRect.yMax, buttonRect.width - 180, 25); // Description below title
 
             // Draw background of main button
             GUI.Box(buttonRect, GUIContent.none, EditorCore.styles.FeatureButton);
 
-            // Draw icon and label
+            // Draw icon and text
             GUI.DrawTexture(iconRect, featureData.Icon);
-            GUI.Label(labelRect, featureData.Title, EditorCore.styles.FeatureButtonTitle);
-
-            if (featureData.Tags != null && featureData.Tags.Count > 0)
-            {
-                float tagStartX = labelRect.x;
-                float tagStartY = labelRect.yMax - 35;  // Move closer under the title
-                float tagSpacing = 3;
-
-                for (int i = 0; i < featureData.Tags.Count; i++)
-                {
-                    string tagText = featureData.Tags[i];
-
-                    Vector2 tagSize = EditorCore.styles.Tag.CalcSize(new GUIContent(tagText));
-                    Rect tagRect = new Rect(tagStartX, tagStartY, tagSize.x + 6, EditorCore.styles.Tag.fixedHeight);
-
-                    if (GUI.Button(tagRect, tagText, EditorCore.styles.Tag))
-                    {
-                        Debug.Log($"Tag clicked: {tagText}");
-                        // TODO: Filtering logic
-                    }
-
-                    tagStartX += tagRect.width + tagSpacing;
-                }
-            }
+            GUI.Label(titleRect, featureData.Title, EditorCore.styles.FeatureButtonTitle);
+            GUI.Label(descriptionRect, featureData.Description, EditorCore.styles.FeatureButtonDescription);
 
             // Draw action buttons (Apply, Upload, LinkTo, etc.)
             if (featureData.Actions != null && featureData.Actions.Count > 0)
             {
                 float buttonWidth = 40;
-                float spacing = 5;
+                float spacing = 10;
                 float yOffset = 30;
 
                 for (int i = 0; i < featureData.Actions.Count; i++)

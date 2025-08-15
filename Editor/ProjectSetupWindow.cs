@@ -105,8 +105,9 @@ namespace Cognitive3D
             using (new EditorGUILayout.VerticalScope(EditorCore.styles.ContextPadding))
             {
                 GUILayout.Space(5);
+                GUILayout.Label("Welcome to the " + EditorCore.DisplayValue(DisplayKey.FullName) + " SDK Project Setup", EditorCore.styles.FeatureTitle);
                 GUILayout.Label(
-                    "Welcome to the " + EditorCore.DisplayValue(DisplayKey.FullName) + " SDK Project Setup! This window will guide you through setting up our SDK in your project and ensuring the features available from packages in your project are automatically recorded.\n\nAt the end of this setup process, you will have production ready analytics and a method to replay individual sessions",
+                    "This window will guide you through setting up our SDK in your project and ensuring the features available from packages in your project are automatically recorded.",
                     EditorCore.styles.ItemDescription);
 
                 #region Dev and App keys

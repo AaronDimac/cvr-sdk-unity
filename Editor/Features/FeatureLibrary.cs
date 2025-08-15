@@ -31,7 +31,7 @@ namespace Cognitive3D
             {
                 new FeatureData(
                     "Dynamic Objects",
-                    "Learn how to use reusable components to construct immersive XR experiences.",
+                    "Manage and track specific Dynamic Objects in the current scene",
                     EditorCore.DynamicsIcon,
                     () => { setFeatureIndex(0); },
                     new List<FeatureAction>
@@ -50,7 +50,7 @@ namespace Cognitive3D
                 ),
                 new FeatureData(
                     "ExitPoll Survey",
-                    "Visualize player journeys and scene engagement metrics in real time.",
+                    "Set up ExitPoll surveys to collect and view user feedback",
                     EditorCore.ExitpollIcon,
                     () => { setFeatureIndex(1); },
                     new List<FeatureAction>
@@ -69,7 +69,7 @@ namespace Cognitive3D
                 ),
                 new FeatureData(
                     "Remote Controls",
-                    "Visualize player journeys and scene engagement metrics in real time.",
+                    "Set up variables to customize app behavior for different users",
                     EditorCore.RemoteControlsIcon,
                     () => { setFeatureIndex(2); },
                     new List<FeatureAction>
@@ -87,9 +87,9 @@ namespace Cognitive3D
                     new List<string>{"Component", "All-SDKs"}
                 ),
                 new FeatureData(
-                    "Meta (Oculus) Social",
-                    "Visualize player journeys and scene engagement metrics in real time.",
-                    EditorCore.OculusSocialIcon,
+                    "Social Platform",
+                    "Set up a Social Platform to capture user and app identity data",
+                    EditorCore.MultiplayerIcon,
                     () => { setFeatureIndex(3); },
                     new List<FeatureAction>
                     {
@@ -107,7 +107,7 @@ namespace Cognitive3D
                 ),
                 new FeatureData(
                     "Custom Events",
-                    "Visualize player journeys and scene engagement metrics in real time.",
+                    "API reference and examples for recording custom events",
                     EditorCore.CustomEventIcon,
                     () => { setFeatureIndex(4); },
                     new List<FeatureAction>
@@ -126,7 +126,7 @@ namespace Cognitive3D
                 ),
                 new FeatureData(
                     "Sensors",
-                    "Sensor description",
+                    "API reference and examples for recording custom sensors",
                     EditorCore.SensorIcon,
                     () => { setFeatureIndex(5); },
                     new List<FeatureAction>
@@ -145,8 +145,8 @@ namespace Cognitive3D
                 ),
                 new FeatureData(
                     "Multiplayer",
-                    "Multiplayer description",
-                    EditorCore.CustomEventIcon,
+                    "Set up Multiplayer to track server-client player activity and analytics",
+                    EditorCore.MultiplayerIcon,
                     () => { setFeatureIndex(6); },
                     new List<FeatureAction>
                     {
@@ -164,7 +164,7 @@ namespace Cognitive3D
                 ),
                 new FeatureData(
                     "Media and 360 Video",
-                    "Media related context",
+                    "Set up Media to track gaze on images and videos",
                     EditorCore.MediaIcon,
                     () => { setFeatureIndex(7); },
                     new List<FeatureAction>

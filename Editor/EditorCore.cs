@@ -596,17 +596,15 @@ namespace Cognitive3D
 
             internal readonly GUIStyle FeatureButtonTitle = new GUIStyle(GUI.skin.label)
             {
-                fontSize = 14,
+                fontSize = 16,
                 fontStyle = FontStyle.Bold,
+                alignment = TextAnchor.MiddleLeft,
             };
 
-            internal readonly GUIStyle Tag = new GUIStyle(EditorStyles.helpBox)
+            internal readonly GUIStyle FeatureButtonDescription = new GUIStyle(GUI.skin.label)
             {
-                fixedHeight = 12,
-                fontSize = 8,
-                padding = new RectOffset(4, 4, 0, 0),
-                alignment = TextAnchor.MiddleCenter,
-                normal = { background = ColorExtensions.ToTexture(new Color32(60, 60, 60, 255)) } // Dark Charcoal
+                fontSize = 11,
+                alignment = TextAnchor.MiddleLeft,
             };
 
             internal readonly GUIStyle FeatureTitle = new GUIStyle(GUI.skin.label)
@@ -999,14 +997,14 @@ namespace Cognitive3D
             }
         }
 
-        private static Texture2D _oculusSocialIcon;
-        public static Texture2D OculusSocialIcon
+        private static Texture2D _multiplayerIcon;
+        public static Texture2D MultiplayerIcon
         {
             get
             {
-                if (_oculusSocialIcon == null)
-                    _oculusSocialIcon = Resources.Load<Texture2D>("Features/Icons/oculus-social");
-                return _oculusSocialIcon;
+                if (_multiplayerIcon == null)
+                    _multiplayerIcon = Resources.Load<Texture2D>("Features/Icons/multiplayer");
+                return _multiplayerIcon;
             }
         }
 
