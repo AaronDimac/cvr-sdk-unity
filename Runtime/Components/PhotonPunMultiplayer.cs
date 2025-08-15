@@ -7,7 +7,7 @@ namespace Cognitive3D.Components
 {
     [DisallowMultipleComponent]
     // Can't inherit multiple classes: https://forum.unity.com/threads/multiple-inheritance-implementation-alternative.367802/
-    public class PhotonMultiplayer : MonoBehaviourPunCallbacks
+    public class PhotonPunMultiplayer : MonoBehaviourPunCallbacks
     {
         private int playerPhotonActorNumber;
         private int maxPlayerPhotonActorConnected;

@@ -49,9 +49,9 @@ namespace Cognitive3D
         /// Adds project validation items to the registry
         /// </summary>
         private static void AddProjectValidationItems()
-        {            
+        {
             ProjectValidation.AddItem(
-                level: ProjectValidation.ItemLevel.Required, 
+                level: ProjectValidation.ItemLevel.Required,
                 category: CATEGORY,
                 actionType: ProjectValidation.ItemAction.Edit,
                 message: "No Cognitive3D player definition is found. Select an SDK in the Project Setup window to support specific features.",
@@ -76,7 +76,7 @@ namespace Cognitive3D
                     { "Authorization", "APIKEY:DEVELOPER " + EditorCore.DeveloperKey }
                 };
 
-                EditorNetwork.Get(url, (responsecode, error, text) => 
+                EditorNetwork.Get(url, (responsecode, error, text) =>
                 {
                     if (responsecode == 200)
                     {
@@ -87,7 +87,7 @@ namespace Cognitive3D
                             if (collection.versions.Find(version => version.versionNumber == currentSettings.VersionNumber) != null)
                             {
                                 ProjectValidation.AddItem(
-                                    level: ProjectValidation.ItemLevel.Required, 
+                                    level: ProjectValidation.ItemLevel.Required,
                                     category: CATEGORY,
                                     actionType: ProjectValidation.ItemAction.Fix,
                                     message: "Current scene version not found on dashboard. Set to the latest version?",
@@ -105,7 +105,7 @@ namespace Cognitive3D
                             else
                             {
                                 ProjectValidation.AddItem(
-                                    level: ProjectValidation.ItemLevel.Required, 
+                                    level: ProjectValidation.ItemLevel.Required,
                                     category: CATEGORY,
                                     actionType: ProjectValidation.ItemAction.Fix,
                                     message: "Current scene version not found on dashboard. Set to the latest version?",
@@ -125,7 +125,7 @@ namespace Cognitive3D
                             if (collection.GetLatestVersion().versionNumber > currentSettings.VersionNumber)
                             {
                                 ProjectValidation.AddItem(
-                                    level: ProjectValidation.ItemLevel.Recommended, 
+                                    level: ProjectValidation.ItemLevel.Recommended,
                                     category: CATEGORY,
                                     actionType: ProjectValidation.ItemAction.Apply,
                                     message: "No latest scene version is used. Set to the latest version?",
@@ -143,7 +143,7 @@ namespace Cognitive3D
                             else
                             {
                                 ProjectValidation.AddItem(
-                                    level: ProjectValidation.ItemLevel.Recommended, 
+                                    level: ProjectValidation.ItemLevel.Recommended,
                                     category: CATEGORY,
                                     actionType: ProjectValidation.ItemAction.Apply,
                                     message: "No latest scene version is used. Set to the latest version?",
@@ -174,7 +174,7 @@ namespace Cognitive3D
                     // Check if auto player setup is enabled and validate the absence of tracking space and controllers
                     if (Cognitive3D_Preferences.Instance.AutoPlayerSetup)
                     {
-                        return !ProjectValidation.FindComponentInActiveScene<RoomTrackingSpace>() 
+                        return !ProjectValidation.FindComponentInActiveScene<RoomTrackingSpace>()
                             && !ProjectValidation.TryGetControllers(out var controllerNamesList);
                     }
                     return true;
@@ -209,7 +209,7 @@ namespace Cognitive3D
             );
 
             ProjectValidation.AddItem(
-                level: ProjectValidation.ItemLevel.Required, 
+                level: ProjectValidation.ItemLevel.Required,
                 category: CATEGORY,
                 actionType: ProjectValidation.ItemAction.Edit,
                 message: "Tracking space is not configured. Select the tracking space of the player prefab in the Scene Setup window",
@@ -226,9 +226,9 @@ namespace Cognitive3D
                     ProjectSetupWindow.Init();
                 }
             );
-            
+
             ProjectValidation.AddItem(
-                level: ProjectValidation.ItemLevel.Required, 
+                level: ProjectValidation.ItemLevel.Required,
                 category: CATEGORY,
                 actionType: ProjectValidation.ItemAction.Edit,
                 message: "Application key is not valid. Re-enter application key in the Project Setup window.",
@@ -242,9 +242,9 @@ namespace Cognitive3D
                     ProjectSetupWindow.Init();
                 }
                 );
-            
+
             ProjectValidation.AddItem(
-                level: ProjectValidation.ItemLevel.Required, 
+                level: ProjectValidation.ItemLevel.Required,
                 category: CATEGORY,
                 actionType: ProjectValidation.ItemAction.Fix,
                 message: "No Cognitive3D manager is found. Add Cognitive3D_Manager prefab to current scene?",
@@ -259,9 +259,9 @@ namespace Cognitive3D
                     PrefabUtility.InstantiatePrefab(c3dManagerPrefab);
                 }
                 );
-            
+
             ProjectValidation.AddItem(
-                level: ProjectValidation.ItemLevel.Required, 
+                level: ProjectValidation.ItemLevel.Required,
                 category: CATEGORY,
                 actionType: ProjectValidation.ItemAction.Fix,
                 message: "No Cognitive3D preferences file is found in project folder. Create an instance in Assets/Resources?",
@@ -277,7 +277,7 @@ namespace Cognitive3D
                 );
 
             ProjectValidation.AddItem(
-                level: ProjectValidation.ItemLevel.Required, 
+                level: ProjectValidation.ItemLevel.Required,
                 category: CATEGORY,
                 actionType: ProjectValidation.ItemAction.Edit,
                 message: "Current scene is not found in Cognitive3D preferences. Please upload the current scene from the Scene Setup window.",
@@ -294,7 +294,7 @@ namespace Cognitive3D
                 );
 
             ProjectValidation.AddItem(
-                level: ProjectValidation.ItemLevel.Required, 
+                level: ProjectValidation.ItemLevel.Required,
                 category: CATEGORY,
                 actionType: ProjectValidation.ItemAction.Edit,
                 message: "Current scene has no SceneId. Please upload the current scene from the Scene Setup window.",
@@ -302,7 +302,7 @@ namespace Cognitive3D
                 checkAction: () =>
                 {
                     Cognitive3D_Preferences.SceneSettings c3dScene = Cognitive3D_Preferences.FindSceneByPath(SceneManager.GetActiveScene().path);
-                    return (c3dScene != null  && !string.IsNullOrEmpty(c3dScene.SceneId)) ? true : false;
+                    return (c3dScene != null && !string.IsNullOrEmpty(c3dScene.SceneId)) ? true : false;
                 },
                 fixAction: () =>
                 {
@@ -311,7 +311,7 @@ namespace Cognitive3D
                 );
 
             ProjectValidation.AddItem(
-                level: ProjectValidation.ItemLevel.Required, 
+                level: ProjectValidation.ItemLevel.Required,
                 category: CATEGORY,
                 actionType: ProjectValidation.ItemAction.Edit,
                 message: "Scene path(s) are invalid. Please verify the path in Cognitive3D's preference scene settings",
@@ -329,8 +329,8 @@ namespace Cognitive3D
                         }
                     }
 
-                    string newMessage = invalidScenes.Count > 0 
-                        ? $"{string.Join(", ", invalidScenes)} {oldMessage}" 
+                    string newMessage = invalidScenes.Count > 0
+                        ? $"{string.Join(", ", invalidScenes)} {oldMessage}"
                         : oldMessage;
 
                     ProjectValidation.UpdateItemMessage(oldMessage, newMessage);
@@ -344,10 +344,10 @@ namespace Cognitive3D
             );
 
             ProjectValidation.AddItem(
-                level: ProjectValidation.ItemLevel.Required, 
+                level: ProjectValidation.ItemLevel.Required,
                 category: CATEGORY,
                 actionType: ProjectValidation.ItemAction.None,
-                message : "The maximum limit of controllers in the scene has been exceeded. Please remove any extra controller dynamic objects.",
+                message: "The maximum limit of controllers in the scene has been exceeded. Please remove any extra controller dynamic objects.",
                 fixmessage: "The maximum limit of controllers in the scene has not been exceeded.",
                 checkAction: () =>
                 {
@@ -369,15 +369,15 @@ namespace Cognitive3D
                 },
                 fixAction: () =>
                 {
-                    
+
                 }
             );
 
             ProjectValidation.AddItem(
-                level: ProjectValidation.ItemLevel.Required, 
+                level: ProjectValidation.ItemLevel.Required,
                 category: CATEGORY,
                 actionType: ProjectValidation.ItemAction.Edit,
-                message : "Controllers are not correctly set up. Less than 2 controllers are detected in the scene. You can configure the controllers in Cognitive3D > Scene Setup",
+                message: "Controllers are not correctly set up. Less than 2 controllers are detected in the scene. You can configure the controllers in Cognitive3D > Scene Setup",
                 fixmessage: "Controllers are correctly set up in current scene",
                 checkAction: () =>
                 {
@@ -393,7 +393,7 @@ namespace Cognitive3D
             );
 
             ProjectValidation.AddItem(
-                level: ProjectValidation.ItemLevel.Recommended, 
+                level: ProjectValidation.ItemLevel.Recommended,
                 category: CATEGORY,
                 actionType: ProjectValidation.ItemAction.Edit,
                 message: "A camera with the 'MainCamera' tag should be included in the scene. If the player rig is spawned or persist from another scene, no action is needed. Edit the player rig?",
@@ -650,13 +650,13 @@ namespace Cognitive3D
             );
 #elif C3D_DEFAULT
 
-    #if COGNITIVE3D_INCLUDE_COREUTILITIES
+#if COGNITIVE3D_INCLUDE_COREUTILITIES
             ProjectValidation.FindComponentInActiveScene<XROrigin>(out var xrorigins);
 
             if (xrorigins != null && xrorigins.Count != 0)
             {
                 ProjectValidation.AddItem(
-                    level: ProjectValidation.ItemLevel.Recommended, 
+                    level: ProjectValidation.ItemLevel.Recommended,
                     category: CATEGORY,
                     actionType: ProjectValidation.ItemAction.Apply,
                     message: "Tracking origin is not set to floor. This can lead in to miscalculation in participant and controllers height. Set tracking origin to Floor?",
@@ -684,7 +684,7 @@ namespace Cognitive3D
                 );
 
                 ProjectValidation.AddItem(
-                    level: ProjectValidation.ItemLevel.Recommended, 
+                    level: ProjectValidation.ItemLevel.Recommended,
                     category: CATEGORY,
                     actionType: ProjectValidation.ItemAction.Apply,
                     message: "Dynamic Object component detected on XR rig. XR rig should have no Dynamic Object component. Remove the component?",
@@ -710,16 +710,16 @@ namespace Cognitive3D
                         }
                     }
                 );
-            } 
-    #endif
+            }
+#endif
 
-    #if COGNITIVE3D_INCLUDE_LEGACYINPUTHELPERS
+#if COGNITIVE3D_INCLUDE_LEGACYINPUTHELPERS
             ProjectValidation.FindComponentInActiveScene<CameraOffset>(out var cameraOffset);
 
             if (cameraOffset != null && cameraOffset.Count != 0)
             {
                 ProjectValidation.AddItem(
-                    level: ProjectValidation.ItemLevel.Recommended, 
+                    level: ProjectValidation.ItemLevel.Recommended,
                     category: CATEGORY,
                     actionType: ProjectValidation.ItemAction.Apply,
                     message: "Tracking origin is set to floor. This can lead in to miscalculation in participant and controllers height. Set tracking origin to Floor?",
@@ -748,7 +748,7 @@ namespace Cognitive3D
                 );
 
                 ProjectValidation.AddItem(
-                    level: ProjectValidation.ItemLevel.Recommended, 
+                    level: ProjectValidation.ItemLevel.Recommended,
                     category: CATEGORY,
                     actionType: ProjectValidation.ItemAction.Apply,
                     message: "Dynamic Object component detected on XR rig. XR rig should have no Dynamic Object component. Remove the component?",
@@ -777,9 +777,9 @@ namespace Cognitive3D
                     }
                 );
             }
-    #endif
+#endif
 
-    #if COGNITIVE3D_INCLUDE_OPENXR_1_9_0_OR_NEWER && UNITY_ANDROID
+#if COGNITIVE3D_INCLUDE_OPENXR_1_9_0_OR_NEWER && UNITY_ANDROID
             var androidOpenXRSettings = OpenXRSettings.GetSettingsForBuildTargetGroup(BuildTargetGroup.Android);
             var questFeature = androidOpenXRSettings.GetFeature<MetaQuestFeature>();
 
@@ -808,9 +808,9 @@ namespace Cognitive3D
                     }
                 );
             }
-    #endif
+#endif
 
-    #if COGNITIVE3D_INCLUDE_OPENXR_1_8_1_OR_1_8_2 && UNITY_ANDROID
+#if COGNITIVE3D_INCLUDE_OPENXR_1_8_1_OR_1_8_2 && UNITY_ANDROID
             var androidOpenXRSettings = OpenXRSettings.GetSettingsForBuildTargetGroup(BuildTargetGroup.Android);
             var questFeature = androidOpenXRSettings.GetFeature<MetaQuestFeature>();
 
@@ -855,7 +855,7 @@ namespace Cognitive3D
                     }
                 );
             }
-    #endif
+#endif
 
 #endif
 
@@ -891,12 +891,12 @@ namespace Cognitive3D
                         oculusSocial[0].SetRecordOculusUserData(true);
                     }
                 }
-            );  
+            );
 #endif
 
-#region Multiplayer Support
+            #region Multiplayer Support
 #if C3D_PHOTON
-        #if !PHOTON_UNITY_NETWORKING
+#if !PHOTON_UNITY_NETWORKING
             ProjectValidation.AddItem(
                 level: ProjectValidation.ItemLevel.Required, 
                 category: CATEGORY,
@@ -912,7 +912,7 @@ namespace Cognitive3D
                     
                 }
             );
-        #else
+#else
             ProjectValidation.AddItem(
                 level: ProjectValidation.ItemLevel.Required, 
                 category: CATEGORY,
@@ -928,11 +928,55 @@ namespace Cognitive3D
 
                 }
             );
-        #endif
+#endif
+#endif
+
+#if FUSION2
+            ProjectValidation.AddItem(
+                level: ProjectValidation.ItemLevel.Recommended,
+                category: CATEGORY,
+                actionType: ProjectValidation.ItemAction.Fix,
+                message: "\"Allow unsafe code\" is not enabled in Cognitive3D.asmdef. This is required for Photon Fusion 2 support.",
+                fixmessage: "\"Allow unsafe code\" has been enabled in Cognitive3D.asmdef for Photon Fusion 2 support.",
+                checkAction: () =>
+                {
+                    return EditorCore.IsUnsafeCodeEnabled();
+                },
+                fixAction: () =>
+                {
+                    EditorCore.EnableUnsafeCode();
+                }
+            );
+
+            if (Fusion.NetworkProjectConfig.Global != null)
+            {
+                ProjectValidation.AddItem(
+                    level: ProjectValidation.ItemLevel.Recommended,
+                    category: CATEGORY,
+                    actionType: ProjectValidation.ItemAction.None,
+                    message: "Cognitive3D.asmdef is not included in the Photon Fusion 'Assemblies to Weave' list. This is required for Photon Fusion 2 support. You can add it via Tools > Fusion > Network Project Config, under the Weaver Settings section.",
+                    fixmessage: "Cognitive3D.asmdef has been added to the Photon Fusion 'Assemblies to Weave' list for Photon Fusion 2 support.",
+                    checkAction: () =>
+                    {
+                        foreach (var asm in Fusion.NetworkProjectConfig.Global.AssembliesToWeave)
+                        {
+                            if (asm != null && asm.Contains("Cognitive3D"))
+                            {
+                                return true;
+                            }
+                        }
+                        return false;
+                    },
+                    fixAction: () =>
+                    {
+                        
+                    }
+                );
+            }
 #endif
 
 #if C3D_NETCODE
-        #if !COGNITIVE3D_INCLUDE_UNITY_NETCODE
+#if !COGNITIVE3D_INCLUDE_UNITY_NETCODE
             ProjectValidation.AddItem(
                 level: ProjectValidation.ItemLevel.Required, 
                 category: CATEGORY,
@@ -948,7 +992,7 @@ namespace Cognitive3D
                     
                 }
             );
-        #else
+#else
             ProjectValidation.AddItem(
                 level: ProjectValidation.ItemLevel.Required, 
                 category: CATEGORY,
@@ -990,11 +1034,11 @@ namespace Cognitive3D
                     networkManager.NetworkConfig.NetworkTransport = transport;
                 }
             );
-        #endif
+#endif
 #endif
 
 #if C3D_NORMCORE
-        #if !COGNITIVE3D_INCLUDE_NORMCORE
+#if !COGNITIVE3D_INCLUDE_NORMCORE
             ProjectValidation.AddItem(
                 level: ProjectValidation.ItemLevel.Required, 
                 category: CATEGORY,
@@ -1010,7 +1054,7 @@ namespace Cognitive3D
                     
                 }
             );
-        #else
+#else
             ProjectValidation.AddItem(
                 level: ProjectValidation.ItemLevel.Required, 
                 category: CATEGORY,
@@ -1026,10 +1070,10 @@ namespace Cognitive3D
 
                 }
             );
-        #endif
+#endif
 #endif
 
-#endregion
-        }
+                #endregion
+            }
     }
 }
