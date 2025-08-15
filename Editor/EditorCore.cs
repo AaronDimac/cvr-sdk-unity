@@ -134,7 +134,7 @@ namespace Cognitive3D
 
         public static List<string> GetPlayerDefines()
         {
-            string s = PlayerSettings.GetScriptingDefineSymbolsForGroup(EditorUserBuildSettings.selectedBuildTargetGroup);
+            string s = PlayerSettings.GetScriptingDefineSymbols(UnityEditor.Build.NamedBuildTarget.FromBuildTargetGroup(EditorUserBuildSettings.selectedBuildTargetGroup));
             string[] ExistingSymbols = s.Split(';');
             return new List<string>(ExistingSymbols);
         }
@@ -157,12 +157,12 @@ namespace Cognitive3D
                     alldefines += defines[i] + ";";
                 }
             }
-            PlayerSettings.SetScriptingDefineSymbolsForGroup(EditorUserBuildSettings.selectedBuildTargetGroup, alldefines);
+            PlayerSettings.SetScriptingDefineSymbols(UnityEditor.Build.NamedBuildTarget.FromBuildTargetGroup(EditorUserBuildSettings.selectedBuildTargetGroup), alldefines);
         }
 
         public static void RemoveDefine(string symbol)
         {
-            string s = PlayerSettings.GetScriptingDefineSymbolsForGroup(EditorUserBuildSettings.selectedBuildTargetGroup);
+            string s = PlayerSettings.GetScriptingDefineSymbols(UnityEditor.Build.NamedBuildTarget.FromBuildTargetGroup(EditorUserBuildSettings.selectedBuildTargetGroup));
             string[] ExistingSymbols = s.Split(';');
             List<string> finalDefines = new List<string>();
             for(int i = 0; i<ExistingSymbols.Length;i++)
@@ -182,7 +182,7 @@ namespace Cognitive3D
                     alldefines += finalDefines[i] + ";";
                 }
             }
-            PlayerSettings.SetScriptingDefineSymbolsForGroup(EditorUserBuildSettings.selectedBuildTargetGroup, alldefines);
+            PlayerSettings.SetScriptingDefineSymbols(UnityEditor.Build.NamedBuildTarget.FromBuildTargetGroup(EditorUserBuildSettings.selectedBuildTargetGroup), alldefines);
         }
 
         public static bool HasC3DDefine()
@@ -218,7 +218,7 @@ namespace Cognitive3D
         public static void SetPlayerDefine(List<string> C3DSymbols)
         {
             //get all scripting define symbols
-            string s = PlayerSettings.GetScriptingDefineSymbolsForGroup(EditorUserBuildSettings.selectedBuildTargetGroup);
+            string s = PlayerSettings.GetScriptingDefineSymbols(UnityEditor.Build.NamedBuildTarget.FromBuildTargetGroup(EditorUserBuildSettings.selectedBuildTargetGroup));
             string[] ExistingSymbols = s.Split(';');
 
             //categorizing definition symbols
@@ -247,7 +247,7 @@ namespace Cognitive3D
                     alldefines += finalDefines[i] + ";";
                 }
             }
-            PlayerSettings.SetScriptingDefineSymbolsForGroup(EditorUserBuildSettings.selectedBuildTargetGroup, alldefines);
+            PlayerSettings.SetScriptingDefineSymbols(UnityEditor.Build.NamedBuildTarget.FromBuildTargetGroup(EditorUserBuildSettings.selectedBuildTargetGroup), alldefines);
         }
 
         public static void SetPlayerDefine(string C3DSymbol)
