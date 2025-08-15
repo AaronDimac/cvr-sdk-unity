@@ -997,6 +997,17 @@ namespace Cognitive3D
             }
         }
 
+        private static Texture2D _socialPlatformIcon;
+        public static Texture2D SocialPlatformIcon
+        {
+            get
+            {
+                if (_socialPlatformIcon == null)
+                    _socialPlatformIcon = Resources.Load<Texture2D>("Features/Icons/social-platform");
+                return _socialPlatformIcon;
+            }
+        }
+
         private static Texture2D _multiplayerIcon;
         public static Texture2D MultiplayerIcon
         {

@@ -86,7 +86,7 @@ namespace Cognitive3D
                 new FeatureData(
                     "Social Platform",
                     "Set up a Social Platform to capture user and app identity data",
-                    EditorCore.MultiplayerIcon,
+                    EditorCore.SocialPlatformIcon,
                     () => { setFeatureIndex(3); },
                     new List<FeatureAction>
                     {
