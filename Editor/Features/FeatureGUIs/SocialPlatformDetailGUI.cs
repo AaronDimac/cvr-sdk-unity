@@ -5,13 +5,13 @@ using UnityEditor;
 
 namespace Cognitive3D
 {
-    public class OculusSocialDetailGUI : IFeatureDetailGUI
+    public class SocialPlatformDetailGUI : IFeatureDetailGUI
     {
         public void OnGUI()
         {
             GUILayout.BeginHorizontal();
             {
-                GUILayout.Label("Meta (Oculus) Social", EditorCore.styles.FeatureTitle);
+                GUILayout.Label("Social Platform", EditorCore.styles.FeatureTitle);
 
                 float iconSize = EditorGUIUtility.singleLineHeight;
                 Rect iconRect = GUILayoutUtility.GetRect(iconSize, iconSize, GUILayout.Width(iconSize), GUILayout.Height(iconSize));
@@ -42,12 +42,12 @@ namespace Cognitive3D
             EditorGUILayout.Space(10);
 
             GUILayout.Label("2. Add to Cognitive3D_Manager prefab", EditorCore.styles.FeatureTitle);
-            GUILayout.Label("Adds the Oculus Social component to the Cognitive3D_Manager prefab to record Oculus user data.", EditorStyles.wordWrappedLabel);
+            GUILayout.Label("Adds the Social Platform component to the Cognitive3D_Manager prefab to record Oculus user data.", EditorStyles.wordWrappedLabel);
 
-            var btnLabel = FeatureLibrary.TryGetComponent<Cognitive3D.Components.OculusSocial>() ? "Remove Oculus Social" : "Add Oculus Social";
+            var btnLabel = FeatureLibrary.TryGetComponent<Cognitive3D.Components.SocialPlatform>() ? "Remove Social Platform" : "Add Social Platform";
             if (GUILayout.Button(btnLabel, GUILayout.Height(30)))
             {
-                FeatureLibrary.AddOrRemoveComponent<Cognitive3D.Components.OculusSocial>();
+                FeatureLibrary.AddOrRemoveComponent<Cognitive3D.Components.SocialPlatform>();
             }
         }
     }

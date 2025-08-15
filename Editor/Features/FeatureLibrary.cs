@@ -99,7 +99,7 @@ namespace Cognitive3D
                             }
                         )
                     },
-                    new OculusSocialDetailGUI()
+                    new SocialPlatformDetailGUI()
                 ),
                 new FeatureData(
                     "Custom Events",

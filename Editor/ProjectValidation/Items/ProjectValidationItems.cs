@@ -868,27 +868,27 @@ namespace Cognitive3D
                 fixmessage: "Recording Oculus user data like username, id, and display name is enabled",
                 checkAction: () =>
                 {
-                    ProjectValidation.FindComponentInActiveScene<OculusSocial>(out var oculusSocial);
-                    if (oculusSocial != null && oculusSocial.Count != 0)
+                    ProjectValidation.FindComponentInActiveScene<SocialPlatform>(out var socialPlatform);
+                    if (socialPlatform != null && socialPlatform.Count != 0)
                     {
-                        return oculusSocial[0].GetRecordOculusUserData();
+                        return socialPlatform[0].GetRecordOculusUserData();
                     }
                     return false;
                 },
                 fixAction: () =>
                 {
-                    ProjectValidation.FindComponentInActiveScene<OculusSocial>(out var oculusSocial);
-                    if (oculusSocial != null && oculusSocial.Count != 0)
+                    ProjectValidation.FindComponentInActiveScene<SocialPlatform>(out var socialPlatform);
+                    if (socialPlatform != null && socialPlatform.Count != 0)
                     {
-                        oculusSocial[0].SetRecordOculusUserData(true);
+                        socialPlatform[0].SetRecordOculusUserData(true);
                         return;
                     }
 
-                    Cognitive3D_Manager.Instance.gameObject.AddComponent<OculusSocial>();
-                    ProjectValidation.FindComponentInActiveScene<OculusSocial>(out oculusSocial);
-                    if (oculusSocial != null && oculusSocial.Count != 0)
+                    Cognitive3D_Manager.Instance.gameObject.AddComponent<SocialPlatform>();
+                    ProjectValidation.FindComponentInActiveScene<SocialPlatform>(out socialPlatform);
+                    if (socialPlatform != null && socialPlatform.Count != 0)
                     {
-                        oculusSocial[0].SetRecordOculusUserData(true);
+                        socialPlatform[0].SetRecordOculusUserData(true);
                     }
                 }
             );

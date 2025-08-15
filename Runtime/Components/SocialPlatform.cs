@@ -10,8 +10,8 @@ using Oculus.Platform.Models;
 namespace Cognitive3D.Components
 {
     [DisallowMultipleComponent]
-    [AddComponentMenu("Cognitive3D/Components/Oculus Social")]
-    public class OculusSocial : AnalyticsComponentBase
+    [AddComponentMenu("Cognitive3D/Components/Social Platform")]
+    public class SocialPlatform : AnalyticsComponentBase
     {
 
 #if COGNITIVE3D_META_PLATFORM

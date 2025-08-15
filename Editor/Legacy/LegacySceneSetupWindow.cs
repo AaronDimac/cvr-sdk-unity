@@ -103,7 +103,7 @@ namespace Cognitive3D
             if (Cognitive3D_Manager.Instance != null)
             {
                 wantPassthroughEnabled = Cognitive3D_Manager.Instance.GetComponent<Passthrough>();
-                wantSocialEnabled = Cognitive3D_Manager.Instance.GetComponent<OculusSocial>();
+                wantSocialEnabled = Cognitive3D_Manager.Instance.GetComponent<SocialPlatform>();
                 wantSceneApiEnabled = Cognitive3D_Manager.Instance.GetComponent<Cognitive3D_MetaSceneMesh>();
             }
 #endif
@@ -151,7 +151,7 @@ namespace Cognitive3D
             if (Cognitive3D_Manager.Instance != null)
             {
                 wantPassthroughEnabled = Cognitive3D_Manager.Instance.GetComponent<Passthrough>();
-                wantSocialEnabled = Cognitive3D_Manager.Instance.GetComponent<OculusSocial>();
+                wantSocialEnabled = Cognitive3D_Manager.Instance.GetComponent<SocialPlatform>();
                 wantSceneApiEnabled = Cognitive3D_Manager.Instance.GetComponent<Cognitive3D_MetaSceneMesh>();
             }
 #endif
@@ -485,7 +485,7 @@ namespace Cognitive3D
                 wantEyeTrackingEnabled = false;
                 Debug.LogWarning("OVRManager not found in scene!");
             }
-            wantSocialEnabled = Cognitive3D_Manager.Instance.GetComponent<OculusSocial>();
+            wantSocialEnabled = Cognitive3D_Manager.Instance.GetComponent<SocialPlatform>();
             wantPassthroughEnabled = Cognitive3D_Manager.Instance.GetComponent<Passthrough>();
 
 #elif C3D_VIVEWAVE
@@ -1036,15 +1036,15 @@ namespace Cognitive3D
             }
             if (wantSocialEnabled)
             {
-                var social = FindFirstObjectByType<OculusSocial>();
+                var social = FindFirstObjectByType<SocialPlatform>();
                 if (social == null)
                 {
-                    Cognitive3D_Manager.Instance.gameObject.AddComponent<OculusSocial>();
+                    Cognitive3D_Manager.Instance.gameObject.AddComponent<SocialPlatform>();
                 }
             }
             else
             {
-                var social = FindFirstObjectByType<OculusSocial>();
+                var social = FindFirstObjectByType<SocialPlatform>();
                 if (social != null)
                 {
                     DestroyImmediate(social);
