@@ -11,7 +11,7 @@ namespace Cognitive3D
         UnityEngine.Camera userCamera;
         bool latlong = true;
 
-        int _choiceIndex = 0;
+        int _choiceIndex;
 
         #region Visual Elements
         public void OnGUI()

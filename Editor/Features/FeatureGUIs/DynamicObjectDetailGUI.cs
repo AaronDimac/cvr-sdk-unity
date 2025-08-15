@@ -11,7 +11,7 @@ namespace Cognitive3D
 
         private bool selectAll;
 
-        private List<DynamicObjectEntry> dynamicObjects = new List<DynamicObjectEntry>();
+        private readonly List<DynamicObjectEntry> dynamicObjects = new List<DynamicObjectEntry>();
         bool refreshList;
         private int lastDynamicCount = -1;
 
@@ -48,7 +48,7 @@ namespace Cognitive3D
             }
         }
 
-        private double lastCheckTime = 0;
+        private double lastCheckTime;
 
         #region Visual Elements
         public void OnGUI()

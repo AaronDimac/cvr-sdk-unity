@@ -247,7 +247,7 @@ namespace Cognitive3D
                         EditorCore.styles.HelpBoxLabel
                     );
 
-                    if (GUILayout.Button(EditorCore.ExternalLink, EditorCore.styles.ExternalLink))
+                    if (GUILayout.Button(EditorCore.ExternalLinkIcon, EditorCore.styles.ExternalLink))
                     {
                         Application.OpenURL("https://docs.cognitive3d.com/unity/scenes/#additive-scene-loading");
                     }

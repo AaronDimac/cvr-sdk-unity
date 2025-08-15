@@ -588,7 +588,7 @@ namespace Cognitive3D
             internal const float TitleLabelWidth = 196f;
             private const float IconSize = 16f;
 
-            internal readonly GUIStyle DetailContainer = new GUIStyle()
+            internal readonly GUIStyle DetailContainer = new GUIStyle
             {
                 padding = new RectOffset(10, 10, 5, 5)
             };
@@ -616,7 +616,7 @@ namespace Cognitive3D
                 padding = new RectOffset(0, 5, 0, 5)
             };
 
-            internal readonly GUIStyle ContextPadding = new GUIStyle()
+            internal readonly GUIStyle ContextPadding = new GUIStyle
             {
                 padding = new RectOffset(10, 10, 5, 3),
                 margin = new RectOffset(4, 4, 4, 5)
@@ -686,7 +686,7 @@ namespace Cognitive3D
                 fontSize = 30
             };
 
-            internal readonly GUIStyle CompleteIcon = new GUIStyle()
+            internal readonly GUIStyle CompleteIcon = new GUIStyle
             {
                 fixedWidth = 18,
                 fixedHeight = 18,
@@ -694,7 +694,7 @@ namespace Cognitive3D
                 padding = new RectOffset(2, 0, 2, 2),
             };
 
-            internal readonly GUIStyle IncompleteIcon = new GUIStyle()
+            internal readonly GUIStyle IncompleteIcon = new GUIStyle
             {
                 fixedWidth = 18,
                 fixedHeight = 18,
@@ -930,16 +930,16 @@ namespace Cognitive3D
             }
         }
 
-        private static Texture2D _externalLink;
-        public static Texture2D ExternalLink
+        private static Texture2D _externalLinkIcon;
+        public static Texture2D ExternalLinkIcon
         {
             get
             {
-                if (_externalLink == null)
+                if (_externalLinkIcon == null)
                 {
-                    _externalLink = Resources.Load<Texture2D>("Icons/external-link");
+                    _externalLinkIcon = Resources.Load<Texture2D>("Icons/external-link");
                 }
-                return _externalLink;
+                return _externalLinkIcon;
             }
         }
 

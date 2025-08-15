@@ -421,7 +421,6 @@ namespace Cognitive3D
                     }
                     ExportUtility.UploadDynamicObjects(dynamicMeshNames, showPopups);
                 }
-                // CompletedUpload = true;
             }
 
             void OnSceneVersionRefreshed()

@@ -7,10 +7,10 @@ namespace Cognitive3D
 {
     internal class FeaturesWindow : EditorWindow
     {
-        private float slideProgress = 0f;
-        private float slideSpeed = 4f;
-        private bool slidingForward = false;
-        private bool slidingBackward = false;
+        private float slideProgress;
+        private readonly float slideSpeed = 4f;
+        private bool slidingForward;
+        private bool slidingBackward;
 
         private Vector2 mainScroll;
 
