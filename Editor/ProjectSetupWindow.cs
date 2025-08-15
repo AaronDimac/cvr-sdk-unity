@@ -113,7 +113,7 @@ namespace Cognitive3D
                     "This window will guide you through setting up our SDK in your project and ensuring the features available from packages in your project are automatically recorded.",
                     EditorCore.styles.ItemDescription);
 
-                #region Dev and App keys
+#region Dev and App keys
                 completenessStatus = !string.IsNullOrEmpty(developerKey) && !string.IsNullOrEmpty(apiKey);
                 statusIcon = GetStatusIcon(completenessStatus);
 
@@ -153,10 +153,10 @@ namespace Cognitive3D
                         EditorGUILayout.HelpBox(devKeyStatusMessage, devKeyStatusType);
                     }
                 });
-                #endregion
+#endregion
 
                 EditorGUI.BeginDisabledGroup(!keysSet);
-                #region XR SDK
+#region XR SDK
                 completenessStatus = autoSelectXR;
                 statusIcon = GetStatusIcon(completenessStatus);
 
@@ -185,9 +185,9 @@ namespace Cognitive3D
 
                     EditorGUILayout.HelpBox($"Current SDK: {availableXrSdks.Keys.ElementAt(selectedSDKIndex)}", MessageType.Info);
                 });
-                #endregion
+#endregion
 
-                #region Player Setup
+#region Player Setup
                 completenessStatus = EditorCore.GetPreferences().AutoPlayerSetup;
                 statusIcon = GetStatusIcon(completenessStatus);
 
@@ -233,9 +233,9 @@ namespace Cognitive3D
                         EditorGUILayout.HelpBox("Auto Player Setup is enabled, allowing all player-related objects to be automatically detected and tracked.", MessageType.Info);
                     }
                 });
-                #endregion
+#endregion
 
-                #region Scene Upload
+#region Scene Upload
                 completenessStatus = Cognitive3D_Preferences.Instance.sceneSettings.Count > 0;
                 statusIcon = GetStatusIcon(completenessStatus);
 
@@ -346,7 +346,7 @@ namespace Cognitive3D
                     GUILayout.EndScrollView();
                     EditorGUILayout.EndVertical();
                 });
-                #endregion
+#endregion
 
                 EditorGUI.EndDisabledGroup();
             }
