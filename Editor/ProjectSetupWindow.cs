@@ -253,6 +253,19 @@ namespace Cognitive3D
                     }
                     GUILayout.FlexibleSpace(); // Push content to the left
                     GUILayout.EndHorizontal();
+
+                    if (EditorBuildSettings.scenes.Length == 0)
+                    {
+                        GUILayout.BeginHorizontal(EditorCore.styles.HelpBoxPadding);
+                        // Display error icon
+                        GUILayout.Label(EditorGUIUtility.IconContent("console.erroricon"), GUILayout.Width(35), GUILayout.Height(35));
+                        GUILayout.Label(
+                            "No scenes have been added to the Build Settings.",
+                            EditorCore.styles.HelpBoxLabel
+                        );
+                        GUILayout.EndHorizontal();
+                    }
+
                     EditorGUILayout.BeginVertical(EditorCore.styles.ListBoxPadding);
 
                     EditorGUILayout.BeginHorizontal(EditorStyles.toolbar);

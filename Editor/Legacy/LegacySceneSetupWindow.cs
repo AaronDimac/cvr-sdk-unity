@@ -589,12 +589,12 @@ namespace Cognitive3D
             GUI.Label(new Rect(200, 105, 440, 440), "Auto Player Setup", "normallabel");
             Rect checkboxRect = new Rect(170, 100, 30, 30);
 
-            if (Cognitive3D_Manager.Instance.autoInitializePlayerSetup)
+            if (Cognitive3D_Preferences.Instance.AutoPlayerSetup)
             {
                 if (GUI.Button(checkboxRect, EditorCore.BoxCheckmark, "image_centered"))
                 {
                     SegmentAnalytics.TrackEvent("DisabledAutoPlayerSetup_PlayerSetupPage", "SceneSetupPlayerSetupPage");
-                    Cognitive3D_Manager.Instance.autoInitializePlayerSetup = false;
+                    Cognitive3D_Preferences.Instance.AutoPlayerSetup = false;
                 }
 
                 GUI.Label(new Rect(30, 140, 440, 440), "When \"Auto Player Setup\" is enabled, all player-related objects are automatically detected and tracked. If you'd prefer to assign these objects manually, disable this option.", "normallabel");
@@ -627,7 +627,7 @@ namespace Cognitive3D
                         }
                     }
 
-                    Cognitive3D_Manager.Instance.autoInitializePlayerSetup = true;
+                    Cognitive3D_Preferences.Instance.AutoPlayerSetup = true;
                 }
 
                 GUI.Label(new Rect(30, 140, 440, 440), "The display for the HMD should be tagged as <b>MainCamera</b>", "normallabel");
@@ -700,7 +700,7 @@ namespace Cognitive3D
                     GUI.Label(new Rect(400, 390, 30, 30), new GUIContent(EditorCore.Alert, "Right Controller not set"), "image_centered");
                 }
 
-                AllSetupComplete = (Cognitive3D_Manager.Instance.autoInitializePlayerSetup || (leftControllerIsValid && rightControllerIsValid))
+                AllSetupComplete = (Cognitive3D_Preferences.Instance.AutoPlayerSetup || (leftControllerIsValid && rightControllerIsValid))
                                 && cameraIsValid && trackingSpaceIsValid;
 
 #if C3D_STEAMVR2
@@ -835,7 +835,7 @@ namespace Cognitive3D
 
         public static void SetupPlayer()
         {
-            if (!Cognitive3D_Manager.Instance.autoInitializePlayerSetup)
+            if (!Cognitive3D_Preferences.Instance.AutoPlayerSetup)
             {
                 if (trackingSpace != null && trackingSpace.GetComponent<RoomTrackingSpace>() == null)
                 {
@@ -1693,7 +1693,7 @@ namespace Cognitive3D
                         };
                     }
                 #else
-                    appearDisabled = !isSetupComplete && !Cognitive3D_Manager.Instance.autoInitializePlayerSetup;
+                    appearDisabled = !isSetupComplete && !Cognitive3D_Preferences.Instance.AutoPlayerSetup;
                     if (appearDisabled)
                     {
                         onclick += () =>
