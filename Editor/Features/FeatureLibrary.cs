@@ -127,7 +127,7 @@ namespace Cognitive3D
                 new FeatureData(
                     "Sensors",
                     "Sensor description",
-                    EditorCore.CustomEventIcon,
+                    EditorCore.SensorIcon,
                     () => { setFeatureIndex(5); },
                     new List<FeatureAction>
                     {

@@ -966,6 +966,17 @@ namespace Cognitive3D
             }
         }
 
+        private static Texture2D _sensorIcon;
+        public static Texture2D SensorIcon
+        {
+            get
+            {
+                if (_sensorIcon == null)
+                    _sensorIcon = Resources.Load<Texture2D>("Features/Icons/sensors");
+                return _sensorIcon;
+            }
+        }
+
         private static Texture2D _exitpollIcon;
         public static Texture2D ExitpollIcon
         {
