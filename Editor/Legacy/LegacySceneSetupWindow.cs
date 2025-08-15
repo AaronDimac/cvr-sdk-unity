@@ -606,7 +606,7 @@ namespace Cognitive3D
                     SegmentAnalytics.TrackEvent("EnabledAutoPlayerSetup_PlayerSetupPage", "SceneSetupPlayerSetupPage");
 
                     // Remove the controllers/hands DynamicObject components (if they exist)
-                    var dynamics = FindObjectsOfType<DynamicObject>();
+                    var dynamics = FindObjectsByType<DynamicObject>(FindObjectsSortMode.None);
                     if (dynamics.Length > 0)
                     {
                         foreach (var dynamic in dynamics)
@@ -618,7 +618,7 @@ namespace Cognitive3D
                         }
                     }
 
-                    var trackingSpaces = FindObjectsOfType<RoomTrackingSpace>();
+                    var trackingSpaces = FindObjectsByType<RoomTrackingSpace>(FindObjectsSortMode.None);
                     if (trackingSpaces.Length > 0)
                     {
                         foreach (var _trackingSpace in trackingSpaces)

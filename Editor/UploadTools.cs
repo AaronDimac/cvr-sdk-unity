@@ -154,7 +154,7 @@ namespace Cognitive3D
                     }
 
                     // Add Cognitive3D_manager
-                    var found = Object.FindObjectOfType<Cognitive3D_Manager>();
+                    var found = Object.FindAnyObjectByType<Cognitive3D_Manager>();
                     if (found == null)
                     {
                         GameObject c3dManagerPrefab = Resources.Load<GameObject>("Cognitive3D_Manager");

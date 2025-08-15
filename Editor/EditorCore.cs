@@ -253,7 +253,7 @@ namespace Cognitive3D
         public static void SetPlayerDefine(string C3DSymbol)
         {
             //get all scripting define symbols
-            string s = PlayerSettings.GetScriptingDefineSymbolsForGroup(EditorUserBuildSettings.selectedBuildTargetGroup);
+            string s = PlayerSettings.GetScriptingDefineSymbols(UnityEditor.Build.NamedBuildTarget.FromBuildTargetGroup(EditorUserBuildSettings.selectedBuildTargetGroup));
             string[] ExistingSymbols = s.Split(';');
 
             //categorizing definition symbols
@@ -283,7 +283,8 @@ namespace Cognitive3D
                     alldefines += finalDefines[i] + ";";
                 }
             }
-            PlayerSettings.SetScriptingDefineSymbolsForGroup(EditorUserBuildSettings.selectedBuildTargetGroup, alldefines);
+
+            PlayerSettings.SetScriptingDefineSymbols(UnityEditor.Build.NamedBuildTarget.FromBuildTargetGroup(EditorUserBuildSettings.selectedBuildTargetGroup), alldefines);
         }
 
         /// <summary>
