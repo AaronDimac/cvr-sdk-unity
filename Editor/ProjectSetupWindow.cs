@@ -76,31 +76,34 @@ namespace Cognitive3D
 
         private void OnGUI()
         {
+            bool completenessStatus;
+            Texture2D statusIcon;
+
+            // Footer height
+            float footerHeight = 60f;
+
+            // Scrollable content area (from top of window to above footer)
+            Rect contentRect = new Rect(0, 0, position.width, position.height - footerHeight);
+            GUILayout.BeginArea(contentRect);
+            mainScroll = GUILayout.BeginScrollView(mainScroll);
+
             // Header background and logo
             if (EditorCore.LogoTexture != null)
             {
                 float bgHeight = 100f;
-                Rect bgRect = GUILayoutUtility.GetRect(position.width, bgHeight);
+
+                Rect bgRect = new Rect(0, 0, position.width, bgHeight);
                 GUI.DrawTexture(bgRect, EditorCore.BackgroundTexture, ScaleMode.ScaleAndCrop);
 
                 float logoWidth = EditorCore.LogoTexture.width / 3f;
                 float logoHeight = EditorCore.LogoTexture.height / 3f;
-                float logoX = bgRect.x + (bgRect.width - logoWidth) / 2f;
-                float logoY = bgRect.y + (bgRect.height - logoHeight) / 2f;
+                float logoX = (position.width - logoWidth) / 2f;
+                float logoY = (bgHeight - logoHeight) / 2f;
+
                 GUI.DrawTexture(new Rect(logoX, logoY, logoWidth, logoHeight), EditorCore.LogoTexture, ScaleMode.ScaleToFit);
+
+                GUILayout.Space(bgHeight);
             }
-
-            // Calculate heights
-            float footerHeight = 60f;
-            float contentHeight = position.height - footerHeight;
-
-            // Scrollable content area
-            Rect contentRect = new Rect(0, 100, position.width, contentHeight - 100); // below logo
-            GUILayout.BeginArea(contentRect);
-            mainScroll = GUILayout.BeginScrollView(mainScroll);
-
-            bool completenessStatus;
-            Texture2D statusIcon;
 
             using (new EditorGUILayout.VerticalScope(EditorCore.styles.ContextPadding))
             {

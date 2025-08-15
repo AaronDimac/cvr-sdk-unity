@@ -125,7 +125,6 @@ namespace Cognitive3D
             );
 
             // Define sub-rects
-            // Define sub-rects
             Rect iconRect = new Rect(buttonRect.x, buttonRect.y + 1, 98, 98);
             Rect titleRect = new Rect(iconRect.xMax + 15, buttonRect.y + 30, buttonRect.width - 180, 20); // Title area
             Rect descriptionRect = new Rect(iconRect.xMax + 15, titleRect.yMax, buttonRect.width - 180, 25); // Description below title
