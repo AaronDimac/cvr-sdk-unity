@@ -45,8 +45,7 @@ namespace Cognitive3D
                             }
                         )
                     },
-                    new DynamicObjectDetailGUI(),
-                    new List<string>{"Component", "All-SDKs"}
+                    new DynamicObjectDetailGUI()
                 ),
                 new FeatureData(
                     "ExitPoll Survey",
@@ -64,8 +63,7 @@ namespace Cognitive3D
                             }
                         )
                     },
-                    new ExitpollDetailGUI(),
-                    new List<string>{"All-SDKs"}
+                    new ExitpollDetailGUI()
                 ),
                 new FeatureData(
                     "Remote Controls",
@@ -83,8 +81,7 @@ namespace Cognitive3D
                             }
                         )
                     },
-                    new RemoteControlsDetailGUI(),
-                    new List<string>{"Component", "All-SDKs"}
+                    new RemoteControlsDetailGUI()
                 ),
                 new FeatureData(
                     "Social Platform",
@@ -102,8 +99,7 @@ namespace Cognitive3D
                             }
                         )
                     },
-                    new OculusSocialDetailGUI(),
-                    new List<string>{"Component", "Meta (Oculus) SDK"}
+                    new OculusSocialDetailGUI()
                 ),
                 new FeatureData(
                     "Custom Events",
@@ -121,8 +117,7 @@ namespace Cognitive3D
                             }
                         )
                     },
-                    new CustomEventDetailGUI(),
-                    new List<string>{"API"}
+                    new CustomEventDetailGUI()
                 ),
                 new FeatureData(
                     "Sensors",
@@ -140,8 +135,7 @@ namespace Cognitive3D
                             }
                         )
                     },
-                    new SensorDetailGUI(),
-                    new List<string>{"API"}
+                    new SensorDetailGUI()
                 ),
                 new FeatureData(
                     "Multiplayer",
@@ -159,8 +153,7 @@ namespace Cognitive3D
                             }
                         )
                     },
-                    new MultiplayerDetailGUI(),
-                    new List<string>{"Component", "Multiplayer"}
+                    new MultiplayerDetailGUI()
                 ),
                 new FeatureData(
                     "Media and 360 Video",
@@ -178,8 +171,7 @@ namespace Cognitive3D
                             }
                         )
                     },
-                    new MediaDetailGUI(),
-                    new List<string>{"Component", "All-SDKs"}
+                    new MediaDetailGUI()
                 )
             };
         }
@@ -253,7 +245,6 @@ namespace Cognitive3D
     {
         internal string Title;
         internal string Description;
-        internal List<string> Tags;
         internal Texture2D Icon;
         internal System.Action OnClick;
 
@@ -261,7 +252,7 @@ namespace Cognitive3D
 
         internal IFeatureDetailGUI DetailGUI;
 
-        internal FeatureData(string title, string description, Texture2D icon, System.Action onClick, List<FeatureAction> actions, IFeatureDetailGUI detailGUI = null, List<string> tags = null)
+        internal FeatureData(string title, string description, Texture2D icon, System.Action onClick, List<FeatureAction> actions, IFeatureDetailGUI detailGUI = null)
         {
             Title = title;
             Description = description;
@@ -269,7 +260,6 @@ namespace Cognitive3D
             OnClick = onClick;
             Actions = actions ?? new List<FeatureAction>();
             DetailGUI = detailGUI;
-            Tags = tags;
         }
     }
 
