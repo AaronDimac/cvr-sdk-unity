@@ -62,7 +62,7 @@ namespace Cognitive3D
                 },
                 fixAction: () =>
                 {
-                    ProjectSetupWindow.Init(ProjectSetupWindow.Page.SDKSelection);
+                    ProjectSetupWindow.Init();
                 }
                 );
 
@@ -172,7 +172,7 @@ namespace Cognitive3D
                 checkAction: () =>
                 {
                     // Check if auto player setup is enabled and validate the absence of tracking space and controllers
-                    if (Cognitive3D_Manager.autoInitializePlayerSetup)
+                    if (Cognitive3D_Preferences.Instance.AutoPlayerSetup)
                     {
                         return !ProjectValidation.FindComponentInActiveScene<RoomTrackingSpace>() 
                             && !ProjectValidation.TryGetControllers(out var controllerNamesList);
@@ -216,14 +216,14 @@ namespace Cognitive3D
                 fixmessage: "Tracking space is configured",
                 checkAction: () =>
                 {
-                    if (Cognitive3D_Manager.autoInitializePlayerSetup)
+                    if (Cognitive3D_Preferences.Instance.AutoPlayerSetup)
                         return true;
 
                     return ProjectValidation.FindComponentInActiveScene<RoomTrackingSpace>();
                 },
                 fixAction: () =>
                 {
-                    SceneSetupWindow.Init(SceneSetupWindow.Page.PlayerSetup);
+                    ProjectSetupWindow.Init();
                 }
             );
             
@@ -239,7 +239,7 @@ namespace Cognitive3D
                 },
                 fixAction: () =>
                 {
-                    ProjectSetupWindow.Init(ProjectSetupWindow.Page.APIKeys);
+                    ProjectSetupWindow.Init();
                 }
                 );
             
@@ -289,7 +289,7 @@ namespace Cognitive3D
                 },
                 fixAction: () =>
                 {
-                    SceneSetupWindow.Init(SceneSetupWindow.Page.Welcome);
+                    ProjectSetupWindow.Init();
                 }
                 );
 
@@ -306,7 +306,7 @@ namespace Cognitive3D
                 },
                 fixAction: () =>
                 {
-                    SceneSetupWindow.Init(SceneSetupWindow.Page.Welcome);
+                    ProjectSetupWindow.Init();
                 }
                 );
 
@@ -381,14 +381,14 @@ namespace Cognitive3D
                 fixmessage: "Controllers are correctly set up in current scene",
                 checkAction: () =>
                 {
-                    if (Cognitive3D_Manager.autoInitializePlayerSetup)
+                    if (Cognitive3D_Preferences.Instance.AutoPlayerSetup)
                         return true;
 
                     return ProjectValidation.TryGetControllers(out var _controllerNamesList) && _controllerNamesList.Count >= 2;
                 },
                 fixAction: () =>
                 {
-                    SceneSetupWindow.Init(SceneSetupWindow.Page.PlayerSetup);
+                    ProjectSetupWindow.Init();
                 }
             );
 
@@ -404,7 +404,7 @@ namespace Cognitive3D
                 },
                 fixAction: () =>
                 {
-                    SceneSetupWindow.Init(SceneSetupWindow.Page.PlayerSetup);
+                    ProjectSetupWindow.Init();
                 }
             );
 

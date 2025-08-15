@@ -69,7 +69,7 @@ namespace Cognitive3D
         [HideInInspector]
         public Transform trackingSpace;
 
-        internal static bool autoInitializePlayerSetup = true;
+        internal bool autoInitializePlayerSetup = true;
 
         /// <summary>
         /// sets instance of Cognitive3D_Manager
@@ -140,6 +140,8 @@ namespace Cognitive3D
                 Util.logDebug("Cognitive3D_Manager Initialize does not have valid apikey");
                 return;
             }
+
+            autoInitializePlayerSetup = Cognitive3D_Preferences.Instance.AutoPlayerSetup;
 
             SceneManager.sceneLoaded += SceneManager_SceneLoaded;
             SceneManager.sceneUnloaded += SceneManager_SceneUnloaded;

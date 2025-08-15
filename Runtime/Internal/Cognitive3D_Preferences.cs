@@ -65,6 +65,7 @@ namespace Cognitive3D
         public string ApplicationKey = string.Empty;
         public string AttributionKey;
 
+        public bool AutoPlayerSetup = true;
         public bool EnableLogging = true;
         public bool EnableDevLogging = false;
 
