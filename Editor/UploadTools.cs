@@ -168,7 +168,7 @@ namespace Cognitive3D
                     var found = Object.FindAnyObjectByType<Cognitive3D_Manager>();
                     if (found == null)
                     {
-                        GameObject c3dManagerPrefab = Resources.Load<GameObject>("Cognitive3D_Manager");
+                        GameObject c3dManagerPrefab = EditorCore.GetCognitive3DManagerPrefab();
                         PrefabUtility.InstantiatePrefab(c3dManagerPrefab);
                         UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(UnityEditor.SceneManagement.EditorSceneManager.GetActiveScene());
                     }

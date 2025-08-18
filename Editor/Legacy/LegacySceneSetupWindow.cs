@@ -76,7 +76,7 @@ namespace Cognitive3D
             var found = Object.FindFirstObjectByType<Cognitive3D_Manager>();
             if (found == null) //add Cognitive3D_manager
             {
-                GameObject c3dManagerPrefab = Resources.Load<GameObject>("Cognitive3D_Manager");
+                GameObject c3dManagerPrefab = EditorCore.GetCognitive3DManagerPrefab();
                 PrefabUtility.InstantiatePrefab(c3dManagerPrefab);
                 UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(UnityEditor.SceneManagement.EditorSceneManager.GetActiveScene());
             }
@@ -124,7 +124,7 @@ namespace Cognitive3D
             var found = Object.FindFirstObjectByType<Cognitive3D_Manager>();
             if (found == null) //add Cognitive3D_manager
             {
-                GameObject c3dManagerPrefab = Resources.Load<GameObject>("Cognitive3D_Manager");
+                GameObject c3dManagerPrefab = EditorCore.GetCognitive3DManagerPrefab();
                 PrefabUtility.InstantiatePrefab(c3dManagerPrefab);
                 UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(UnityEditor.SceneManagement.EditorSceneManager.GetActiveScene());
             }
@@ -281,7 +281,7 @@ namespace Cognitive3D
             var found = Object.FindFirstObjectByType<Cognitive3D_Manager>();
             if (found == null) //add Cognitive3D_manager
             {
-                GameObject c3dManagerPrefab = Resources.Load<GameObject>("Cognitive3D_Manager");
+                GameObject c3dManagerPrefab = EditorCore.GetCognitive3DManagerPrefab();
                 PrefabUtility.InstantiatePrefab(c3dManagerPrefab);
                 UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(UnityEditor.SceneManagement.EditorSceneManager.GetActiveScene());
             }
@@ -886,7 +886,7 @@ namespace Cognitive3D
 
             if (Cognitive3D_Manager.Instance == null)
             {
-                GameObject c3dManagerPrefab = Resources.Load<GameObject>("Cognitive3D_Manager");
+                GameObject c3dManagerPrefab = EditorCore.GetCognitive3DManagerPrefab();
                 PrefabUtility.InstantiatePrefab(c3dManagerPrefab);
                 UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(UnityEditor.SceneManagement.EditorSceneManager.GetActiveScene());
             }

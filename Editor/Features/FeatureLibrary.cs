@@ -193,7 +193,7 @@ namespace Cognitive3D
 
         internal static void AddOrRemoveComponent<T>() where T : Component
         {
-            GameObject c3dPrefab = Resources.Load<GameObject>("Cognitive3D_Manager");
+            GameObject c3dPrefab = EditorCore.GetCognitive3DManagerPrefab();
 
             if (c3dPrefab == null)
             {
@@ -222,7 +222,7 @@ namespace Cognitive3D
 
         internal static bool TryGetComponent<T>() where T : Component
         {
-            GameObject c3dPrefab = Resources.Load<GameObject>("Cognitive3D_Manager");
+            GameObject c3dPrefab = EditorCore.GetCognitive3DManagerPrefab();
 
             if (c3dPrefab == null)
             {

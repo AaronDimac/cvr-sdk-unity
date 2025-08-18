@@ -255,10 +255,26 @@ namespace Cognitive3D
                 },
                 fixAction: () =>
                 {
-                    GameObject c3dManagerPrefab = Resources.Load<GameObject>("Cognitive3D_Manager");
+                    GameObject c3dManagerPrefab = EditorCore.GetCognitive3DManagerPrefab();
                     PrefabUtility.InstantiatePrefab(c3dManagerPrefab);
                 }
-                );
+            );
+
+            ProjectValidation.AddItem(
+                level: ProjectValidation.ItemLevel.Required,
+                category: CATEGORY,
+                actionType: ProjectValidation.ItemAction.Apply,
+                message: "The current scene is using Cognitive3D_Manager from the package's Resources folder. It should be updated to use the prefab from Assets/Resources. Apply the update to all tracked scenes?",
+                fixmessage: "Cognitive3D_Manager in the scene is now using the prefab from Assets/Resources.",
+                checkAction: () =>
+                {
+                    return !EditorCore.IsUsingOldManagerPrefab();
+                },
+                fixAction: () =>
+                {
+                    EditorCore.PrefabUpdater();
+                }
+            );
 
             ProjectValidation.AddItem(
                 level: ProjectValidation.ItemLevel.Required,

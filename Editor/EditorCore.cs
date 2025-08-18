@@ -1668,6 +1668,168 @@ namespace Cognitive3D
         }
 #endregion
 
+#region Cognitive3DPrefabUtility
+
+        private const string packagePrefabPath = "Packages/com.cognitive3d.c3d-sdk/Runtime/Resources/Cognitive3D_Manager.prefab";
+        private const string projectPrefabPath = "Assets/Resources/Cognitive3D_Manager.prefab";
+
+        /// <summary>
+        /// Returns the prefab that should be used by the project,
+        /// preferring the copy in Assets/Resources. 
+        /// If the copy doesn't exist, it is created from the package prefab.
+        /// </summary>
+        public static GameObject GetCognitive3DManagerPrefab()
+        {
+            GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(projectPrefabPath);
+            if (prefab != null) return prefab;
+
+            CreatePrefabCopy();
+            prefab = AssetDatabase.LoadAssetAtPath<GameObject>(projectPrefabPath);
+            if (prefab != null) return prefab;
+
+            // Fallback to package prefab if something went wrong
+            return AssetDatabase.LoadAssetAtPath<GameObject>(packagePrefabPath);
+        }
+        
+        /// <summary>
+        /// Creates a copy of the Cognitive3D Manager prefab from the package into Assets/Resources.
+        /// Does nothing if the prefab already exists in Assets/Resources.
+        /// </summary>
+        public static void CreatePrefabCopy()
+        {
+            if (File.Exists(projectPrefabPath))
+            {
+                return;
+            }
+
+            // Load from package
+            GameObject packagePrefab = AssetDatabase.LoadAssetAtPath<GameObject>(packagePrefabPath);
+            if (packagePrefab == null)
+            {
+                Debug.LogError("Could not find Cognitive3D Manager prefab in package.");
+                return;
+            }
+
+            // Ensure Resources folder exists
+            if (!Directory.Exists("Assets/Resources"))
+            {
+                Directory.CreateDirectory("Assets/Resources");
+            }
+
+            // Copy prefab into Assets
+            AssetDatabase.CopyAsset(packagePrefabPath, projectPrefabPath);
+            AssetDatabase.SaveAssets();
+
+            Util.logDebug("Created Cognitive3D Manager prefab copy in Assets/Resources.");
+        }
+
+        /// <summary>
+        /// Checks if the Cognitive3D Manager in the current scene is using the old prefab from the package.
+        /// </summary>
+        public static bool IsUsingOldManagerPrefab()
+        {
+            var currentScene = UnityEditor.SceneManagement.EditorSceneManager.GetActiveScene();
+            var currentSettings = Cognitive3D_Preferences.FindSceneByPath(currentScene.path);
+            if (currentSettings != null)
+            {
+                foreach (var root in currentScene.GetRootGameObjects())
+                {
+                    var oldManager = root.GetComponentInChildren<Cognitive3D_Manager>();
+                    if (oldManager != null)
+                    {
+                        GameObject sourcePrefab = PrefabUtility.GetCorrespondingObjectFromSource(oldManager.gameObject) as GameObject;
+                        string prefabPath = sourcePrefab != null ? AssetDatabase.GetAssetPath(sourcePrefab) : "";
+
+                        if (prefabPath == packagePrefabPath)
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Starts the update process to replace old prefab instances in tracked scenes.
+        /// </summary>
+        public static void PrefabUpdater()
+        {
+            EditorApplication.update += RunUpdateCheck;
+        }
+
+        /// <summary>
+        /// Iterates through all tracked scenes, replaces any old package prefab instances
+        /// with the project prefab, and adds a manager if none exists.
+        /// </summary>
+        static void RunUpdateCheck()
+        {
+            EditorApplication.update -= RunUpdateCheck;
+
+            var scenes = Cognitive3D_Preferences.Instance.sceneSettings;
+            foreach (var scene in scenes)
+            {
+                string path = scene.ScenePath;
+                if (!System.IO.File.Exists(path))
+                {
+                    Util.logWarning($"Scene path not found: {path}");
+                    continue;
+                }
+
+                var _scene = EditorSceneManager.OpenScene(path, OpenSceneMode.Single);
+
+                bool modified = false;
+                bool foundManager = false;
+
+                foreach (var root in _scene.GetRootGameObjects())
+                {
+                    var oldManager = root.GetComponentInChildren<Cognitive3D_Manager>();
+                    if (oldManager != null)
+                    {
+                        foundManager = true;
+                        // Get prefab source path
+                        GameObject sourcePrefab = PrefabUtility.GetCorrespondingObjectFromSource(oldManager.gameObject) as GameObject;
+                        string prefabPath = sourcePrefab != null ? AssetDatabase.GetAssetPath(sourcePrefab) : "";
+
+                        // Only replace if it's from the old package path
+                        if (prefabPath == packagePrefabPath)
+                        {
+                            var newPrefab = PrefabUtility.InstantiatePrefab(GetCognitive3DManagerPrefab(), _scene) as GameObject;
+                            if (newPrefab != null)
+                            {
+                                newPrefab.name = "Cognitive3D_Manager";
+                                UnityEngine.Object.DestroyImmediate(oldManager.gameObject);
+                                modified = true;
+                            }
+                        }
+                    }
+                }
+
+                // If no manager exists, add one
+                if (!foundManager)
+                {
+                    var newPrefab = PrefabUtility.InstantiatePrefab(GetCognitive3DManagerPrefab(), _scene) as GameObject;
+                    if (newPrefab != null)
+                    {
+                        newPrefab.name = "Cognitive3D_Manager";
+                        modified = true;
+                    }
+                }
+
+                if (modified)
+                {
+                    EditorSceneManager.MarkSceneDirty(_scene);
+                    EditorSceneManager.SaveScene(_scene);
+                    Util.logDebug($"Saved updated scene: {path}");
+                }
+                else
+                {
+                    Util.logDebug($"No changes made to scene: {path}");
+                }
+            }
+        }
+#endregion
+
         #region Packages
 
         static Action<UnityEditor.PackageManager.PackageCollection> GetPackageResponseAction;
