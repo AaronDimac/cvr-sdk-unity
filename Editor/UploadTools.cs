@@ -374,6 +374,35 @@ namespace Cognitive3D
         {
             sceneUploadProgress = progress;
         }
+
+        internal static bool EnsureSceneReady(string scenePath)
+        {
+            if (string.IsNullOrEmpty(scenePath)) return false;
+
+            var activeScene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
+            if (scenePath != activeScene.path)
+            {
+                UnityEditor.SceneManagement.EditorSceneManager.OpenScene(scenePath);
+                activeScene = UnityEngine.SceneManagement.SceneManager.GetActiveScene();
+            }
+
+            if (string.IsNullOrEmpty(activeScene.name))
+            {
+                bool saveNow = EditorUtility.DisplayDialog(
+                    "Scene Not Saved",
+                    "Cannot proceed with a scene that is not saved.\nDo you want to save now?",
+                    "Save",
+                    "Cancel"
+                );
+
+                if (!saveNow) return false;
+
+                if (!UnityEditor.SceneManagement.EditorSceneManager.SaveOpenScenes())
+                    return false;
+            }
+
+            return true;
+        }
         #endregion
 
         #region Dynamic Objects Upload Tools

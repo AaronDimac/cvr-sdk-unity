@@ -156,15 +156,8 @@ namespace Cognitive3D
                 // Export button
                 if (GUILayout.Button(new GUIContent("Export", "Exports the current open (active scene)")))
                 {
-                    if (string.IsNullOrEmpty(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name))
-                    {
-                        if (EditorUtility.DisplayDialog("Export Paused", "Cannot export scene that is not saved.\n\nDo you want to save now?", "Save", "Cancel"))
-                        {
-                            if (!UnityEditor.SceneManagement.EditorSceneManager.SaveOpenScenes())
-                                return;
-                        }
-                        else return;
-                    }
+                    var scenePath = element.FindPropertyRelative("ScenePath").stringValue;
+                    if (string.IsNullOrEmpty(scenePath) || !UploadTools.EnsureSceneReady(scenePath)) return;
 
                     ExportUtility.ExportGLTFScene(true);
 
@@ -178,26 +171,14 @@ namespace Cognitive3D
                     UnityEditor.AssetDatabase.SaveAssets();
                     EditorCore.RefreshSceneVersion(null);
                 }
-
+                
                 // Upload button
                 if (GUILayout.Button(new GUIContent("Upload", "Uploads the current open (active scene)")))
                 {
-                    if (string.IsNullOrEmpty(UnityEngine.SceneManagement.SceneManager.GetActiveScene().name))
-                    {
-                        if (EditorUtility.DisplayDialog("Upload Paused", "Cannot upload scene that is not saved.\n\nDo you want to save now?", "Save", "Cancel"))
-                        {
-                            if (UnityEditor.SceneManagement.EditorSceneManager.SaveOpenScenes())
-                            {
-                                UploadTools.UploadSceneAndDynamics(true, true, true, true, true);
-                            }
-                            else return;
-                        }
-                        else return;
-                    }
-                    else
-                    {
-                        UploadTools.UploadSceneAndDynamics(true, true, true, true, true);
-                    }
+                    var scenePath = element.FindPropertyRelative("ScenePath").stringValue;
+                    if (string.IsNullOrEmpty(scenePath) || !UploadTools.EnsureSceneReady(scenePath)) return;
+
+                    UploadTools.UploadSceneAndDynamics(true, true, true, true, true);
                 }
 
                 // Open on Dashboard button
