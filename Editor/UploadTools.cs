@@ -102,7 +102,7 @@ namespace Cognitive3D
             // Asking user if they want to include dynamics for all scenes
             bool includeDynamics = EditorUtility.DisplayDialog(
                 "Export and Upload Dynamics",
-                "Do you want to include dynamics for all selected scenes in this upload?\n\n" +
+                "Do you want to include dynamics for all selected scenes in this upload? (Recommended)\n\n" +
                 "You can also upload dynamics later via Dynamic Objects > Feature Builder.",
                 "Yes",
                 "No"
