@@ -408,11 +408,13 @@ namespace Cognitive3D
 
             string footerButtonText = GetFooterButtonText(hasScenesToUpload, xrSdkNeedsUpdate);
 
+            EditorGUI.BeginDisabledGroup(!keysSet); // disable if keySet is false
             if (GUILayout.Button(footerButtonText, GUILayout.Width(140), GUILayout.Height(30)))
             {
                 HandleFooterButtonClick(hasScenesToUpload, xrSdkNeedsUpdate, selectedScenes);
                 Close();  // Close the window
             }
+            EditorGUI.EndDisabledGroup();
 
             GUILayout.FlexibleSpace();
             GUILayout.EndHorizontal();
