@@ -1724,6 +1724,29 @@ namespace Cognitive3D
         }
 
         /// <summary>
+        /// Checks if a Cognitive3D Manager prefab exists in the current scene.
+        /// </summary>
+        public static bool IsManagerPrefabInScene()
+        {
+            var currentScene = UnityEditor.SceneManagement.EditorSceneManager.GetActiveScene();
+            var currentSettings = Cognitive3D_Preferences.FindSceneByPath(currentScene.path);
+
+            if (currentSettings != null)
+            {
+                foreach (var root in currentScene.GetRootGameObjects())
+                {
+                    var manager = root.GetComponentInChildren<Cognitive3D_Manager>();
+                    if (manager != null)
+                    {
+                        return true; // Found a Cognitive3D_Manager in the scene
+                    }
+                }
+            }
+
+            return false; // No manager found
+        }
+
+        /// <summary>
         /// Checks if the Cognitive3D Manager in the current scene is using the old prefab from the package.
         /// </summary>
         public static bool IsUsingOldManagerPrefab()
@@ -1821,10 +1844,6 @@ namespace Cognitive3D
                     EditorSceneManager.MarkSceneDirty(_scene);
                     EditorSceneManager.SaveScene(_scene);
                     Util.logDebug($"Saved updated scene: {path}");
-                }
-                else
-                {
-                    Util.logDebug($"No changes made to scene: {path}");
                 }
             }
         }

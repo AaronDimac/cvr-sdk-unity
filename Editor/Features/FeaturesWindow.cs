@@ -27,6 +27,45 @@ namespace Cognitive3D
 
         private void OnEnable()
         {
+            if (EditorCore.IsUsingOldManagerPrefab())
+            {
+                bool updatePrefab = EditorUtility.DisplayDialog(
+                    "Update Prefab Source",
+                    "It looks like you're still using the Manager prefab from the package resources.\n\n" +
+                    "We highly recommend moving it to Assets/Resources for all tracked scenes. " +
+                    "Otherwise, any added components may be overridden by future updates since the prefab in the package is immutable.\n\n" +
+                    "Would you like to update the prefab source now?",
+                    "Yes, Update",
+                    "No, Keep As Is"
+                );
+
+                if (updatePrefab)
+                {
+                    EditorCore.PrefabUpdater();
+                }
+            }
+
+            if (!EditorCore.IsManagerPrefabInScene())
+            {
+                bool addManager = EditorUtility.DisplayDialog(
+                    "Cognitive3D Manager Not Found",
+                    "This scene does not currently contain a Cognitive3D Manager.\n\n" +
+                    "Would you like to add a Cognitive3D Manager to this scene?",
+                    "Yes, Add Manager",
+                    "No, Skip"
+                );
+
+                if (addManager)
+                {
+                    GameObject managerPrefab = EditorCore.GetCognitive3DManagerPrefab();
+                    if (managerPrefab != null)
+                    {
+                        PrefabUtility.InstantiatePrefab(managerPrefab);
+                        UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(UnityEditor.SceneManagement.EditorSceneManager.GetActiveScene());
+                    }
+                }
+            }
+
             features = FeatureLibrary.CreateFeatures((index) =>
             {
                 currentFeatureIndex = index;
