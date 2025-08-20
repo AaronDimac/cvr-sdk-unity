@@ -18,7 +18,7 @@ namespace Cognitive3D
 
                 if (GUI.Button(iconRect, EditorCore.InfoGrey, EditorCore.styles.InfoButton))
                 {
-                    Application.OpenURL("https://docs.cognitive3d.com/unity/components/#oculus-social-data");
+                    Application.OpenURL("https://docs.cognitive3d.com/unity/components/#social-platform");
                 }
 
                 GUILayout.FlexibleSpace(); // Push content to the left

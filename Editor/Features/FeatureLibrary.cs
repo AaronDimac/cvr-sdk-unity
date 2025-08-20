@@ -95,7 +95,7 @@ namespace Cognitive3D
                             "Link to Remote Controls documentation",
                             () =>
                             {
-                                Application.OpenURL("https://docs.cognitive3d.com/unity/components/#oculus-social-data");
+                                Application.OpenURL("https://docs.cognitive3d.com/unity/components/#social-platform");
                             }
                         )
                     },
