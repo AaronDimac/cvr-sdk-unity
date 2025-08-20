@@ -34,13 +34,9 @@ namespace Cognitive3D
 
         private void CheckDynamicObjectChanges()
         {
-#if UNITY_2020_1_OR_NEWER
             int currentCount = Cognitive3D_Preferences.Instance.IncludeDisabledDynamicObjects
             ? GameObject.FindObjectsByType<DynamicObject>(FindObjectsInactive.Include, FindObjectsSortMode.None).Length
             : GameObject.FindObjectsByType<DynamicObject>(FindObjectsInactive.Exclude, FindObjectsSortMode.None).Length;
-#else
-            int currentCount = FindObjectsOfType<DynamicObject>().Length;
-#endif
             if (currentCount != lastDynamicCount)
             {
                 lastDynamicCount = currentCount;
@@ -243,10 +239,7 @@ namespace Cognitive3D
                 gm.AddSeparator("");
                 gm.AddItem(new GUIContent("Open Dynamic Export Folder"), false, OnOpenDynamicExportFolder);
                 gm.AddItem(new GUIContent("Get Dynamic IDs from Dashboard"), false, GetDashboardManifest);
-
-#if UNITY_2020_1_OR_NEWER
                 gm.AddItem(new GUIContent("Include Disabled Dynamic Objects"), Cognitive3D_Preferences.Instance.IncludeDisabledDynamicObjects, ToggleIncludeDisabledObjects);
-#endif
                 gm.ShowAsContext();
             }
             EditorGUILayout.EndHorizontal();
