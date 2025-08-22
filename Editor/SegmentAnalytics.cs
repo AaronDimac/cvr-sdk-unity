@@ -174,7 +174,6 @@ namespace Cognitive3D
             }
         }
 
-
         private static void GetUserResponse(int responseCode, string error, string text)
         {
             var userdata = JsonUtility.FromJson<EditorCore.UserData>(text);

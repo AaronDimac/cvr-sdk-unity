@@ -47,6 +47,7 @@ namespace Cognitive3D
         public static void Get(string url, Response callback, Dictionary<string, string> headers, bool blocking, string requestName = "Get", string requestInfo = "")
         {
             var req = UnityWebRequest.Get(url);
+            req.timeout = 10;
             req.SetRequestHeader("Content-Type", "application/json");
             req.SetRequestHeader("X-HTTP-Method-Override", "GET");
             foreach (var v in headers)
@@ -134,7 +135,10 @@ namespace Cognitive3D
                         EditorUtility.ClearProgressBar();
                     }
                 }
-                if (!EditorWebRequests[i].Request.isDone) { return; }
+                if (!EditorWebRequests[i].Request.isDone) 
+                {
+                    continue; // skip this one, check the rest
+                }
                 if (EditorWebRequests[i].IsBlocking)
                     EditorUtility.ClearProgressBar();
 
@@ -151,6 +155,10 @@ namespace Cognitive3D
                 }
                 finally //if there is an error in try, still remove request
                 {
+                    if (EditorWebRequests[i].IsBlocking)
+                    {
+                        EditorUtility.ClearProgressBar();
+                    }
                     EditorWebRequests.RemoveAt(i);
                 }
             }
