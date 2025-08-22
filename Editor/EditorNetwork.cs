@@ -48,6 +48,7 @@ namespace Cognitive3D
         {
             var req = UnityWebRequest.Get(url);
             req.timeout = 10;
+            req.disposeUploadHandlerOnDispose = true;
             req.disposeDownloadHandlerOnDispose = true;
             req.SetRequestHeader("Content-Type", "application/json");
             req.SetRequestHeader("X-HTTP-Method-Override", "GET");
@@ -71,6 +72,7 @@ namespace Cognitive3D
             var p = UnityWebRequest.Put(url, bytes);
             p.timeout = 10;
             p.disposeUploadHandlerOnDispose = true;
+            p.disposeDownloadHandlerOnDispose = true;
             p.method = "POST";
             p.SetRequestHeader("Content-Type", "application/json");
             p.SetRequestHeader("X-HTTP-Method-Override", "POST");
@@ -91,6 +93,7 @@ namespace Cognitive3D
             var p = UnityWebRequest.Put(url, bytecontent);
             p.timeout = 10;
             p.disposeUploadHandlerOnDispose = true;
+            p.disposeDownloadHandlerOnDispose = true;
             p.method = "POST";
             p.SetRequestHeader("X-HTTP-Method-Override", "POST");
             foreach (var v in headers)
@@ -111,6 +114,7 @@ namespace Cognitive3D
             var p = UnityWebRequest.Post(url, formcontent);
             p.timeout = 10;
             p.disposeUploadHandlerOnDispose = true;
+            p.disposeDownloadHandlerOnDispose = true;
             p.SetRequestHeader("X-HTTP-Method-Override", "POST");
             foreach (var v in headers)
             {
