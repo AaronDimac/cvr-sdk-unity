@@ -48,6 +48,7 @@ namespace Cognitive3D
         {
             var req = UnityWebRequest.Get(url);
             req.timeout = 10;
+            req.disposeDownloadHandlerOnDispose = true;
             req.SetRequestHeader("Content-Type", "application/json");
             req.SetRequestHeader("X-HTTP-Method-Override", "GET");
             foreach (var v in headers)

@@ -148,8 +148,6 @@ namespace Cognitive3D
 
         private static async Task SendTrackingDataAsync(string trackURL, string data)
         {
-            if (string.IsNullOrEmpty(_writeKey)) Init();
-
             if (!string.IsNullOrEmpty(_writeKey))
             {
                 var bytes = Encoding.UTF8.GetBytes(data);
