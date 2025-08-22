@@ -2042,6 +2042,7 @@ namespace Cognitive3D
                 DynamicUploadSuccess++;
             }
             Debug.Log("Finished uploading Dynamic Object mesh: " + currentDynamicUploadName);
+            dynamicUploadWWW.Dispose();
             dynamicUploadWWW = null;
         }
         #endregion
