@@ -156,6 +156,8 @@ namespace Cognitive3D
 
                 using (var request = new UnityWebRequest(trackURL, UnityWebRequest.kHttpVerbPOST))
                 {
+                    request.disposeUploadHandlerOnDispose = true;
+                    request.disposeDownloadHandlerOnDispose = true;
                     request.uploadHandler = new UploadHandlerRaw(bytes);
                     request.downloadHandler = new DownloadHandlerBuffer();
 
