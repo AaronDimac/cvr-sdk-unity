@@ -68,6 +68,7 @@ namespace Cognitive3D
         {
             var bytes = System.Text.UTF8Encoding.UTF8.GetBytes(stringcontent);
             var p = UnityWebRequest.Put(url, bytes);
+            p.timeout = 10;
             p.method = "POST";
             p.SetRequestHeader("Content-Type", "application/json");
             p.SetRequestHeader("X-HTTP-Method-Override", "POST");
@@ -86,6 +87,7 @@ namespace Cognitive3D
         public static void Post(string url, byte[] bytecontent, Response callback, Dictionary<string, string> headers, bool blocking, string requestName = "Post", string requestInfo = "", System.Action<float> progressCallback = null)
         {
             var p = UnityWebRequest.Put(url, bytecontent);
+            p.timeout = 10;
             p.method = "POST";
             p.SetRequestHeader("X-HTTP-Method-Override", "POST");
             foreach (var v in headers)
@@ -104,6 +106,7 @@ namespace Cognitive3D
         public static void Post(string url, WWWForm formcontent, Response callback, Dictionary<string, string> headers, bool blocking, string requestName = "Post", string requestInfo = "")
         {
             var p = UnityWebRequest.Post(url, formcontent);
+            p.timeout = 10;
             p.SetRequestHeader("X-HTTP-Method-Override", "POST");
             foreach (var v in headers)
             {
@@ -164,29 +167,54 @@ namespace Cognitive3D
             }
         }
 
+        static float requestStartTime;
+
         static void EditorQueueUpdate()
         {
-            if (ActiveQueuedWebRequest == null && EditorWebRequestsQueue.Count == 0) { EditorUtility.ClearProgressBar(); EditorApplication.update -= EditorQueueUpdate; return; }
+            // no active request and queue empty → stop update
+            if (ActiveQueuedWebRequest == null && EditorWebRequestsQueue.Count == 0)
+            {
+                EditorUtility.ClearProgressBar();
+                EditorApplication.update -= EditorQueueUpdate;
+                return;
+            }
 
+            // start next request if none active
             if (ActiveQueuedWebRequest == null)
             {
                 ActiveQueuedWebRequest = EditorWebRequestsQueue.Dequeue();
                 ActiveQueuedWebRequest.Request.SendWebRequest();
+                requestStartTime = (float)EditorApplication.timeSinceStartup;
             }
 
             EditorUtility.DisplayProgressBar(ActiveQueuedWebRequest.RequestName, ActiveQueuedWebRequest.RequestInfo, ActiveQueuedWebRequest.Request.uploadProgress);
 
-            if (ActiveQueuedWebRequest.Request.isDone)
+            // check if done or timed out
+            float elapsed = (float)EditorApplication.timeSinceStartup - requestStartTime;
+            if (ActiveQueuedWebRequest.Request.isDone || elapsed > ActiveQueuedWebRequest.Request.timeout)
             {
-                EditorUtility.ClearProgressBar();
-                int responseCode = (int)ActiveQueuedWebRequest.Request.responseCode;
-                Util.logDevelopment("Got Response from " + ActiveQueuedWebRequest.Request.url + ": [CODE] " + responseCode
-                    + (!string.IsNullOrEmpty(ActiveQueuedWebRequest.Request.downloadHandler.text) ? " [TEXT] " + ActiveQueuedWebRequest.Request.downloadHandler.text : "")
-                    + (!string.IsNullOrEmpty(ActiveQueuedWebRequest.Request.error) ? " [ERROR] " + ActiveQueuedWebRequest.Request.error : ""));
-                if (ActiveQueuedWebRequest.Response != null)
+                if (elapsed > ActiveQueuedWebRequest.Request.timeout && !ActiveQueuedWebRequest.Request.isDone)
                 {
-                    ActiveQueuedWebRequest.Response.Invoke(responseCode, ActiveQueuedWebRequest.Request.error, ActiveQueuedWebRequest.Request.downloadHandler.text);
+                    Debug.LogWarning($"Request timed out: {ActiveQueuedWebRequest.Request.url}");
+                    ActiveQueuedWebRequest.Request.Abort();
                 }
+
+                // log response
+                int responseCode = (int)ActiveQueuedWebRequest.Request.responseCode;
+                Util.logDevelopment(
+                    "Got Response from " + ActiveQueuedWebRequest.Request.url +
+                    ": [CODE] " + responseCode +
+                    (!string.IsNullOrEmpty(ActiveQueuedWebRequest.Request.downloadHandler.text) ? " [TEXT] " + ActiveQueuedWebRequest.Request.downloadHandler.text : "") +
+                    (!string.IsNullOrEmpty(ActiveQueuedWebRequest.Request.error) ? " [ERROR] " + ActiveQueuedWebRequest.Request.error : "")
+                );
+
+                ActiveQueuedWebRequest.Response?.Invoke(responseCode, ActiveQueuedWebRequest.Request.error, ActiveQueuedWebRequest.Request.downloadHandler?.text);
+
+                // dispose request and clear progress bar
+                ActiveQueuedWebRequest.Request.Dispose();
+                EditorUtility.ClearProgressBar();
+
+                // ready for next request
                 ActiveQueuedWebRequest = null;
             }
         }
