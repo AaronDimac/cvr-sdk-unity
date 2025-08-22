@@ -152,18 +152,24 @@ namespace Cognitive3D
 
             if (!string.IsNullOrEmpty(_writeKey))
             {
-                var bytes = System.Text.Encoding.UTF8.GetBytes(data);
-                UnityWebRequest request = UnityWebRequest.Put(trackURL, bytes);
-                request.method = "POST";
-                request.SetRequestHeader("Content-Type", "application/json");
-                // Segment requires basic auth using a base64-encoded Write Key
-                string auth = System.Convert.ToBase64String(Encoding.ASCII.GetBytes(_writeKey + ":"));
-                request.SetRequestHeader("Authorization", "Basic " + auth);
-                var operation = request.SendWebRequest();
+                var bytes = Encoding.UTF8.GetBytes(data);
 
-                while (!operation.isDone)
+                using (var request = new UnityWebRequest(trackURL, UnityWebRequest.kHttpVerbPOST))
                 {
-                    await Task.Yield();
+                    request.uploadHandler = new UploadHandlerRaw(bytes);
+                    request.downloadHandler = new DownloadHandlerBuffer();
+
+                    request.SetRequestHeader("Content-Type", "application/json");
+
+                    // Segment requires basic auth using a base64-encoded Write Key
+                    string auth = System.Convert.ToBase64String(Encoding.ASCII.GetBytes(_writeKey + ":"));
+                    request.SetRequestHeader("Authorization", "Basic " + auth);
+
+                    var operation = request.SendWebRequest();
+                    while (!operation.isDone)
+                    {
+                        await Task.Yield();
+                    }
                 }
             }
         }
