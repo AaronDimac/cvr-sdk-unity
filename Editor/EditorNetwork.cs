@@ -141,7 +141,7 @@ namespace Cognitive3D
                 }
                 if (!EditorWebRequests[i].Request.isDone) 
                 {
-                    continue; // skip this one, check the rest
+                    return;
                 }
                 if (EditorWebRequests[i].IsBlocking)
                     EditorUtility.ClearProgressBar();
