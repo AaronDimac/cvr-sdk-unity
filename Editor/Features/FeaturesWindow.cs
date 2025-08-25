@@ -46,7 +46,7 @@ namespace Cognitive3D
                 }
             }
 
-            if (!EditorCore.IsManagerPrefabInScene())
+            if (Cognitive3D_Preferences.FindCurrentScene() != null && !EditorCore.IsManagerPrefabInScene())
             {
                 bool addManager = EditorUtility.DisplayDialog(
                     "Cognitive3D Manager Not Found",
