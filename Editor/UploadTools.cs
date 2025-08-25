@@ -191,6 +191,21 @@ namespace Cognitive3D
                         if (currentSettings == null)
                             Cognitive3D_Preferences.AddSceneSettings(UnityEngine.SceneManagement.SceneManager.GetActiveScene());
 
+                        float sceneSize = EditorCore.GetSceneFileSize(Cognitive3D_Preferences.FindCurrentScene());
+
+                        if (sceneSize < 1)
+                        {
+                            SegmentAnalytics.TrackEvent("ExportingSceneLess1MB_SceneExportPage", "SceneExportPage", "new");
+                        }
+                        else if (sceneSize >= 1 && sceneSize <= 500)
+                        {
+                            SegmentAnalytics.TrackEvent("ExportingSceneLessOrEqual500MB_SceneExportPage", "SceneExportPage", "new");
+                        }
+                        else // sceneSize > 500
+                        {
+                            SegmentAnalytics.TrackEvent("ExportingSceneGreater500MB_SceneExportPage", "SceneExportPage", "new");
+                        }
+
                         ExportUtility.ExportGLTFScene(false);
 
                         string fullName = UnityEditor.SceneManagement.EditorSceneManager.GetActiveScene().name;

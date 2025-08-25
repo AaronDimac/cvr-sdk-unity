@@ -17,7 +17,7 @@ namespace Cognitive3D
         
         internal static void OpenSettingsWindow()
         {
-            SegmentAnalytics.TrackEvent("DataUploaderSettingsWindow_Opened", "DataUploaderSettingsWindow");
+            SegmentAnalytics.TrackEvent("DataUploaderSettingsWindow_Opened", "DataUploaderSettingsWindow", "new");
             SettingsService.OpenProjectSettings(SettingsPath);
         }
 

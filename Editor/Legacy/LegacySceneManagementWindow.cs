@@ -98,7 +98,7 @@ namespace Cognitive3D
 
         internal static void Init()
         {
-            SegmentAnalytics.TrackEvent("SceneManageWindow_Opened", "SceneManageWindow");
+            SegmentAnalytics.TrackEvent("SceneManageWindow_Opened", "SceneManageWindow", "legacy");
             // Only search "Assets/" - don't search Packages/
             string[] foldersToSearch = { "Assets/" };
             LegacySceneManagementWindow window = (LegacySceneManagementWindow)EditorWindow.GetWindow(typeof(LegacySceneManagementWindow), true, "Scene Management (Version " + Cognitive3D_Manager.SDK_VERSION + ")");
@@ -300,7 +300,7 @@ namespace Cognitive3D
             ////////////////////////
             if (GUI.Button(new Rect(85, 510, 220, 30), new GUIContent("Export and upload all scenes")))
             {
-                SegmentAnalytics.TrackEvent("ExportAllScenes", "SceneManagement_ExportAndUploadAllScenes");
+                SegmentAnalytics.TrackEvent("ExportAllScenes", "SceneManagement_ExportAndUploadAllScenes", "legacy");
                 selectedOnly = false;
                 sceneIndex = 0;
                 isExporting = true;
@@ -312,7 +312,7 @@ namespace Cognitive3D
             ///////////////////////
             if (GUI.Button(new Rect(315, 510, 220, 30), new GUIContent("Export and upload selected scenes")))
             {
-                SegmentAnalytics.TrackEvent("ExportSelectedScenes", "SceneManagement_ExportAndUploadSelectedScenes");
+                SegmentAnalytics.TrackEvent("ExportSelectedScenes", "SceneManagement_ExportAndUploadSelectedScenes", "legacy");
                 selectedOnly = true;
                 sceneIndex = 0;
                 isExporting = true;

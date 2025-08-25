@@ -75,7 +75,7 @@ namespace Cognitive3D
 
         public static void Init()
         {
-            SegmentAnalytics.TrackEvent("DynamicObjectsWindow_Opened", "DynamicObjectsWindow");
+            SegmentAnalytics.TrackEvent("DynamicObjectsWindow_Opened", "DynamicObjectsWindow", "legacy");
             LegacyDynamicObjectsWindow window = (LegacyDynamicObjectsWindow)EditorWindow.GetWindow(typeof(LegacyDynamicObjectsWindow), true, "Dynamic Objects (" + Cognitive3D_Manager.SDK_VERSION + ")");
             window.minSize = new Vector2(600, 550);
             window.maxSize = new Vector2(600, 550);
@@ -87,7 +87,7 @@ namespace Cognitive3D
 
         public static void Init(Rect position)
         {
-            SegmentAnalytics.TrackEvent("DynamicObjectsWindow_Opened", "DynamicObjectsWindow");
+            SegmentAnalytics.TrackEvent("DynamicObjectsWindow_Opened", "DynamicObjectsWindow", "legacy");
             LegacyDynamicObjectsWindow window = (LegacyDynamicObjectsWindow)EditorWindow.GetWindow(typeof(LegacyDynamicObjectsWindow), true, "Dynamic Objects (" +Cognitive3D_Manager.SDK_VERSION +")");
             window.minSize = new Vector2(600, 550);
             window.maxSize = new Vector2(600, 550);

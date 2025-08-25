@@ -63,7 +63,7 @@ namespace Cognitive3D
 
         internal static void Init()
         {
-            SegmentAnalytics.TrackEvent("SceneSetupWindow_Opened", "SceneSetupWindow");
+            SegmentAnalytics.TrackEvent("SceneSetupWindow_Opened", "SceneSetupWindow", "legacy");
             LegacySceneSetupWindow window = (LegacySceneSetupWindow)EditorWindow.GetWindow(typeof(LegacySceneSetupWindow), true, "Scene Setup (Version " + Cognitive3D_Manager.SDK_VERSION + ")");
             currentPage = Page.Welcome;
             window.minSize = new Vector2(500, 550);
@@ -111,7 +111,7 @@ namespace Cognitive3D
 
         internal static void Init(Page page)
         {
-            SegmentAnalytics.TrackEvent("SceneSetupWindow_Opened", "SceneSetupWindow");
+            SegmentAnalytics.TrackEvent("SceneSetupWindow_Opened", "SceneSetupWindow", "legacy");
             LegacySceneSetupWindow window = (LegacySceneSetupWindow)EditorWindow.GetWindow(typeof(LegacySceneSetupWindow), true, "Scene Setup (Version " + Cognitive3D_Manager.SDK_VERSION + ")");
             currentPage = page;
             window.minSize = new Vector2(500, 550);
@@ -159,7 +159,7 @@ namespace Cognitive3D
 
         internal static void Init(Rect position)
         {
-            SegmentAnalytics.TrackEvent("SceneSetupWindow_Opened", "SceneSetupWindow");
+            SegmentAnalytics.TrackEvent("SceneSetupWindow_Opened", "SceneSetupWindow", "legacy");
             LegacySceneSetupWindow window = (LegacySceneSetupWindow)EditorWindow.GetWindow(typeof(LegacySceneSetupWindow), true, "Scene Setup (Version " + Cognitive3D_Manager.SDK_VERSION + ")");
             window.minSize = new Vector2(500, 550);
             window.maxSize = new Vector2(500, 550);
@@ -593,7 +593,7 @@ namespace Cognitive3D
             {
                 if (GUI.Button(checkboxRect, EditorCore.BoxCheckmark, "image_centered"))
                 {
-                    SegmentAnalytics.TrackEvent("DisabledAutoPlayerSetup_PlayerSetupPage", "SceneSetupPlayerSetupPage");
+                    SegmentAnalytics.TrackEvent("DisabledAutoPlayerSetup_PlayerSetupPage", "SceneSetupPlayerSetupPage", "legacy");
                     Cognitive3D_Preferences.Instance.AutoPlayerSetup = false;
                 }
 
@@ -603,7 +603,7 @@ namespace Cognitive3D
             {
                 if (GUI.Button(checkboxRect, EditorCore.BoxEmpty, "image_centered"))
                 {
-                    SegmentAnalytics.TrackEvent("EnabledAutoPlayerSetup_PlayerSetupPage", "SceneSetupPlayerSetupPage");
+                    SegmentAnalytics.TrackEvent("EnabledAutoPlayerSetup_PlayerSetupPage", "SceneSetupPlayerSetupPage", "legacy");
 
                     // Remove the controllers/hands DynamicObject components (if they exist)
                     var dynamics = FindObjectsByType<DynamicObject>(FindObjectsSortMode.None);
@@ -643,7 +643,7 @@ namespace Cognitive3D
                 }
                 else if (mainCameraObject.CompareTag("MainCamera") == false)
                 {
-                    SegmentAnalytics.TrackEvent("EnabledAutoInputSetup_PlayerSetupPage", "SceneSetupPlayerSetupPage");
+                    SegmentAnalytics.TrackEvent("EnabledAutoInputSetup_PlayerSetupPage", "SceneSetupPlayerSetupPage", "legacy");
 
                     // Remove the controllers/hands DynamicObject components (if they exist)
                     var dynamics = FindObjectsByType<DynamicObject>(FindObjectsSortMode.None);
@@ -1273,15 +1273,15 @@ namespace Cognitive3D
 
                 if (sceneSize < 1)
                 {
-                    SegmentAnalytics.TrackEvent("ExportingSceneLess1MB_SceneExportPage", "SceneSetupSceneExportPage");
+                    SegmentAnalytics.TrackEvent("ExportingSceneLess1MB_SceneExportPage", "SceneSetupSceneExportPage", "legacy");
                 }
                 else if (sceneSize >= 1 && sceneSize <= 500)
                 {
-                    SegmentAnalytics.TrackEvent("ExportingSceneLessOrEqual500MB_SceneExportPage", "SceneSetupSceneExportPage");
+                    SegmentAnalytics.TrackEvent("ExportingSceneLessOrEqual500MB_SceneExportPage", "SceneSetupSceneExportPage", "legacy");
                 }
                 else // sceneSize > 500
                 {
-                    SegmentAnalytics.TrackEvent("ExportingSceneGreater500MB_SceneExportPage", "SceneSetupSceneExportPage");
+                    SegmentAnalytics.TrackEvent("ExportingSceneGreater500MB_SceneExportPage", "SceneSetupSceneExportPage", "legacy");
                 }
 
                 ExportUtility.ExportGLTFScene(false);
@@ -1660,7 +1660,7 @@ namespace Cognitive3D
                     onclick += () =>
                     {
                         var status = isSetupComplete ? "PlayerGOComplete_PlayerSetupPage" : "PlayerGOIncomplete_PlayerSetupPage";
-                        SegmentAnalytics.TrackEvent(status, "SceneSetupPlayerSetupPage");
+                        SegmentAnalytics.TrackEvent(status, "SceneSetupPlayerSetupPage", "legacy");
                     };
 
 #if C3D_STEAMVR2

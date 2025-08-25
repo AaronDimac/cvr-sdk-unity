@@ -16,6 +16,7 @@ namespace Cognitive3D
 
         internal static void Init()
         {
+            SegmentAnalytics.TrackEvent("FeatureBuilderWindow_Opened", "FeatureBuilderWindow", "new");
             FeaturesWindow window = GetWindow<FeaturesWindow>("Features");
             window.minSize = new Vector2(600, 800);
             window.titleContent = new GUIContent("Features");

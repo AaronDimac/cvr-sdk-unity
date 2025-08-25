@@ -18,6 +18,7 @@ namespace Cognitive3D
         #region Project Setup Window
         public static void Init()
         {
+            SegmentAnalytics.TrackEvent("ProjectSetupWindow_Opened", "ProjectSetupWindow", "new");
             ProjectSetupWindow setup = GetWindow<ProjectSetupWindow>("Project Setup");
             setup.minSize = new Vector2(600, 800);
             setup.LoadKeys();
@@ -168,9 +169,17 @@ namespace Cognitive3D
 
                     bool newAutoSelectXR = EditorGUILayout.Toggle(new GUIContent("Auto-select XR SDK", "Disable 'Auto-select XR SDK' to configure this manually"), autoSelectXR);
 
-                    if (newAutoSelectXR && newAutoSelectXR != previousAutoSelectXR)
+                    if (newAutoSelectXR != previousAutoSelectXR)
                     {
-                        AutoSelectXRSDK();
+                        if (newAutoSelectXR)
+                        {
+                            SegmentAnalytics.TrackEvent("EnabledAutoXRSDKSetup_SDKDefinePage", "ProjectSetupSDKDefinePage", "new");
+                            AutoSelectXRSDK();
+                        }
+                        else
+                        {
+                            SegmentAnalytics.TrackEvent("DisabledAutoXRSDKSetup_SDKDefinePage", "ProjectSetupSDKDefinePage", "new");
+                        }
                     }
 
                     autoSelectXR = newAutoSelectXR;
@@ -197,7 +206,24 @@ namespace Cognitive3D
                     "By default, key player objects, including the camera (HMD), tracking space, and controllers are automatically detected and tracked.",
                     EditorCore.styles.DescriptionPadding);
 
-                    EditorCore.GetPreferences().AutoPlayerSetup = EditorGUILayout.Toggle(new GUIContent("Auto Player Setup", "Disable auto-setup to manually assign these from your existing Player Prefab"), EditorCore.GetPreferences().AutoPlayerSetup);
+                    bool newAutoPlayerSetupValue = EditorGUILayout.Toggle(
+                        new GUIContent("Auto Player Setup", "Disable auto-setup to manually assign these from your existing Player Prefab"),
+                        EditorCore.GetPreferences().AutoPlayerSetup
+                    );
+
+                    if (newAutoPlayerSetupValue != EditorCore.GetPreferences().AutoPlayerSetup)
+                    {
+                        EditorCore.GetPreferences().AutoPlayerSetup = newAutoPlayerSetupValue;
+
+                        if (newAutoPlayerSetupValue)
+                        {
+                            SegmentAnalytics.TrackEvent("EnabledAutoPlayerSetup_PlayerSetupPage", "ProjectSetupPlayerSetupPage", "new");
+                        }
+                        else
+                        {
+                            SegmentAnalytics.TrackEvent("DisabledAutoPlayerSetup_PlayerSetupPage", "ProjectSetupPlayerSetupPage", "new");
+                        }
+                    }
 
                     GUILayout.Space(10);
 
@@ -506,6 +532,7 @@ namespace Cognitive3D
         double compileStartTime = -1;
         void SetXRSDK()
         {
+            SegmentAnalytics.TrackEvent("SDKDefineIsSet_SDKDefinePage", "ProjectSetupSDKDefinePage", "new");
             EditorCore.SetPlayerDefine(availableXrSdks.Values.ElementAt(selectedSDKIndex));
 
             if (compileStartTime < 0)
@@ -729,7 +756,7 @@ namespace Cognitive3D
         {
             if (responseCode != 200)
             {
-                SegmentAnalytics.TrackEvent("InvalidDevKey_ProjectSetup_" + responseCode, "ProjectSetupAPIPage");
+                SegmentAnalytics.TrackEvent("InvalidDevKey_ProjectSetup_" + responseCode, "ProjectSetupAPIPage", "new");
                 Debug.LogError("GetApplicationKeyResponse response code: " + responseCode + " error: " + error);
                 return;
             }
@@ -738,7 +765,7 @@ namespace Cognitive3D
             try
             {
                 JsonUtility.FromJson<EditorCore.ApplicationKeyResponseData>(text);
-                SegmentAnalytics.TrackEvent("ValidDevKey_ProjectSetup", "ProjectSetupAPIPage");
+                SegmentAnalytics.TrackEvent("ValidDevKey_ProjectSetup", "ProjectSetupAPIPage", "new");
             }
             catch
             {
@@ -751,7 +778,7 @@ namespace Cognitive3D
             //display popup if application key is set but doesn't match the response
             if (!string.IsNullOrEmpty(apiKey) && apiKey != responseData.apiKey)
             {
-                SegmentAnalytics.TrackEvent("APIKeyMismatch_ProjectSetup", "ProjectSetupAPIPage");
+                SegmentAnalytics.TrackEvent("APIKeyMismatch_ProjectSetup", "ProjectSetupAPIPage", "new");
                 var result = EditorUtility.DisplayDialog("Application Key Mismatch", "Do you want to use the latest Application Key available on the Dashboard?", "Ok", "No");
                 if (result)
                 {
@@ -762,7 +789,7 @@ namespace Cognitive3D
             }
             else
             {
-                SegmentAnalytics.TrackEvent("APIKeyFound_ProjectSetup", "ProjectSetupAPIPage");
+                SegmentAnalytics.TrackEvent("APIKeyFound_ProjectSetup", "ProjectSetupAPIPage", "new");
                 apiKey = responseData.apiKey;
                 apiKeyFromDashboard = apiKey;
                 SaveApplicationKey();
@@ -808,6 +835,7 @@ namespace Cognitive3D
                         }
                     }
                 }
+                SegmentAnalytics.Init();
             }
             catch
             {

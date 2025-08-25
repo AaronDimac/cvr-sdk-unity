@@ -16,6 +16,7 @@ namespace Cognitive3D
 
         public static void Init()
         {
+            SegmentAnalytics.TrackEvent("Media360Window_Opened", "Media360Window", "legacy");
             LegacySetup360Window window = (LegacySetup360Window)EditorWindow.GetWindow(typeof(LegacySetup360Window), true, "360 Video Setup");
             window.Show();
         }

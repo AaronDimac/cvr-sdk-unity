@@ -33,7 +33,11 @@ namespace Cognitive3D
                     "Dynamic Objects",
                     "Manage and track specific Dynamic Objects in the current scene",
                     EditorCore.DynamicsIcon,
-                    () => { setFeatureIndex(0); },
+                    () =>
+                    {
+                        setFeatureIndex(0);
+                        SegmentAnalytics.TrackEvent("DynamicObjectsWindow_Opened", "DynamicObjectsWindow", "new");
+                    },
                     new List<FeatureAction>
                     {
                         new FeatureAction(
@@ -51,7 +55,11 @@ namespace Cognitive3D
                     "ExitPoll Survey",
                     "Set up ExitPoll surveys to collect and view user feedback",
                     EditorCore.ExitpollIcon,
-                    () => { setFeatureIndex(1); },
+                    () =>
+                    {
+                        setFeatureIndex(1);
+                        SegmentAnalytics.TrackEvent("ExitPollWindow_Opened", "ExitPollWindow", "new");
+                    },
                     new List<FeatureAction>
                     {
                         new FeatureAction(
@@ -69,7 +77,11 @@ namespace Cognitive3D
                     "Remote Controls",
                     "Set up variables to customize app behavior for different users",
                     EditorCore.RemoteControlsIcon,
-                    () => { setFeatureIndex(2); },
+                    () =>
+                    {
+                        setFeatureIndex(2);
+                        SegmentAnalytics.TrackEvent("RemoteControlsWindow_Opened", "RemoteControlsWindow", "new");
+                    },
                     new List<FeatureAction>
                     {
                         new FeatureAction(
@@ -87,7 +99,11 @@ namespace Cognitive3D
                     "Social Platform",
                     "Set up a Social Platform to capture user and app identity data",
                     EditorCore.SocialPlatformIcon,
-                    () => { setFeatureIndex(3); },
+                    () =>
+                    {
+                        setFeatureIndex(3);
+                        SegmentAnalytics.TrackEvent("SocialPlatformWindow_Opened", "SocialPlatformWindow", "new");
+                    },
                     new List<FeatureAction>
                     {
                         new FeatureAction(
@@ -105,7 +121,11 @@ namespace Cognitive3D
                     "Custom Events",
                     "API reference and examples for recording custom events",
                     EditorCore.CustomEventIcon,
-                    () => { setFeatureIndex(4); },
+                    () =>
+                    {
+                        setFeatureIndex(4);
+                        SegmentAnalytics.TrackEvent("CustomEventsWindow_Opened", "CustomEventsWindow", "new");
+                    },
                     new List<FeatureAction>
                     {
                         new FeatureAction(
@@ -123,7 +143,11 @@ namespace Cognitive3D
                     "Sensors",
                     "API reference and examples for recording custom sensors",
                     EditorCore.SensorIcon,
-                    () => { setFeatureIndex(5); },
+                    () =>
+                    {
+                        setFeatureIndex(5);
+                        SegmentAnalytics.TrackEvent("SensorsWindow_Opened", "SensorsWindow", "new");
+                    },
                     new List<FeatureAction>
                     {
                         new FeatureAction(
@@ -141,7 +165,11 @@ namespace Cognitive3D
                     "Multiplayer",
                     "Set up Multiplayer to track server-client player activity and analytics",
                     EditorCore.MultiplayerIcon,
-                    () => { setFeatureIndex(6); },
+                    () =>
+                    {
+                        setFeatureIndex(6);
+                        SegmentAnalytics.TrackEvent("MultiplayerWindow_Opened", "MultiplayerWindow", "new");
+                    },
                     new List<FeatureAction>
                     {
                         new FeatureAction(
@@ -159,7 +187,11 @@ namespace Cognitive3D
                     "Media and 360 Video",
                     "Set up Media to track gaze on images and videos",
                     EditorCore.MediaIcon,
-                    () => { setFeatureIndex(7); },
+                    () =>
+                    {
+                        setFeatureIndex(7);
+                        SegmentAnalytics.TrackEvent("Media360Window_Opened", "Media360Window", "new");
+                    },
                     new List<FeatureAction>
                     {
                         new FeatureAction(

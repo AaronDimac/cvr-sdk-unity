@@ -11,7 +11,7 @@ namespace Cognitive3D
         readonly Rect steptitlerect = new Rect(30, 5, 100, 440);
         internal static void Init()
         {
-            SegmentAnalytics.TrackEvent("ProjectSetupWindow_Opened", "ProjectSetupWindow");
+            SegmentAnalytics.TrackEvent("ProjectSetupWindow_Opened", "ProjectSetupWindow", "legacy");
             LegacyProjectSetupWindow window = (LegacyProjectSetupWindow)EditorWindow.GetWindow(typeof(LegacyProjectSetupWindow), true, "Project Setup (Version " + Cognitive3D_Manager.SDK_VERSION + ")");
             window.minSize = new Vector2(500, 550);
             window.maxSize = new Vector2(500, 550);
@@ -26,7 +26,7 @@ namespace Cognitive3D
 
         internal static void Init(Page page)
         {
-            SegmentAnalytics.TrackEvent("ProjectSetupWindow_Opened", "ProjectSetupWindow");
+            SegmentAnalytics.TrackEvent("ProjectSetupWindow_Opened", "ProjectSetupWindow", "legacy");
             LegacyProjectSetupWindow window = (LegacyProjectSetupWindow)EditorWindow.GetWindow(typeof(LegacyProjectSetupWindow), true, "Project Setup (Version " + Cognitive3D_Manager.SDK_VERSION + ")");
             window.minSize = new Vector2(500, 550);
             window.maxSize = new Vector2(500, 550);
@@ -41,7 +41,7 @@ namespace Cognitive3D
 
         internal static void Init(Rect position)
         {
-            SegmentAnalytics.TrackEvent("ProjectSetupWindow_Opened", "ProjectSetupWindow");
+            SegmentAnalytics.TrackEvent("ProjectSetupWindow_Opened", "ProjectSetupWindow", "legacy");
             LegacyProjectSetupWindow window = (LegacyProjectSetupWindow)EditorWindow.GetWindow(typeof(LegacyProjectSetupWindow), true, "Project Setup (Version " + Cognitive3D_Manager.SDK_VERSION + ")");
             window.minSize = new Vector2(500, 550);
             window.maxSize = new Vector2(500, 550);
@@ -284,7 +284,7 @@ namespace Cognitive3D
         {
             if (responseCode != 200)
             {
-                SegmentAnalytics.TrackEvent("InvalidDevKey_ProjectSetup_" + responseCode, "ProjectSetupAPIPage");
+                SegmentAnalytics.TrackEvent("InvalidDevKey_ProjectSetup_" + responseCode, "ProjectSetupAPIPage", "legacy");
                 Debug.LogError("GetApplicationKeyResponse response code: " + responseCode + " error: " + error);
                 return;
             }
@@ -294,7 +294,7 @@ namespace Cognitive3D
             {
                 JsonUtility.FromJson<ApplicationKeyResponseData>(text);
                 isResponseJsonValid = true;
-                SegmentAnalytics.TrackEvent("ValidDevKey_ProjectSetup", "ProjectSetupAPIPage");
+                SegmentAnalytics.TrackEvent("ValidDevKey_ProjectSetup", "ProjectSetupAPIPage", "legacy");
             }
             catch
             {
@@ -308,7 +308,7 @@ namespace Cognitive3D
             //display popup if application key is set but doesn't match the response
             if (!string.IsNullOrEmpty(apikey) && apikey != responseData.apiKey)
             {
-                SegmentAnalytics.TrackEvent("APIKeyMismatch_ProjectSetup", "ProjectSetupAPIPage");
+                SegmentAnalytics.TrackEvent("APIKeyMismatch_ProjectSetup", "ProjectSetupAPIPage", "legacy");
                 var result = EditorUtility.DisplayDialog("Application Key Mismatch", "Do you want to use the latest Application Key available on the Dashboard?", "Ok", "No");
                 if (result)
                 {
@@ -317,7 +317,7 @@ namespace Cognitive3D
             }
             else
             {
-                SegmentAnalytics.TrackEvent("APIKeyFound_ProjectSetup", "ProjectSetupAPIPage");
+                SegmentAnalytics.TrackEvent("APIKeyFound_ProjectSetup", "ProjectSetupAPIPage", "legacy");
                 apikey = responseData.apiKey;
             }
         }
@@ -596,13 +596,13 @@ namespace Cognitive3D
                         if (Event.current.shift) //add
                         {
                             selectedsdks.Add(SDKNamesDefines[i].Define);
-                            SegmentAnalytics.TrackEvent("SDKDefineIsSet_SDKDefinePage", "ProjectSetupSDKDefinePage");
+                            SegmentAnalytics.TrackEvent("SDKDefineIsSet_SDKDefinePage", "ProjectSetupSDKDefinePage", "legacy");
                         }
                         else //set
                         {
                             selectedsdks.Clear();
                             selectedsdks.Add(SDKNamesDefines[i].Define);
-                            SegmentAnalytics.TrackEvent("SDKDefineIsSet_SDKDefinePage", "ProjectSetupSDKDefinePage");
+                            SegmentAnalytics.TrackEvent("SDKDefineIsSet_SDKDefinePage", "ProjectSetupSDKDefinePage", "legacy");
                         }
                     }
                 }
@@ -837,7 +837,7 @@ namespace Cognitive3D
 
             //done
             if (EditorApplication.isCompiling) { return; }
-            SegmentAnalytics.TrackEvent("RecompileCompleted_RecompilePage", "ProjectSetupRecompilePage");
+            SegmentAnalytics.TrackEvent("RecompileCompleted_RecompilePage", "ProjectSetupRecompilePage", "legacy");
             compileStartTime = -1;
 
             currentPage++;
@@ -853,7 +853,7 @@ namespace Cognitive3D
             if (GUI.Button(new Rect(150, 100, 200, 30), "Quick Scene Setup"))
             {
                 LegacySceneSetupWindow.Init(position);
-                SegmentAnalytics.TrackEvent("QuickSceneSetupSelected_ProjectSetupNextStepsPage", "QuickSceneSetup");
+                SegmentAnalytics.TrackEvent("QuickSceneSetupSelected_ProjectSetupNextStepsPage", "QuickSceneSetup", "legacy");
                 Close();
             }
 
@@ -861,7 +861,7 @@ namespace Cognitive3D
             if (GUI.Button(new Rect(150, 320, 200, 30), "Advanced Scene Setup"))
             {
                 //show dynamic page
-                SegmentAnalytics.TrackEvent("AdvancedSceneSetupSelected_ProjectSetupNextStepsPage", "AdvancedSceneSetup");
+                SegmentAnalytics.TrackEvent("AdvancedSceneSetupSelected_ProjectSetupNextStepsPage", "AdvancedSceneSetup", "legacy");
                 currentPage = Page.DynamicSetup;
             }
         }
@@ -1043,7 +1043,7 @@ namespace Cognitive3D
                     }
                     break;
                 case Page.SDKSelection:
-                    onclick += () => SegmentAnalytics.TrackEvent("SDKDefineSelected_SDKDefinePage", "ProjectSetupSDKDefinePage");
+                    onclick += () => SegmentAnalytics.TrackEvent("SDKDefineSelected_SDKDefinePage", "ProjectSetupSDKDefinePage", "legacy");
                     onclick += () => currentPage = Page.MultiplayerSetup;
                     break;
                 case Page.Recompile:
@@ -1086,7 +1086,7 @@ namespace Cognitive3D
                         {
                             selectedsdks.Add("C3D_PHOTON");
                         }
-                        onclick += () => SegmentAnalytics.TrackEvent("PhotonPUN2SupportEnabled_MultiplayerPage", "ProjectSetupMultiplayerPage");
+                        onclick += () => SegmentAnalytics.TrackEvent("PhotonPUN2SupportEnabled_MultiplayerPage", "ProjectSetupMultiplayerPage", "legacy");
                     }
                     else
                     { 
@@ -1099,7 +1099,7 @@ namespace Cognitive3D
                         {
                             selectedsdks.Add("C3D_NETCODE");
                         }
-                        onclick += () => SegmentAnalytics.TrackEvent("NetcodeSupportEnabled_MultiplayerPage", "ProjectSetupMultiplayerPage");
+                        onclick += () => SegmentAnalytics.TrackEvent("NetcodeSupportEnabled_MultiplayerPage", "ProjectSetupMultiplayerPage", "legacy");
                     }
                     else
                     { 
@@ -1112,7 +1112,7 @@ namespace Cognitive3D
                         {
                             selectedsdks.Add("C3D_NORMCORE");
                         }
-                        onclick += () => SegmentAnalytics.TrackEvent("NormcoreSupportEnabled_MultiplayerPage", "ProjectSetupMultiplayerPage");
+                        onclick += () => SegmentAnalytics.TrackEvent("NormcoreSupportEnabled_MultiplayerPage", "ProjectSetupMultiplayerPage", "legacy");
                     }
                     else
                     { 
