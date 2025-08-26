@@ -90,7 +90,7 @@ namespace Cognitive3D
             GUILayout.Label("1. Add Dynamic Object Component", EditorCore.styles.FeatureTitle);
 
             GUILayout.Label(
-                "Select GameObjects in the scene that you want to track, then click the button below to add the Dynamic Object component.",
+                "Select GameObjects in the scene that you want to track, then click the button below to add the Dynamic Object component or add the component manually if you prefer.",
                 EditorStyles.wordWrappedLabel
             );
 
