@@ -27,7 +27,7 @@ namespace Cognitive3D
             GUILayout.EndHorizontal();
 
             GUILayout.Label(
-                "Sensors are a feature to record a value or property over time.\n\nIf you have the hardware to support it, you can record Sensor data for Heart Rate, GSR, ECG,  and view it as a graph on the dashboard.\n\nSeveral types of data are recorded by default, such as FPS and Battery Temperature.",
+                "Sensors are a feature to record a value or property over time.\n\nIf you have the hardware to support it, you can record Sensor data for Heart Rate, GSR, ECG,  and view it as a graph on the dashboard.\n\nSeveral types of data are recorded by default, including FPS, as well as HMD pitch and yaw.",
                 EditorStyles.wordWrappedLabel
             );
 
