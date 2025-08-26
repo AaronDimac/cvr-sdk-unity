@@ -45,19 +45,17 @@ namespace Cognitive3D
             if (GUILayout.Button("Rename"))
             {
                 action.Invoke(defaultMeshName);
-                sourceWindow.RefreshList();
-                sourceGUI.RefreshList();
+                if (sourceWindow != null) sourceWindow.RefreshList();
+                if (sourceGUI != null) sourceGUI.RefreshList();
                 Close();
             }
             if (GUILayout.Button("Cancel"))
             {
-                sourceWindow.RefreshList();
-                sourceGUI.RefreshList();
+                if (sourceWindow != null) sourceWindow.RefreshList();
+                if (sourceGUI != null) sourceGUI.RefreshList();
                 Close();
             }
             GUILayout.EndHorizontal();
-            //rename textfield
-            //rename + cancel buttons
         }
     }
 }
