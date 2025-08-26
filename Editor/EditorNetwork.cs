@@ -70,7 +70,6 @@ namespace Cognitive3D
         {
             var bytes = System.Text.UTF8Encoding.UTF8.GetBytes(stringcontent);
             var p = UnityWebRequest.Put(url, bytes);
-            p.timeout = 10;
             p.disposeUploadHandlerOnDispose = true;
             p.disposeDownloadHandlerOnDispose = true;
             p.method = "POST";
@@ -91,7 +90,6 @@ namespace Cognitive3D
         public static void Post(string url, byte[] bytecontent, Response callback, Dictionary<string, string> headers, bool blocking, string requestName = "Post", string requestInfo = "", System.Action<float> progressCallback = null)
         {
             var p = UnityWebRequest.Put(url, bytecontent);
-            p.timeout = 10;
             p.disposeUploadHandlerOnDispose = true;
             p.disposeDownloadHandlerOnDispose = true;
             p.method = "POST";
@@ -112,7 +110,6 @@ namespace Cognitive3D
         public static void Post(string url, WWWForm formcontent, Response callback, Dictionary<string, string> headers, bool blocking, string requestName = "Post", string requestInfo = "")
         {
             var p = UnityWebRequest.Post(url, formcontent);
-            p.timeout = 10;
             p.disposeUploadHandlerOnDispose = true;
             p.disposeDownloadHandlerOnDispose = true;
             p.SetRequestHeader("X-HTTP-Method-Override", "POST");

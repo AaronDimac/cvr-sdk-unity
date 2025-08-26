@@ -7,6 +7,8 @@ namespace Cognitive3D
 {
     internal class FeaturesWindow : EditorWindow
     {
+        private bool devKeyValid = true;
+
         private float slideProgress;
         private readonly float slideSpeed = 4f;
         private bool slidingForward;
@@ -20,6 +22,7 @@ namespace Cognitive3D
             FeaturesWindow window = (FeaturesWindow)EditorWindow.GetWindow(typeof(FeaturesWindow), true, "Feature Builder (Version " + Cognitive3D_Manager.SDK_VERSION + ")");
             window.minSize = new Vector2(600, 800);
             window.Show();
+            window.CheckDevKey();
         }
 
         private List<FeatureData> features;
@@ -111,6 +114,7 @@ namespace Cognitive3D
             GUILayout.EndArea();
         }
 
+#region Main Page
         private void DrawMainPage()
         {
             // Header background and logo
@@ -143,10 +147,20 @@ namespace Cognitive3D
 
             GUILayout.Space(10);
 
+            if (!devKeyValid)
+            {
+                EditorGUILayout.HelpBox(
+                    "Developer Key is either missing or invalid. Please set a valid key in the Project Setup window.",
+                    MessageType.Error
+                );
+            }
+
+            EditorGUI.BeginDisabledGroup(!devKeyValid);
             foreach (var feature in features)
             {
                 DrawFeatureButton(feature);
             }
+            EditorGUI.EndDisabledGroup();
         }
 
         private void DrawFeatureButton(FeatureData featureData)
@@ -234,7 +248,9 @@ namespace Cognitive3D
 
             GUILayout.EndHorizontal();
         }
+#endregion
 
+#region Detail Page
         private void DrawDetailPage()
         {
             if (currentFeatureIndex < 0 || currentFeatureIndex >= features.Count)
@@ -256,5 +272,32 @@ namespace Cognitive3D
                 slidingBackward = true;
             }
         }
+
+        private void CheckDevKey()
+        {
+            var developerKey = EditorCore.DeveloperKey;
+            var apiKey = EditorCore.GetPreferences().ApplicationKey;
+
+            if (!string.IsNullOrEmpty(developerKey) && !string.IsNullOrEmpty(apiKey))
+            {
+                EditorCore.CheckForExpiredDeveloperKey(developerKey, GetDevKeyResponse);
+            }
+        }
+#endregion
+
+#region Callback Responses
+        void GetDevKeyResponse(int responseCode, string error, string text)
+        {
+            if (responseCode == 200)
+            {
+                //dev key is fine
+                devKeyValid = true;
+                return;
+            }
+
+            Debug.LogError("Developer Key invalid or expired. Response code: " + responseCode + " error: " + error);
+            devKeyValid = false;
+        }
+#endregion
     }
 }
