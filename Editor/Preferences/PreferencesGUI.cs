@@ -7,6 +7,8 @@ namespace Cognitive3D
 {
     internal class PreferencesGUI
     {
+        private Editor preferencesInspectorEditor;
+
         internal void OnGUI()
         {
             using (new EditorGUILayout.VerticalScope(EditorCore.styles.DetailContainer))
@@ -15,7 +17,7 @@ namespace Cognitive3D
                     "View the current Cognitive3D project preferences, including application keys, tracking options, data sending settings, and scene export configurations.",
                     EditorCore.styles.ItemDescription
                 );
-                
+
                 GUILayout.Space(5);
 
                 // Load current preferences
@@ -30,9 +32,9 @@ namespace Cognitive3D
                 // Draw the preferences asset in a read-only state
                 EditorGUI.BeginDisabledGroup(true);
                 EditorGUILayout.ObjectField(
-                    "Preferences Asset", 
-                    currentPrefs, 
-                    typeof(Cognitive3D_Preferences), 
+                    "Preferences Asset",
+                    currentPrefs,
+                    typeof(Cognitive3D_Preferences),
                     false
                 );
                 EditorGUI.EndDisabledGroup();
@@ -44,11 +46,11 @@ namespace Cognitive3D
                 EditorGUILayout.Space(5);
 
                 // Use existing preferences inspector UI
-                var editor = Editor.CreateEditor(currentPrefs, typeof(PreferencesInspector));
-                if (editor != null)
+                if (preferencesInspectorEditor == null)
                 {
-                    editor.OnInspectorGUI();
+                    preferencesInspectorEditor = Editor.CreateEditor(currentPrefs, typeof(PreferencesInspector));
                 }
+                preferencesInspectorEditor.OnInspectorGUI();
             }
         }
     }
