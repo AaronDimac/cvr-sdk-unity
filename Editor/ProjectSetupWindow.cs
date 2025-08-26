@@ -60,7 +60,7 @@ namespace Cognitive3D
             { "MetaXR", "C3D_OCULUS" },
             { "PicoXR", "C3D_PICOXR" },
             { "ViveWave", "C3D_VIVEWAVE" },
-            { "SteamVR/OpenVR", "C3D_STEAMVR2" },
+            { "SteamVR (OpenVR)", "C3D_STEAMVR2" },
             { "SRAnipal", "C3D_SRANIPAL" },
             { "Omnicept", "C3D_OMNICEPT" },
             { "VarjoXR", "C3D_VARJOXR" },
