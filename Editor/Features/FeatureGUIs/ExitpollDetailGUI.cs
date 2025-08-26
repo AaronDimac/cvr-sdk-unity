@@ -16,7 +16,7 @@ namespace Cognitive3D
                 float iconSize = EditorGUIUtility.singleLineHeight;
                 Rect iconRect = GUILayoutUtility.GetRect(iconSize, iconSize, GUILayout.Width(iconSize), GUILayout.Height(iconSize));
 
-                GUIContent buttonContent = new GUIContent(EditorCore.ExternalIcon, "Open ExitPoll documentation");
+                GUIContent buttonContent = new GUIContent(EditorCore.ExternalIcon, "Open ExitPoll Survey documentation");
                 if (GUI.Button(iconRect, buttonContent, EditorCore.styles.InfoButton))
                 {
                     Application.OpenURL("https://docs.cognitive3d.com/unity/exitpoll/");

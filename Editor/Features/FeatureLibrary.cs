@@ -108,7 +108,7 @@ namespace Cognitive3D
                     {
                         new FeatureAction(
                             FeatureActionType.LinkTo,
-                            "Link to Remote Controls documentation",
+                            "Link to Social Platform documentation",
                             () =>
                             {
                                 Application.OpenURL("https://docs.cognitive3d.com/unity/components/#social-platform");
@@ -130,7 +130,7 @@ namespace Cognitive3D
                     {
                         new FeatureAction(
                             FeatureActionType.LinkTo,
-                            "Link to Oculus Social Data documentation",
+                            "Link to Custom Events documentation",
                             () =>
                             {
                                 Application.OpenURL("https://docs.cognitive3d.com/unity/customevents/");
