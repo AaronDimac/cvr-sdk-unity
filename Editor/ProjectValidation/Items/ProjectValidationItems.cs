@@ -738,7 +738,7 @@ namespace Cognitive3D
                     level: ProjectValidation.ItemLevel.Recommended,
                     category: CATEGORY,
                     actionType: ProjectValidation.ItemAction.Apply,
-                    message: "Tracking origin is set to floor. This can lead in to miscalculation in participant and controllers height. Set tracking origin to Floor?",
+                    message: "Tracking origin is not set to floor. This can lead in to miscalculation in participant and controllers height. Set tracking origin to Floor?",
                     fixmessage: "Tracking origin is set to floor",
                     checkAction: () =>
                     {
