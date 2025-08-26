@@ -34,6 +34,15 @@ namespace Cognitive3D
                     }
                 }
 
+                // Check if the folder has required files
+                if (!string.IsNullOrEmpty(folderPath) && !HasRequiredDataFiles(folderPath))
+                {
+                    EditorGUILayout.HelpBox(
+                        "The selected folder must contain both 'data_read' and 'data_write' files.",
+                        MessageType.Warning
+                    );
+                }
+
                 GUILayout.Space(5);
 
                 deleteData = EditorGUILayout.ToggleLeft("Delete data from disk after successful upload", deleteData);
@@ -52,6 +61,14 @@ namespace Cognitive3D
                     GUILayout.FlexibleSpace();
                 }
             }
+        }
+
+        private bool HasRequiredDataFiles(string path)
+        {
+            string readFile = System.IO.Path.Combine(path, "data_read");
+            string writeFile = System.IO.Path.Combine(path, "data_write");
+
+            return System.IO.File.Exists(readFile) && System.IO.File.Exists(writeFile);
         }
         
         ICache ic;
