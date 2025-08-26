@@ -207,7 +207,18 @@ namespace Cognitive3D
             EditorGUILayout.Space(5);
             if (GUILayout.Button(new GUIContent("+ Add Scene Setting", "Add a new scene entry")))
             {
-                sceneSettings.InsertArrayElementAtIndex(sceneSettings.arraySize);
+                int newIndex = sceneSettings.arraySize;
+                sceneSettings.InsertArrayElementAtIndex(newIndex);
+
+                SerializedProperty newElement = sceneSettings.GetArrayElementAtIndex(newIndex);
+
+                // Resetting each field manually
+                newElement.FindPropertyRelative("SceneName").stringValue = "";
+                newElement.FindPropertyRelative("SceneId").stringValue = "";
+                newElement.FindPropertyRelative("ScenePath").stringValue = "";
+                newElement.FindPropertyRelative("LastRevision").stringValue = "";
+                newElement.FindPropertyRelative("VersionNumber").intValue = 0;
+                newElement.FindPropertyRelative("VersionId").intValue = 0;
             }
 
             serializedObject.ApplyModifiedProperties();
