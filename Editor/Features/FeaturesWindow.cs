@@ -74,6 +74,8 @@ namespace Cognitive3D
                 currentFeatureIndex = index;
                 slidingForward = true;
             });
+
+            EditorCore.RefreshMediaSources();
         }
 
         private void OnGUI()

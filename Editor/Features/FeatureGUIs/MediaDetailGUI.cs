@@ -107,6 +107,21 @@ namespace Cognitive3D
             EditorGUI.EndDisabledGroup();
             GUILayout.EndHorizontal();
 
+            var validChoice = _choiceIndex >= 0
+                  && _choiceIndex < EditorCore.MediaSources.Length
+                  && EditorCore.MediaSources[_choiceIndex] != null
+                  && !string.IsNullOrEmpty(EditorCore.MediaSources[_choiceIndex].name);
+
+            bool allSet = selectedClip != null && validChoice && userCamera != null;
+
+            if (!allSet)
+            {
+                EditorGUILayout.HelpBox(
+                    "Ensure all required fields are configured: Video Clip, valid Media Source, and Main Camera",
+                    MessageType.Error
+                );
+            }
+
             GUILayout.Space(20);
             GUILayout.BeginHorizontal();
             GUILayout.Label("Projection Type");
@@ -118,13 +133,13 @@ namespace Cognitive3D
             GUI.color = Color.white;
             GUILayout.EndHorizontal();
 
-
-            EditorGUI.BeginDisabledGroup(selectedClip == null || string.IsNullOrEmpty(EditorCore.MediaSources[_choiceIndex].name) || userCamera == null);
+            EditorGUI.BeginDisabledGroup(!allSet);
             if (GUILayout.Button("Create"))
             {
                 CreateAssets();
             }
             EditorGUI.EndDisabledGroup();
+
             EditorGUILayout.Space(10);
             EditorGUILayout.EndVertical();
         }

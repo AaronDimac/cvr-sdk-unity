@@ -74,8 +74,12 @@ namespace Cognitive3D
             GUI.color = Color.white;
             GUILayout.EndHorizontal();
 
+            var validChoice = _choiceIndex >= 0 
+                  && _choiceIndex < EditorCore.MediaSources.Length 
+                  && EditorCore.MediaSources[_choiceIndex] != null 
+                  && !string.IsNullOrEmpty(EditorCore.MediaSources[_choiceIndex].name);
 
-            EditorGUI.BeginDisabledGroup(selectedClip == null || string.IsNullOrEmpty(EditorCore.MediaSources[_choiceIndex].name) || userCamera == null);
+            EditorGUI.BeginDisabledGroup(selectedClip == null || !validChoice || userCamera == null);
             if (GUILayout.Button("Create"))
             {
                 CreateAssets();
