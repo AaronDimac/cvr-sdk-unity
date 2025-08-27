@@ -172,54 +172,29 @@ namespace Cognitive3D
             }
         }
 
-        static float requestStartTime;
-
         static void EditorQueueUpdate()
         {
-            // no active request and queue empty → stop update
-            if (ActiveQueuedWebRequest == null && EditorWebRequestsQueue.Count == 0)
-            {
-                EditorUtility.ClearProgressBar();
-                EditorApplication.update -= EditorQueueUpdate;
-                return;
-            }
-
-            // start next request if none active
+            if (ActiveQueuedWebRequest == null && EditorWebRequestsQueue.Count == 0) { EditorUtility.ClearProgressBar(); EditorApplication.update -= EditorQueueUpdate; return; }
             if (ActiveQueuedWebRequest == null)
             {
                 ActiveQueuedWebRequest = EditorWebRequestsQueue.Dequeue();
                 ActiveQueuedWebRequest.Request.SendWebRequest();
-                requestStartTime = (float)EditorApplication.timeSinceStartup;
             }
-
             EditorUtility.DisplayProgressBar(ActiveQueuedWebRequest.RequestName, ActiveQueuedWebRequest.RequestInfo, ActiveQueuedWebRequest.Request.uploadProgress);
-
-            // check if done or timed out
-            float elapsed = (float)EditorApplication.timeSinceStartup - requestStartTime;
-            if (ActiveQueuedWebRequest.Request.isDone || elapsed > ActiveQueuedWebRequest.Request.timeout)
+            if (ActiveQueuedWebRequest.Request.isDone)
             {
-                if (elapsed > ActiveQueuedWebRequest.Request.timeout && !ActiveQueuedWebRequest.Request.isDone)
+                EditorUtility.ClearProgressBar();
+                int responseCode = (int)ActiveQueuedWebRequest.Request.responseCode;
+                Util.logDevelopment("Got Response from " + ActiveQueuedWebRequest.Request.url + ": [CODE] " + responseCode
+                    + (!string.IsNullOrEmpty(ActiveQueuedWebRequest.Request.downloadHandler.text) ? " [TEXT] " + ActiveQueuedWebRequest.Request.downloadHandler.text : "")
+                    + (!string.IsNullOrEmpty(ActiveQueuedWebRequest.Request.error) ? " [ERROR] " + ActiveQueuedWebRequest.Request.error : ""));
+                if (ActiveQueuedWebRequest.Response != null)
                 {
-                    Debug.LogWarning($"Request timed out: {ActiveQueuedWebRequest.Request.url}");
-                    ActiveQueuedWebRequest.Request.Abort();
+                    ActiveQueuedWebRequest.Response.Invoke(responseCode, ActiveQueuedWebRequest.Request.error, ActiveQueuedWebRequest.Request.downloadHandler.text);
                 }
 
-                // log response
-                int responseCode = (int)ActiveQueuedWebRequest.Request.responseCode;
-                Util.logDevelopment(
-                    "Got Response from " + ActiveQueuedWebRequest.Request.url +
-                    ": [CODE] " + responseCode +
-                    (!string.IsNullOrEmpty(ActiveQueuedWebRequest.Request.downloadHandler.text) ? " [TEXT] " + ActiveQueuedWebRequest.Request.downloadHandler.text : "") +
-                    (!string.IsNullOrEmpty(ActiveQueuedWebRequest.Request.error) ? " [ERROR] " + ActiveQueuedWebRequest.Request.error : "")
-                );
-
-                ActiveQueuedWebRequest.Response?.Invoke(responseCode, ActiveQueuedWebRequest.Request.error, ActiveQueuedWebRequest.Request.downloadHandler?.text);
-
-                // dispose request and clear progress bar
-                ActiveQueuedWebRequest.Request.Dispose();
-                EditorUtility.ClearProgressBar();
-
                 // ready for next request
+                ActiveQueuedWebRequest.Request.Dispose();
                 ActiveQueuedWebRequest = null;
             }
         }

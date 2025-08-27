@@ -270,7 +270,7 @@ namespace Cognitive3D
 
                 DrawFoldout("Scene Upload", statusIcon, keysSet, () =>
                 {
-                    GUILayout.Label("Configure which scenes should be prepared and uploaded.", EditorCore.styles.DescriptionPadding);
+                    GUILayout.Label("Configure which scenes from the Build Settings should be prepared and uploaded. Ensure all the scenes you want to track are added to the Build Settings.", EditorCore.styles.DescriptionPadding);
                     GUILayout.BeginHorizontal(EditorCore.styles.HelpBoxPadding);
 
                     // Warning icon
