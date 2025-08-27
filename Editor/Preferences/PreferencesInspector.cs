@@ -213,9 +213,9 @@ namespace Cognitive3D
                 SerializedProperty newElement = sceneSettings.GetArrayElementAtIndex(newIndex);
 
                 // Resetting each field manually
-                newElement.FindPropertyRelative("SceneName").stringValue = "";
+                newElement.FindPropertyRelative("SceneName").stringValue = UnityEditor.SceneManagement.EditorSceneManager.GetActiveScene().name;
                 newElement.FindPropertyRelative("SceneId").stringValue = "";
-                newElement.FindPropertyRelative("ScenePath").stringValue = "";
+                newElement.FindPropertyRelative("ScenePath").stringValue = UnityEditor.SceneManagement.EditorSceneManager.GetActiveScene().path;
                 newElement.FindPropertyRelative("LastRevision").stringValue = "";
                 newElement.FindPropertyRelative("VersionNumber").intValue = 0;
                 newElement.FindPropertyRelative("VersionId").intValue = 0;
