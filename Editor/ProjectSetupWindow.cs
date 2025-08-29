@@ -118,7 +118,7 @@ namespace Cognitive3D
                     EditorCore.styles.ItemDescription);
 
 #region Dev and App keys
-                completenessStatus = !string.IsNullOrEmpty(developerKey) && !string.IsNullOrEmpty(apiKey);
+                completenessStatus = keysSet;
                 statusIcon = GetStatusIcon(completenessStatus);
 
                 DrawFoldout("Developer and App Keys", statusIcon, true, () =>
@@ -496,8 +496,6 @@ namespace Cognitive3D
                 EditorCore.CheckForExpiredDeveloperKey(developerKey, GetDevKeyResponse);
                 EditorCore.CheckForApplicationKey(developerKey, GetApplicationKeyResponse);
                 EditorCore.GetUserData(developerKey, GetUserResponse);
-
-                keysSet = true;
             }
 
             EditorCore.RefreshSceneVersionComplete += CacheCurrentScenes;
@@ -752,6 +750,7 @@ namespace Cognitive3D
 
                 devKeyStatusMessage = "Developer Key invalid or expired.";
                 devKeyStatusType = MessageType.Error;
+                keysSet = false;
             }
         }
 
