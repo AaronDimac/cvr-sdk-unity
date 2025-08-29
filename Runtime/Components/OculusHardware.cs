@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.XR;
 using System.Collections.Generic;
@@ -29,7 +29,7 @@ namespace Cognitive3D.Components
             yield return wait;
 
             currentActiveSubsystem = GetActiveDisplaySubsystem();
-            if (currentActiveSubsystem != null && currentActiveSubsystem.SubsystemDescriptor.id.Contains("oculus"))
+            if (currentActiveSubsystem != null && currentActiveSubsystem.subsystemDescriptor.id.Contains("oculus"))
             {
                 while (Cognitive3D.Cognitive3D_Manager.IsInitialized)
                 {
@@ -37,7 +37,7 @@ namespace Cognitive3D.Components
                     RecordOculusStats();
                 }
             }
-            else if (currentActiveSubsystem != null && currentActiveSubsystem.SubsystemDescriptor.id.Contains("OpenXR"))
+            else if (currentActiveSubsystem != null && currentActiveSubsystem.subsystemDescriptor.id.Contains("OpenXR"))
             {
                 Debug.LogWarning("Oculus Hardware sensors cannot be accessed while using OpenXR plugin");
             }
@@ -48,7 +48,6 @@ namespace Cognitive3D.Components
             try
             {
                 //battery level handled by a different component
-                Cognitive3D.SensorRecorder.RecordDataPoint("c3d.battery.temp", Stats.AdaptivePerformance.BatteryTemp);
                 Cognitive3D.SensorRecorder.RecordDataPoint("c3d.cpuLevel", Stats.AdaptivePerformance.CPULevel);
                 Cognitive3D.SensorRecorder.RecordDataPoint("c3d.gpuLevel", Stats.AdaptivePerformance.GPULevel);
                 Cognitive3D.SensorRecorder.RecordDataPoint("c3d.isPowerSavingMode", (Stats.AdaptivePerformance.PowerSavingMode ? 1 : 0));

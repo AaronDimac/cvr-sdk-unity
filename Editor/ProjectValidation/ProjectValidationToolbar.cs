@@ -56,7 +56,7 @@ namespace Cognitive3D
 
             validateButton = new Button(() =>
             {
-                ProjectValidationSettingsProvider.OpenProjectSetupTool();
+                ProjectValidationSettingsProvider.OpenSettingsWindow();
             })
             {
                 text = string.Empty
