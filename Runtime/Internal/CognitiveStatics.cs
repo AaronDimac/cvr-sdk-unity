@@ -18,12 +18,27 @@ namespace Cognitive3D
             int dotIndex = Cognitive3D_Preferences.Instance.Gateway.IndexOf('.');
             return dotIndex != -1 ? Cognitive3D_Preferences.Instance.Gateway.Substring(dotIndex + 1) : "cognitive3d.com";
         }
+        
+        internal static string GetExitPollSettingsUrl(int projectID)
+        {
+            return string.Concat(Cognitive3D_Preferences.Instance.Protocol, "://app.", GetDomain(), "/v3/settings/projects/", projectID, "/manageexitpolls");
+        }
+
+        internal static string GetRemoteControlsSettingsUrl(int projectID)
+        {
+            return string.Concat(Cognitive3D_Preferences.Instance.Protocol, "://app.", GetDomain(), "/v3/settings/projects/", projectID, "/remotecontrols");
+        }
+
+        internal static string GetMediaSettingsUrl(int projectID)
+        {
+            return string.Concat(Cognitive3D_Preferences.Instance.Protocol, "://app.", GetDomain(), "/v3/settings/projects/", projectID, "/managemedia");
+        }
 
         //GET dynamic object manifest
         //https://data.cognitive3d.com/v0/objects
         internal static string GetDynamicManifest(int versionid)
         {
-            return String.Concat(Cognitive3D_Preferences.Instance.Protocol, "://", Cognitive3D_Preferences.Instance.Gateway, "/v", version,"/versions/", versionid, "/objects");
+            return String.Concat(Cognitive3D_Preferences.Instance.Protocol, "://", Cognitive3D_Preferences.Instance.Gateway, "/v", version, "/versions/", versionid, "/objects");
         }
 
         //POST dynamic object aggregation manifest

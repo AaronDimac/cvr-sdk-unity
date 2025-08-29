@@ -33,7 +33,7 @@ namespace Cognitive3D
         protected virtual void OnEnable()
         {
             if (GameplayReferences.HMD == null) { return; }
-            if (FindObjectOfType<ExitPollHolder>().Parameters.PointerType == ExitPollManager.PointerType.HMD)
+            if (FindFirstObjectByType<ExitPollHolder>().Parameters.PointerType == ExitPollManager.PointerType.HMD)
             {
                 buttonPrompt.text = "Hover To Record";
             }
@@ -133,7 +133,11 @@ namespace Cognitive3D
 
         void StopRecording()
         {
+#if UNITY_WEBGL
+            return; // Microphone not supported on WebGL
+#else
             Microphone.End(null);
+#endif
             byte[] bytes;
             Cognitive3D.MicrophoneUtility.Save(clip, out bytes);
             string encodedWav = MicrophoneUtility.EncodeWav(bytes);

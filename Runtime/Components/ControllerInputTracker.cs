@@ -24,6 +24,9 @@ namespace Cognitive3D.Components
         float nextUpdateTime;
         //records analogue inputs at this interval
 
+        DynamicObject LeftHandDynamicObject;
+        DynamicObject RightHandDynamicObject;
+
         DynamicData LeftHand;
         DynamicData RightHand;
 
@@ -34,8 +37,27 @@ namespace Cognitive3D.Components
 
         void Init()
         {
-            LeftHand = DynamicManager.GetInputDynamicData(InputUtil.InputType.Controller, false);
-            RightHand = DynamicManager.GetInputDynamicData(InputUtil.InputType.Controller, true);
+            string leftHandId = "";
+            string leftControllerDisplay = "";
+
+            string rightHandId = "";
+            string rightControllerDisplay = "";
+            if (!Cognitive3D_Manager.Instance.autoInitializePlayerSetup)
+            {
+                TryGetControllerData(false, out leftHandId, out leftControllerDisplay);
+                TryGetControllerData(true, out rightHandId, out rightControllerDisplay);
+            }
+            else
+            {
+                LeftHand = DynamicManager.GetInputDynamicData(InputUtil.InputType.Controller, false);
+                RightHand = DynamicManager.GetInputDynamicData(InputUtil.InputType.Controller, true);
+
+                leftHandId = LeftHand.Id;
+                leftControllerDisplay = LeftHand.ControllerType;
+
+                rightHandId = RightHand.Id;
+                rightControllerDisplay = RightHand.ControllerType;
+            }
 
             Cognitive3D_Manager.SetSessionProperty("c3d.device.controllerinputs.enabled", true);
 #if !C3D_STEAMVR2
@@ -43,7 +65,7 @@ namespace Cognitive3D.Components
             RightLastFrameButtonStates = new Dictionary<string, ButtonState>();
 
             //left hand
-            if (!System.String.IsNullOrEmpty(LeftHand.Id) && InputUtil.TryParseControllerDisplayType(LeftHand.ControllerType, out InputUtil.ControllerDisplayType leftDisplay))
+            if (!System.String.IsNullOrEmpty(leftHandId) && InputUtil.TryParseControllerDisplayType(leftControllerDisplay, out InputUtil.ControllerDisplayType leftDisplay))
             {
                 switch (leftDisplay)
                 {
@@ -124,7 +146,7 @@ namespace Cognitive3D.Components
             }
 
             //right hand
-            if (!System.String.IsNullOrEmpty(RightHand.Id) && InputUtil.TryParseControllerDisplayType(RightHand.ControllerType, out InputUtil.ControllerDisplayType rightDisplay))
+            if (!System.String.IsNullOrEmpty(rightHandId) && InputUtil.TryParseControllerDisplayType(rightControllerDisplay, out InputUtil.ControllerDisplayType rightDisplay))
             {
                 switch (rightDisplay)
                 {
@@ -266,6 +288,31 @@ namespace Cognitive3D.Components
             }
 #endif
         }
+        
+        void TryGetControllerData(bool isRight, out string handId, out string controllerDisplay)
+        {
+            handId = "";
+            controllerDisplay = "";
+
+            if (GameplayReferences.GetControllerTransform(isRight, out Transform tempTransform))
+            {
+                var dynamicObject = tempTransform.GetComponent<DynamicObject>();
+
+                if (isRight)
+                    RightHandDynamicObject = dynamicObject;
+                else
+                    LeftHandDynamicObject = dynamicObject;
+
+                if (dynamicObject != null)
+                {
+                    handId = dynamicObject.GetId();
+                    InputUtil.CommonDynamicMesh tempMesh;
+                    InputUtil.ControllerDisplayType tempDisplay;
+                    dynamicObject.GetControllerTypeData(out tempMesh, out tempDisplay);
+                    controllerDisplay = tempDisplay.ToString();
+                }
+            }
+        }
 
 #if C3D_STEAMVR2
 #region  SteamVR
@@ -301,7 +348,10 @@ namespace Cognitive3D.Components
             		copy.Add(CurrentLeftButtonStates[i]);
             	}
                 CurrentLeftButtonStates.Clear();
-            	DynamicManager.RecordControllerEvent(false, copy);
+            	if (Cognitive3D_Manager.autoInitializePlayerSetup)
+                    DynamicManager.RecordControllerEvent(false, copy);
+                else
+                    DynamicManager.RecordControllerEvent(LeftHandDynamicObject.GetId(), copy);
             }
             if (CurrentRightButtonStates.Count > 0)
             {
@@ -311,7 +361,10 @@ namespace Cognitive3D.Components
                     copy.Add(CurrentRightButtonStates[i]);
                 }
                 CurrentRightButtonStates.Clear();
-                DynamicManager.RecordControllerEvent(true, copy);
+                if (Cognitive3D_Manager.autoInitializePlayerSetup)
+                    DynamicManager.RecordControllerEvent(true, copy);
+                else
+                    DynamicManager.RecordControllerEvent(RightHandDynamicObject.GetId(), copy);
             }
         }
 
@@ -675,7 +728,10 @@ namespace Cognitive3D.Components
                 }
                 CurrentRightButtonStates.Clear();
 
-                DynamicManager.RecordControllerEvent(true, copy);
+                if (Cognitive3D_Manager.Instance.autoInitializePlayerSetup)
+                    DynamicManager.RecordControllerEvent(true, copy);
+                else
+                    DynamicManager.RecordControllerEvent(RightHandDynamicObject.GetId(), copy);
             }
             if (CurrentLeftButtonStates.Count > 0)
             {
@@ -686,7 +742,10 @@ namespace Cognitive3D.Components
                 }
                 CurrentLeftButtonStates.Clear();
 
-                DynamicManager.RecordControllerEvent(false, copy);
+                if (Cognitive3D_Manager.Instance.autoInitializePlayerSetup)
+                    DynamicManager.RecordControllerEvent(false, copy);
+                else
+                    DynamicManager.RecordControllerEvent(LeftHandDynamicObject.GetId(), copy);
             }
         }
 

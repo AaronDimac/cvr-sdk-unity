@@ -217,7 +217,7 @@ namespace Cognitive3D
         /// <summary>
         /// export all geometry for the active scene. will NOT delete existing files in this directory
         /// </summary>
-        public static void ExportGLTFScene()
+        public static void ExportGLTFScene(bool showSuccessPopup)
         {
             var activeScene = UnityEditor.SceneManagement.EditorSceneManager.GetActiveScene();
             List<GameObject> allRootObjects = new List<GameObject>();
@@ -284,6 +284,12 @@ namespace Cognitive3D
                 foreach (var tempgameobject in deleteCustomRenders)
                 {
                     UnityEngine.Object.DestroyImmediate(tempgameobject);
+                }
+
+                if (showSuccessPopup)
+                {
+                    EditorUtility.ClearProgressBar();
+                    EditorUtility.DisplayDialog("Export Complete", "Scene exported successfully!", "OK");
                 }
             }
         }
@@ -564,14 +570,14 @@ namespace Cognitive3D
         /// <param name="path">used to bake terrain texture to file</param>
         static void BakeNonstandardRenderers(DynamicObject rootDynamic, List<BakeableMesh> meshes, string path)
         {
-            SkinnedMeshRenderer[] SkinnedMeshes = UnityEngine.Object.FindObjectsOfType<SkinnedMeshRenderer>();
-            Terrain[] Terrains = UnityEngine.Object.FindObjectsOfType<Terrain>();
-            Canvas[] Canvases = UnityEngine.Object.FindObjectsOfType<Canvas>();
-            SpriteRenderer[] spriteRenderers= UnityEngine.Object.FindObjectsOfType<SpriteRenderer>();
+            SkinnedMeshRenderer[] SkinnedMeshes = UnityEngine.Object.FindObjectsByType<SkinnedMeshRenderer>(FindObjectsSortMode.None);
+            Terrain[] Terrains = UnityEngine.Object.FindObjectsByType<Terrain>(FindObjectsSortMode.None);
+            Canvas[] Canvases = UnityEngine.Object.FindObjectsByType<Canvas>(FindObjectsSortMode.None);
+            SpriteRenderer[] spriteRenderers= UnityEngine.Object.FindObjectsByType<SpriteRenderer>(FindObjectsSortMode.None);
             List<MeshFilter> ProceduralMeshFilters = new List<MeshFilter>();
-            CustomRenderExporter[] CustomRenders = UnityEngine.Object.FindObjectsOfType<CustomRenderExporter>();
+            CustomRenderExporter[] CustomRenders = UnityEngine.Object.FindObjectsByType<CustomRenderExporter>(FindObjectsSortMode.None);
 #if C3D_TMPRO
-            TextMeshPro[] TextMeshPros = UnityEngine.Object.FindObjectsOfType<TextMeshPro>();
+            TextMeshPro[] TextMeshPros = UnityEngine.Object.FindObjectsByType<TextMeshPro>(FindObjectsSortMode.None);
 #endif
             deleteCustomRenders = new List<GameObject>();
 
@@ -594,7 +600,7 @@ namespace Cognitive3D
             }
             else
             {
-                var meshfilters = UnityEngine.Object.FindObjectsOfType<MeshFilter>();
+                var meshfilters = UnityEngine.Object.FindObjectsByType<MeshFilter>(FindObjectsSortMode.None);
                 foreach (var mf in meshfilters)
                 {
                     if (mf.sharedMesh != null && string.IsNullOrEmpty(UnityEditor.AssetDatabase.GetAssetPath(mf.sharedMesh)))
@@ -1602,7 +1608,7 @@ namespace Cognitive3D
         /// <returns>true if any dynamics are exported</returns>
         public static bool ExportAllDynamicsInScene()
         {
-            var dynamics = UnityEngine.Object.FindObjectsOfType<DynamicObject>();
+            var dynamics = UnityEngine.Object.FindObjectsByType<DynamicObject>(FindObjectsSortMode.None);
             List<GameObject> gos = new List<GameObject>();
             foreach (var v in dynamics)
                 gos.Add(v.gameObject);
@@ -2036,6 +2042,7 @@ namespace Cognitive3D
                 DynamicUploadSuccess++;
             }
             Debug.Log("Finished uploading Dynamic Object mesh: " + currentDynamicUploadName);
+            dynamicUploadWWW.Dispose();
             dynamicUploadWWW = null;
         }
         #endregion

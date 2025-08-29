@@ -127,16 +127,39 @@ namespace Cognitive3D.Components
             }
         }
 
+        void DelayEnable(InputDevice device, XRNode node, bool isValid)
+        {
+            GameplayReferences.OnControllerValidityChange -= DelayEnable;
+            RegisterControllers();
+        }
+
         void RegisterControllers()
         {
-            if (!Cognitive3D_Manager.autoInitializePlayerSetup) return;
+            if (!Cognitive3D_Manager.Instance.autoInitializePlayerSetup)
+            {
+                InputDevice device;
+                Transform ignore;
+                if (!GameplayReferences.GetControllerInfo(true, out device) || !GameplayReferences.GetControllerTransform(false,out ignore))
+                {
+                    GameplayReferences.OnControllerValidityChange += DelayEnable;
+                }
+                else if (!GameplayReferences.GetControllerInfo(false, out device) || !GameplayReferences.GetControllerTransform(true, out ignore))
+                {
+                    GameplayReferences.OnControllerValidityChange += DelayEnable;
+                }
+                else
+                {
+                    OnControllerRegistered?.Invoke();
+                }
+                return;
+            }
 
             // Check if the left controller is valid and not yet registered
-            if (!leftControllerRegistered && InputUtil.TryGetInputDevice(XRNode.LeftHand, out InputDevice leftController))
-            {
-                DynamicManager.RegisterController(XRNode.LeftHand, false, FallbackControllerType);
-                leftControllerRegistered = true;
-            }
+                if (!leftControllerRegistered && InputUtil.TryGetInputDevice(XRNode.LeftHand, out InputDevice leftController))
+                {
+                    DynamicManager.RegisterController(XRNode.LeftHand, false, FallbackControllerType);
+                    leftControllerRegistered = true;
+                }
 
             // Check if the right controller is valid and not yet registered
             if (!rightControllerRegistered && InputUtil.TryGetInputDevice(XRNode.RightHand, out InputDevice rightController))

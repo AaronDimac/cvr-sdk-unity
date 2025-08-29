@@ -36,7 +36,7 @@ namespace Cognitive3D
             {
                 if (cachedOVRFaceExpressions == null)
                 {
-                    cachedOVRFaceExpressions = UnityEngine.Object.FindObjectOfType<OVRFaceExpressions>();
+                    cachedOVRFaceExpressions = UnityEngine.Object.FindFirstObjectByType<OVRFaceExpressions>();
                     if (cachedOVRFaceExpressions == null)
                     {
                         Cognitive3D_Manager.Instance.gameObject.AddComponent<OVRFaceExpressions>();
@@ -89,6 +89,9 @@ namespace Cognitive3D
                 }
 
                 return true;
+#elif COGNITIVE3D_VIVE_OPENXR_2_5_OR_NEWER
+                var feature = UnityEngine.XR.OpenXR.OpenXRSettings.Instance.GetFeature<VIVE.OpenXR.EyeTracker.ViveEyeTracker>();
+                return feature != null && feature.enabled;
 #elif C3D_DEFAULT
                 var head = InputDevices.GetDeviceAtXRNode(XRNode.Head);
                 Eyes eyedata;
@@ -108,7 +111,7 @@ namespace Cognitive3D
             {
                 if (_roomTrackingSpaceTransform == null)
                 {
-                    var roomTrackingSpace = GameObject.FindObjectOfType<RoomTrackingSpace>();
+                    var roomTrackingSpace = GameObject.FindFirstObjectByType<RoomTrackingSpace>();
                     _roomTrackingSpaceTransform = roomTrackingSpace != null ? roomTrackingSpace.transform : null;
                 }
                 return _roomTrackingSpaceTransform;
@@ -268,7 +271,7 @@ namespace Cognitive3D
             {
                 if (_cameraRig == null)
                 {
-                    _cameraRig = GameObject.FindObjectOfType<OVRCameraRig>();
+                    _cameraRig = GameObject.FindFirstObjectByType<OVRCameraRig>();
                 }
                 return _cameraRig;
             }
@@ -282,7 +285,7 @@ namespace Cognitive3D
             {
                 if (pvr_UnitySDKManager == null)
                 {
-                    pvr_UnitySDKManager = GameObject.FindObjectOfType<Pvr_UnitySDKManager>();
+                    pvr_UnitySDKManager = GameObject.FindFirstObjectByType<Pvr_UnitySDKManager>();
                 }
                 return pvr_UnitySDKManager;
             }
@@ -296,7 +299,7 @@ namespace Cognitive3D
             {
                 if (gliaBehaviour == null)
                 {
-                    gliaBehaviour = GameObject.FindObjectOfType<HP.Omnicept.Unity.GliaBehaviour>();
+                    gliaBehaviour = GameObject.FindFirstObjectByType<HP.Omnicept.Unity.GliaBehaviour>();
                 }
                 return gliaBehaviour;
             }
@@ -311,14 +314,14 @@ namespace Cognitive3D
             {
                 if (_playerRig == null)
                 {
-                    var player = GameObject.FindObjectOfType<Valve.VR.InteractionSystem.Player>();
+                    var player = GameObject.FindFirstObjectByType<Valve.VR.InteractionSystem.Player>();
                     if (player != null)
                     {
                         _playerRig = player.gameObject;
                     }
                     else
                     {
-                        var playArea = GameObject.FindObjectOfType<Valve.VR.SteamVR_PlayArea>();
+                        var playArea = GameObject.FindFirstObjectByType<Valve.VR.SteamVR_PlayArea>();
                         if (playArea != null)
                         {
                             _playerRig = playArea.gameObject;
@@ -339,7 +342,7 @@ namespace Cognitive3D
             {
                 if (_xrOrigin == null)
                 {
-                    _xrOrigin = GameObject.FindObjectOfType<Unity.XR.CoreUtils.XROrigin>();
+                    _xrOrigin = GameObject.FindFirstObjectByType<Unity.XR.CoreUtils.XROrigin>();
                 }
                 return _xrOrigin;
             }
@@ -354,7 +357,7 @@ namespace Cognitive3D
             {
                 if (_cameraOffset == null)
                 {
-                    _cameraOffset = GameObject.FindObjectOfType<UnityEditor.XR.LegacyInputHelpers.CameraOffset>();
+                    _cameraOffset = GameObject.FindFirstObjectByType<UnityEditor.XR.LegacyInputHelpers.CameraOffset>();
                 }
                 return _cameraOffset;
             }
@@ -369,7 +372,7 @@ namespace Cognitive3D
             {
                 if (_waveRig == null)
                 {
-                    _waveRig = GameObject.FindObjectOfType<Wave.Essence.WaveRig>();
+                    _waveRig = GameObject.FindFirstObjectByType<Wave.Essence.WaveRig>();
                 }
                 return _waveRig;
             }

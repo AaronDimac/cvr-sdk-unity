@@ -29,7 +29,7 @@ namespace Cognitive3D
     [DefaultExecutionOrder(-50)]
     public class Cognitive3D_Manager : MonoBehaviour
     {
-        public static readonly string SDK_VERSION = "1.9.1";
+        public static readonly string SDK_VERSION = "2.0.0";
     
         private static Cognitive3D_Manager instance;
         public static Cognitive3D_Manager Instance
@@ -38,7 +38,7 @@ namespace Cognitive3D
             {
                 if (instance == null)
                 {
-                    instance = FindObjectOfType<Cognitive3D_Manager>();
+                    instance = FindFirstObjectByType<Cognitive3D_Manager>();
                 }
                 return instance;
             }
@@ -69,7 +69,7 @@ namespace Cognitive3D
         [HideInInspector]
         public Transform trackingSpace;
 
-        internal static bool autoInitializePlayerSetup = true;
+        internal bool autoInitializePlayerSetup = true;
 
         /// <summary>
         /// sets instance of Cognitive3D_Manager
@@ -140,6 +140,8 @@ namespace Cognitive3D
                 Util.logDebug("Cognitive3D_Manager Initialize does not have valid apikey");
                 return;
             }
+
+            autoInitializePlayerSetup = Cognitive3D_Preferences.Instance.AutoPlayerSetup;
 
             SceneManager.sceneLoaded += SceneManager_SceneLoaded;
             SceneManager.sceneUnloaded += SceneManager_SceneUnloaded;
@@ -436,7 +438,7 @@ namespace Cognitive3D
             //DO NOT FLUSH DYNAMICS because dynamics from the next scene are already loaded
             if (!string.IsNullOrEmpty(TrackingSceneId))
             {
-                CoreInterface.FlushSceneChange(true);
+                CoreInterface.FlushSceneChange(true, false);
             }
 
             // upload session properties to new scene
@@ -468,7 +470,8 @@ namespace Cognitive3D
             // Flush recorded data when scene unloads
             if (TrackingScene != null)
             {
-                CoreInterface.FlushSceneChange(true);
+                DynamicManager.ForceProcessDynamicObjects();
+                CoreInterface.FlushSceneChange(true, true);
             }
 
             // upload session properties to new scene
