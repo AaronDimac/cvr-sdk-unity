@@ -398,6 +398,8 @@ namespace Cognitive3D
 #elif C3D_OMNICEPT
         SetSessionProperty("c3d.device.eyetracking.enabled", GameplayReferences.SDKSupportsEyeTracking);
         SetSessionProperty("c3d.app.sdktype", "HP Omnicept");
+#elif COGNITIVE3D_VIVE_OPENXR_2_5_OR_NEWER
+        SetSessionProperty("c3d.device.eyetracking.enabled", GameplayReferences.SDKSupportsEyeTracking);
 #endif
             //eye tracker addons
 #if C3D_SRANIPAL
