@@ -208,6 +208,7 @@ namespace Cognitive3D
             NetworkManager.PostExitpollAnswers(responseBody, questionSet.name, questionSet.version);
 
             Cleanup();
+            OnSurveyComplete.Invoke();
         }
 
         /// <summary>
