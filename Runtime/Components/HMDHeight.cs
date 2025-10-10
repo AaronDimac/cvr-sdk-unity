@@ -113,7 +113,7 @@ namespace Cognitive3D.Components
 #if COGNITIVE3D_INCLUDE_COREUTILITIES
             if (xrOrigin == null)
             {
-                xrOrigin = FindObjectOfType<XROrigin>(); 
+                xrOrigin = FindFirstObjectByType<XROrigin>(); 
             }  
 
             if (xrOrigin != null)
@@ -135,7 +135,7 @@ namespace Cognitive3D.Components
 #if COGNITIVE3D_INCLUDE_LEGACYINPUTHELPERS
             if (cameraOffset == null)
             {
-                cameraOffset = FindObjectOfType<CameraOffset>();
+                cameraOffset = FindFirstObjectByType<CameraOffset>();
             }
             
             if (cameraOffset != null)

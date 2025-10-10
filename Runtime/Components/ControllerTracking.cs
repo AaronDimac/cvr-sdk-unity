@@ -135,7 +135,7 @@ namespace Cognitive3D.Components
 
         void RegisterControllers()
         {
-            if (!Cognitive3D_Manager.autoInitializePlayerSetup)
+            if (!Cognitive3D_Manager.Instance.autoInitializePlayerSetup)
             {
                 InputDevice device;
                 Transform ignore;

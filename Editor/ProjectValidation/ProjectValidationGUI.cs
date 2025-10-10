@@ -47,7 +47,7 @@ namespace Cognitive3D
                 Init();
             }
 
-            using (new EditorGUILayout.VerticalScope())
+            using (new EditorGUILayout.VerticalScope(EditorCore.styles.DetailContainer))
             {
                 EditorGUILayout.Space();
 

@@ -33,7 +33,7 @@ namespace Cognitive3D
         protected virtual void OnEnable()
         {
             if (GameplayReferences.HMD == null) { return; }
-            if (FindObjectOfType<ExitPollHolder>().Parameters.PointerType == ExitPollManager.PointerType.HMD)
+            if (FindFirstObjectByType<ExitPollHolder>().Parameters.PointerType == ExitPollManager.PointerType.HMD)
             {
                 buttonPrompt.text = "Hover To Record";
             }
@@ -65,6 +65,7 @@ namespace Cognitive3D
 
                 if (_currentRecordTime <= 0)
                 {
+                    ExitPollManager.OnMicrophoneRecordingTimeUp.Invoke();
                     StopRecording();
                 }
             }
@@ -129,6 +130,7 @@ namespace Cognitive3D
             _currentRecordTime = RecordTime;
             _recording = true;
             buttonPrompt.text = "Recording...";
+            ExitPollManager.OnMicrophoneRecordingBegin.Invoke();
         }
 
         void StopRecording()

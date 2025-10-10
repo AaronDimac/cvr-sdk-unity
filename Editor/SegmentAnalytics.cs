@@ -29,7 +29,7 @@ namespace Cognitive3D
         /// <summary>
         /// Method to fetch the Segment key and identify user
         /// </summary>
-        private static async void Init()
+        internal static async void Init()
         {
             _writeKey = await GetKeyFromServerAsync();
 
@@ -146,28 +146,50 @@ namespace Cognitive3D
             await SendTrackingDataAsync(TRACK_URL, jsonPayload);
         }
 
+        /// <summary>
+        /// Sends a tracking event to Segment with optional UI context.
+        /// Wraps the base TrackEvent by allowing you to pass in a button name
+        /// and UI type as additional properties.
+        /// More info about track events: https://segment.com/docs/connections/spec/track/ 
+        /// </summary>
+        /// <param name="eventName">Name of the event to track</param>
+        /// <param name="buttonName">Button identifier related to the event</param>
+        /// <param name="uiType">UI version or type (e.g., "legacy", "new")</param>
+        public static void TrackEvent(string eventName, string buttonName, string uiType)
+        {
+            SegmentProperties props = new SegmentProperties();
+            props.buttonName = buttonName;
+            props.SetProperty("ui_type", uiType);
+            TrackEvent(eventName, props);
+        }
+
         private static async Task SendTrackingDataAsync(string trackURL, string data)
         {
-            if (string.IsNullOrEmpty(_writeKey)) Init();
-
             if (!string.IsNullOrEmpty(_writeKey))
             {
-                var bytes = System.Text.Encoding.UTF8.GetBytes(data);
-                UnityWebRequest request = UnityWebRequest.Put(trackURL, bytes);
-                request.method = "POST";
-                request.SetRequestHeader("Content-Type", "application/json");
-                // Segment requires basic auth using a base64-encoded Write Key
-                string auth = System.Convert.ToBase64String(Encoding.ASCII.GetBytes(_writeKey + ":"));
-                request.SetRequestHeader("Authorization", "Basic " + auth);
-                var operation = request.SendWebRequest();
+                var bytes = Encoding.UTF8.GetBytes(data);
 
-                while (!operation.isDone)
+                using (var request = new UnityWebRequest(trackURL, UnityWebRequest.kHttpVerbPOST))
                 {
-                    await Task.Yield();
+                    request.disposeUploadHandlerOnDispose = true;
+                    request.disposeDownloadHandlerOnDispose = true;
+                    request.uploadHandler = new UploadHandlerRaw(bytes);
+                    request.downloadHandler = new DownloadHandlerBuffer();
+
+                    request.SetRequestHeader("Content-Type", "application/json");
+
+                    // Segment requires basic auth using a base64-encoded Write Key
+                    string auth = System.Convert.ToBase64String(Encoding.ASCII.GetBytes(_writeKey + ":"));
+                    request.SetRequestHeader("Authorization", "Basic " + auth);
+
+                    var operation = request.SendWebRequest();
+                    while (!operation.isDone)
+                    {
+                        await Task.Yield();
+                    }
                 }
             }
         }
-
 
         private static void GetUserResponse(int responseCode, string error, string text)
         {

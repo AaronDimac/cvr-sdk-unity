@@ -134,7 +134,7 @@ namespace Cognitive3D
 
         public static List<string> GetPlayerDefines()
         {
-            string s = PlayerSettings.GetScriptingDefineSymbolsForGroup(EditorUserBuildSettings.selectedBuildTargetGroup);
+            string s = PlayerSettings.GetScriptingDefineSymbols(UnityEditor.Build.NamedBuildTarget.FromBuildTargetGroup(EditorUserBuildSettings.selectedBuildTargetGroup));
             string[] ExistingSymbols = s.Split(';');
             return new List<string>(ExistingSymbols);
         }
@@ -157,12 +157,12 @@ namespace Cognitive3D
                     alldefines += defines[i] + ";";
                 }
             }
-            PlayerSettings.SetScriptingDefineSymbolsForGroup(EditorUserBuildSettings.selectedBuildTargetGroup, alldefines);
+            PlayerSettings.SetScriptingDefineSymbols(UnityEditor.Build.NamedBuildTarget.FromBuildTargetGroup(EditorUserBuildSettings.selectedBuildTargetGroup), alldefines);
         }
 
         public static void RemoveDefine(string symbol)
         {
-            string s = PlayerSettings.GetScriptingDefineSymbolsForGroup(EditorUserBuildSettings.selectedBuildTargetGroup);
+            string s = PlayerSettings.GetScriptingDefineSymbols(UnityEditor.Build.NamedBuildTarget.FromBuildTargetGroup(EditorUserBuildSettings.selectedBuildTargetGroup));
             string[] ExistingSymbols = s.Split(';');
             List<string> finalDefines = new List<string>();
             for(int i = 0; i<ExistingSymbols.Length;i++)
@@ -182,7 +182,7 @@ namespace Cognitive3D
                     alldefines += finalDefines[i] + ";";
                 }
             }
-            PlayerSettings.SetScriptingDefineSymbolsForGroup(EditorUserBuildSettings.selectedBuildTargetGroup, alldefines);
+            PlayerSettings.SetScriptingDefineSymbols(UnityEditor.Build.NamedBuildTarget.FromBuildTargetGroup(EditorUserBuildSettings.selectedBuildTargetGroup), alldefines);
         }
 
         public static bool HasC3DDefine()
@@ -199,10 +199,26 @@ namespace Cognitive3D
             return false;
         }
 
+        public static bool HasC3DDefine(out List<string> C3DSymbols)
+        {
+            List<string> ExistingSymbols = GetPlayerDefines();
+            C3DSymbols = new List<string>();
+
+            foreach (var v in ExistingSymbols)
+            {
+                if (v.StartsWith("C3D_"))
+                {
+                    C3DSymbols.Add(v);
+                    return true;
+                }
+            }
+            return false;
+        }
+
         public static void SetPlayerDefine(List<string> C3DSymbols)
         {
             //get all scripting define symbols
-            string s = PlayerSettings.GetScriptingDefineSymbolsForGroup(EditorUserBuildSettings.selectedBuildTargetGroup);
+            string s = PlayerSettings.GetScriptingDefineSymbols(UnityEditor.Build.NamedBuildTarget.FromBuildTargetGroup(EditorUserBuildSettings.selectedBuildTargetGroup));
             string[] ExistingSymbols = s.Split(';');
 
             //categorizing definition symbols
@@ -231,7 +247,139 @@ namespace Cognitive3D
                     alldefines += finalDefines[i] + ";";
                 }
             }
-            PlayerSettings.SetScriptingDefineSymbolsForGroup(EditorUserBuildSettings.selectedBuildTargetGroup, alldefines);
+            PlayerSettings.SetScriptingDefineSymbols(UnityEditor.Build.NamedBuildTarget.FromBuildTargetGroup(EditorUserBuildSettings.selectedBuildTargetGroup), alldefines);
+        }
+
+        public static void SetPlayerDefine(string C3DSymbol)
+        {
+            //get all scripting define symbols
+            string s = PlayerSettings.GetScriptingDefineSymbols(UnityEditor.Build.NamedBuildTarget.FromBuildTargetGroup(EditorUserBuildSettings.selectedBuildTargetGroup));
+            string[] ExistingSymbols = s.Split(';');
+
+            //categorizing definition symbols
+            List<string> ExistingNonC3DSymbols = new List<string>();
+            foreach (var v in ExistingSymbols)
+            {
+                if (!v.StartsWith("C3D_"))
+                {
+                    ExistingNonC3DSymbols.Add(v);
+                }
+            }
+
+            //combine symbols
+            List<string> finalDefines = new List<string>();
+            foreach (var v in ExistingNonC3DSymbols)
+                finalDefines.Add(v);
+            
+            // Add C3D define
+            finalDefines.Add(C3DSymbol);
+
+            //rebuild symbols
+            string alldefines = "";
+            for (int i = 0; i < finalDefines.Count; i++)
+            {
+                if (!string.IsNullOrEmpty(finalDefines[i]))
+                {
+                    alldefines += finalDefines[i] + ";";
+                }
+            }
+
+            PlayerSettings.SetScriptingDefineSymbols(UnityEditor.Build.NamedBuildTarget.FromBuildTargetGroup(EditorUserBuildSettings.selectedBuildTargetGroup), alldefines);
+        }
+
+        /// <summary>
+        /// Creates a new Cognitive3D_Preferences asset at the specified path and returns it.
+        /// If the path is invalid or empty, returns the existing preferences.
+        /// </summary>
+        public static Cognitive3D_Preferences CreatePreferences(string path)
+        {
+            if (!string.IsNullOrEmpty(path))
+            {
+                var newAsset = ScriptableObject.CreateInstance<Cognitive3D_Preferences>();
+                AssetDatabase.CreateAsset(newAsset, path);
+                AssetDatabase.SaveAssets();
+                AssetDatabase.Refresh();
+                Selection.activeObject = newAsset;
+                return newAsset;
+            }
+
+            return GetPreferences();
+        }
+
+        /// <summary>
+        /// Creates a copy of an existing Cognitive3D_Preferences asset and saves it at the specified path.
+        /// If the path is invalid, returns the existing preferences.
+        /// </summary>
+        public static Cognitive3D_Preferences CopyPreferences(string path, Cognitive3D_Preferences preferencesToCopy)
+        {
+            if (!string.IsNullOrEmpty(path))
+            {
+                // Duplicate the asset
+                string originalPath = AssetDatabase.GetAssetPath(preferencesToCopy);
+                AssetDatabase.CopyAsset(originalPath, path);
+                AssetDatabase.Refresh();
+
+                // Load and set the new copied asset
+                var copiedPrefs = AssetDatabase.LoadAssetAtPath<Cognitive3D_Preferences>(path);
+                if (copiedPrefs != null)
+                {
+                    return copiedPrefs;
+                }
+            }
+
+            return GetPreferences();
+        }
+
+        /// <summary>
+        /// Sets the current active Cognitive3D_Preferences instance used by the editor.
+        /// </summary>
+        internal static void SetPreferences(Cognitive3D_Preferences newPreferences)
+        {
+            _prefs = newPreferences;
+        }
+
+        /// <summary>
+        /// Copies all data from the given preferences object into the main preferences asset in the Resources folder.
+        /// If the main asset does not exist, it will be created.
+        /// </summary>
+        public static void SaveToPreference(Cognitive3D_Preferences newPref)
+        {
+            var mainPrefs = Resources.Load<Cognitive3D_Preferences>("Cognitive3D_Preferences");
+            if (mainPrefs == null)
+            {
+                mainPrefs = ScriptableObject.CreateInstance<Cognitive3D_Preferences>();
+                string filepath = "Assets/Resources";
+                if (!AssetDatabase.IsValidFolder(filepath))
+                {
+                    AssetDatabase.CreateFolder("Assets", "Resources");
+                }
+
+                AssetDatabase.CreateAsset(mainPrefs, $"{filepath}/Cognitive3D_Preferences.asset");
+                AssetDatabase.SaveAssets();
+                AssetDatabase.Refresh();
+            }
+
+            if (mainPrefs != null)
+            {
+                // Save the original name to restore after copying
+                string originalName = mainPrefs.name;
+
+                // Copy serialized data
+                EditorUtility.CopySerialized(newPref, mainPrefs);
+
+                // Restore the original name to avoid asset mismatch warnings
+                mainPrefs.name = originalName;
+
+                EditorUtility.SetDirty(mainPrefs);
+                AssetDatabase.SaveAssets();
+                AssetDatabase.Refresh();
+
+                Debug.Log("Applied current preferences to main asset.");
+            }
+            else
+            {
+                Debug.LogError("Failed to load or create main preferences asset.");
+            }
         }
 
         static Cognitive3D_Preferences _prefs;
@@ -297,7 +445,7 @@ namespace Cognitive3D
             }
         }
 
-        static System.Action RefreshSceneVersionComplete;
+        internal static System.Action RefreshSceneVersionComplete;
         /// <summary>
         /// make a get request for all scene versions of this scene
         /// </summary>
@@ -335,6 +483,67 @@ namespace Cognitive3D
             }
         }
 
+        /// <summary>
+        /// Sends version refresh requests for all Cognitive3D setting scenes.  
+        /// Handles each request asynchronously and tracks completion using a counter.  
+        /// Skips scenes with invalid developer keys or missing scene IDs.
+        /// </summary>
+        /// <param name="refreshSceneVersionComplete">Callback invoked after all valid version requests complete.</param>
+        public static void RefreshAllScenesVersion(Action refreshSceneVersionComplete)
+        {
+            if (Cognitive3D_Preferences.Instance.sceneSettings.Count == 0) return;
+
+            int pendingRequests = 0;
+
+            foreach (var sceneSetting in Cognitive3D_Preferences.Instance.sceneSettings)
+            {
+                if (!IsDeveloperKeyValid)
+                {
+                    Debug.Log("Developer key invalid");
+                    continue;
+                }
+
+                if (sceneSetting == null || string.IsNullOrEmpty(sceneSetting.SceneId))
+                {
+                    continue;
+                }
+
+                string url = CognitiveStatics.GetSceneVersions(sceneSetting.SceneId);
+                var headers = new Dictionary<string, string>
+                {
+                    { "Authorization", "APIKEY:DEVELOPER " + DeveloperKey }
+                };
+
+                pendingRequests++;
+                EditorNetwork.Get(url, (responseCode, error, text) =>
+                {
+                    if (responseCode != 200)
+                    {
+                        Debug.LogError($"Scene {sceneSetting.SceneId} error: {responseCode}, {error}");
+                    }
+                    else
+                    {
+                        var collection = JsonUtility.FromJson<SceneVersionCollection>(text);
+                        if (collection != null)
+                        {
+                            var latest = collection.GetLatestVersion();
+                            sceneSetting.VersionId = latest.id;
+                            sceneSetting.VersionNumber = latest.versionNumber;
+                            EditorUtility.SetDirty(Cognitive3D_Preferences.Instance);
+                            AssetDatabase.SaveAssets();
+                        }
+                    }
+
+                    // Done with one request
+                    pendingRequests--;
+                    if (pendingRequests == 0)
+                    {
+                        refreshSceneVersionComplete?.Invoke();
+                    }
+                }, headers, true, "Get Scene Version");
+            }
+        }
+
         internal static void GetSceneVersionResponse(int responsecode, string error, string text)
         {
             if (responsecode != 200)
@@ -368,7 +577,7 @@ namespace Cognitive3D
             }
         }
 
-#region GUI
+        #region GUI
         internal class Styles
         {
             private const float SmallIconSize = 16.0f;
@@ -379,6 +588,125 @@ namespace Cognitive3D
             internal const float LabelWidth = 96f;
             internal const float TitleLabelWidth = 196f;
             private const float IconSize = 16f;
+
+            internal readonly GUIStyle DetailContainer = new GUIStyle
+            {
+                padding = new RectOffset(10, 10, 5, 5)
+            };
+
+            internal readonly GUIStyle FeatureButtonTitle = new GUIStyle(GUI.skin.label)
+            {
+                fontSize = 16,
+                fontStyle = FontStyle.Bold,
+                alignment = TextAnchor.MiddleLeft,
+            };
+
+            internal readonly GUIStyle FeatureButtonDescription = new GUIStyle(GUI.skin.label)
+            {
+                fontSize = 11,
+                alignment = TextAnchor.MiddleLeft,
+            };
+
+            internal readonly GUIStyle FeatureTitle = new GUIStyle(GUI.skin.label)
+            {
+                fontSize = 16,
+                fontStyle = FontStyle.Bold,
+                alignment = TextAnchor.UpperLeft,
+                padding = new RectOffset(0, 5, 0, 5)
+            };
+
+            internal readonly GUIStyle ContextPadding = new GUIStyle
+            {
+                padding = new RectOffset(10, 10, 5, 3),
+                margin = new RectOffset(4, 4, 4, 5)
+            };
+
+            internal readonly GUIStyle DescriptionPadding = new GUIStyle(GUI.skin.label)
+            {
+                wordWrap = true,
+                padding = new RectOffset(15, 15, 5, 5)
+            };
+
+            internal readonly GUIStyle HelpBoxPadding = new GUIStyle(EditorStyles.helpBox)
+            {
+                margin = new RectOffset(15, 15, 5, 5)
+            };
+
+            internal readonly GUIStyle HelpBoxLabel = new GUIStyle(GUI.skin.label)
+            {
+                fontSize = 10,
+                wordWrap = true,
+                margin = new RectOffset(0, 0, 15, 0),
+                padding = new RectOffset(0, 0, 0, 0)
+            };
+
+            internal readonly GUIStyle ExternalLink = new GUIStyle(GUI.skin.label)
+            {
+                fixedWidth = 18,
+                fixedHeight = 18,
+                margin = new RectOffset(0, 0, 12, 4)
+            };
+
+            internal readonly GUIStyle ListBoxPadding = new GUIStyle(GUI.skin.box)
+            {
+                wordWrap = true,
+                margin = new RectOffset(15, 15, 5, 5)
+            };
+
+            internal readonly GUIStyle ListBoxPadding2 = new GUIStyle(GUI.skin.scrollView)
+            {
+                wordWrap = true,
+                margin = new RectOffset(15, 15, 5, 5)
+            };
+
+            internal readonly GUIStyle LeftPaddingBoldLabel = new GUIStyle(EditorStyles.boldLabel)
+            {
+                padding = new RectOffset(15, 0, 0, 0)
+            };
+
+            internal readonly GUIStyle LeftPaddingLabel = new GUIStyle(GUI.skin.label)
+            {
+                padding = new RectOffset(15, 0, 0, 0),
+                alignment = TextAnchor.MiddleLeft,
+            };
+
+
+            internal readonly GUIStyle FeatureButton = new GUIStyle(GUI.skin.button)
+            {
+                fixedHeight = 100,
+                fontSize = 30,
+                alignment = TextAnchor.MiddleLeft,
+                imagePosition = ImagePosition.ImageLeft,
+                margin = new RectOffset(5, 5, 5, 5)
+            };
+
+            internal readonly GUIStyle FeatureSmallButton = new GUIStyle(GUI.skin.button)
+            {
+                fontSize = 30
+            };
+
+            internal readonly GUIStyle CompleteIcon = new GUIStyle
+            {
+                fixedWidth = 18,
+                fixedHeight = 18,
+                margin = new RectOffset(0, 0, 2, 2),
+                padding = new RectOffset(2, 0, 2, 2),
+            };
+
+            internal readonly GUIStyle IncompleteIcon = new GUIStyle
+            {
+                fixedWidth = 18,
+                fixedHeight = 18,
+                margin = new RectOffset(0, 0, 2, 2),
+                padding = new RectOffset(0, 0, 0, 0),
+            };
+
+            internal readonly GUIStyle CenteredLabel = new GUIStyle(GUI.skin.label)
+            {
+                alignment = TextAnchor.MiddleCenter
+            };
+
+            internal readonly GUIStyle CodeSnippet = new GUIStyle(WizardGUISkin.GetStyle("code_snippet"));
 
             internal readonly GUIStyle ListLabel = new GUIStyle("TV Selection")
             {
@@ -393,7 +721,6 @@ namespace Cognitive3D
                 wordWrap = false,
                 stretchWidth = false,
                 fontStyle = FontStyle.Bold,
-                padding = new RectOffset(10, 2, 0, 0)
             };
 
             internal readonly GUIStyle IssuesTitleLabel = new GUIStyle(EditorStyles.label)
@@ -436,7 +763,7 @@ namespace Cognitive3D
 
             internal readonly GUIStyle IconButton = new GUIStyle(EditorStyles.miniButton)
             {
-                margin = new RectOffset(0, 10, 0, 0),
+                margin = new RectOffset(0, 5, 0, 0),
                 fixedWidth = IconButtonWidth,
                 fixedHeight = 25
             };
@@ -564,10 +891,171 @@ namespace Cognitive3D
             get
             {
                 if (_logo == null)
-                    _logo = Resources.Load<Texture2D>("cognitive3d-editorlogo");
+                    _logo = Resources.Load<Texture2D>("C3D-Primary-Logo");
                 return _logo;
             }
         }
+
+        private static Texture2D _logoIcon;
+        public static Texture2D LogoIcon
+        {
+            get
+            {
+                if (_logoIcon == null)
+                    _logoIcon = Resources.Load<Texture2D>("C3D-Icon");
+                return _logoIcon;
+            }
+        }
+
+        private static Texture2D _background;
+        public static Texture2D BackgroundTexture
+        {
+            get
+            {
+                if (_background == null)
+                    _background = Resources.Load<Texture2D>("cognitive3d-background");
+                return _background;
+            }
+        }
+
+        private static Texture2D _plusIcon;
+        public static Texture2D PlusIcon
+        {
+            get
+            {
+                if (_plusIcon == null)
+                    _plusIcon = Resources.Load<Texture2D>("Features/Icons/plus");
+                return _plusIcon;
+            }
+        }
+
+        private static Texture2D _externalLinkIcon;
+        public static Texture2D ExternalLinkIcon
+        {
+            get
+            {
+                if (_externalLinkIcon == null)
+                {
+                    _externalLinkIcon = Resources.Load<Texture2D>("Icons/external-link");
+                }
+                return _externalLinkIcon;
+            }
+        }
+
+        private static Texture2D _dynamicsIcon;
+        public static Texture2D DynamicsIcon
+        {
+            get
+            {
+                if (_dynamicsIcon == null)
+                    _dynamicsIcon = Resources.Load<Texture2D>("Features/Icons/dynamics");
+                return _dynamicsIcon;
+            }
+        }
+
+        private static Texture2D _customEventIcon;
+        public static Texture2D CustomEventIcon
+        {
+            get
+            {
+                if (_customEventIcon == null)
+                    _customEventIcon = Resources.Load<Texture2D>("Features/Icons/custom-events");
+                return _customEventIcon;
+            }
+        }
+
+        private static Texture2D _sensorIcon;
+        public static Texture2D SensorIcon
+        {
+            get
+            {
+                if (_sensorIcon == null)
+                    _sensorIcon = Resources.Load<Texture2D>("Features/Icons/sensors");
+                return _sensorIcon;
+            }
+        }
+
+        private static Texture2D _exitpollIcon;
+        public static Texture2D ExitpollIcon
+        {
+            get
+            {
+                if (_exitpollIcon == null)
+                    _exitpollIcon = Resources.Load<Texture2D>("Features/Icons/exitpoll");
+                return _exitpollIcon;
+            }
+        }
+
+        private static Texture2D _remoteControlsIcon;
+        public static Texture2D RemoteControlsIcon
+        {
+            get
+            {
+                if (_remoteControlsIcon == null)
+                    _remoteControlsIcon = Resources.Load<Texture2D>("Features/Icons/remote-controls");
+                return _remoteControlsIcon;
+            }
+        }
+
+        private static Texture2D _socialPlatformIcon;
+        public static Texture2D SocialPlatformIcon
+        {
+            get
+            {
+                if (_socialPlatformIcon == null)
+                    _socialPlatformIcon = Resources.Load<Texture2D>("Features/Icons/social-platform");
+                return _socialPlatformIcon;
+            }
+        }
+
+        private static Texture2D _multiplayerIcon;
+        public static Texture2D MultiplayerIcon
+        {
+            get
+            {
+                if (_multiplayerIcon == null)
+                    _multiplayerIcon = Resources.Load<Texture2D>("Features/Icons/multiplayer");
+                return _multiplayerIcon;
+            }
+        }
+
+        private static Texture2D _mediaIcon;
+        public static Texture2D MediaIcon
+        {
+            get
+            {
+                if (_mediaIcon == null)
+                    _mediaIcon = Resources.Load<Texture2D>("Features/Icons/media");
+                return _mediaIcon;
+            }
+        }
+
+        private static Texture2D _completeCheckmark;
+        public static Texture2D CompleteCheckmark
+        {
+            get
+            {
+                if (_completeCheckmark == null)
+                {
+                    _completeCheckmark = Resources.Load<Texture2D>("Icons/circle-checkmark");
+                }
+                return _completeCheckmark;
+            }
+        }
+
+        private static Texture2D _circleWarning;
+        public static Texture2D CircleWarning
+        {
+            get
+            {
+                if (_circleWarning == null)
+                {
+                    _circleWarning = Resources.Load<Texture2D>("Icons/circle-warning");
+                }
+                return _circleWarning;
+            }
+        }
+
         private static Texture2D _circleCheckmark;
         public static Texture2D CircleCheckmark
         {
@@ -1078,6 +1566,26 @@ namespace Cognitive3D
             return "unknown";
         }
 
+        internal static void SetMainCamera(GameObject camera)
+        {
+            if (camera == null) return;
+
+            if (camera.CompareTag("MainCamera") == false)
+            {
+                camera.tag = "MainCamera";
+            }
+        }
+
+        internal static void SetTrackingSpace(GameObject trackingSpace)
+        {
+            if (trackingSpace == null) return;
+
+            if (!trackingSpace.GetComponent<RoomTrackingSpace>())
+            {
+                trackingSpace.AddComponent<RoomTrackingSpace>();
+            }
+        }
+
         private static GameObject _leftController;
         public static GameObject leftController {
             get {
@@ -1114,6 +1622,34 @@ namespace Cognitive3D
             }
         }
 
+        internal static void SetController(bool isRight, GameObject controller)
+        {
+            if (controller == null) return;
+            if (!controller.GetComponent<DynamicObject>())
+            {
+                controller.AddComponent<DynamicObject>();
+            }
+
+            InputUtil.ControllerType controllerType = InputUtil.ControllerType.Quest2;
+#if C3D_STEAMVR2
+            controllerType = InputUtil.ControllerType.ViveWand;
+#elif C3D_OCULUS
+            controllerType = InputUtil.ControllerType.Quest2;
+#elif C3D_PICOXR
+            controllerType = InputUtil.ControllerType.PicoNeo3;
+#elif C3D_VIVEWAVE
+            controllerType = InputUtil.ControllerType.ViveFocus;
+#endif
+
+            var dyn = controller.GetComponent<DynamicObject>();
+            dyn.IsRight = isRight;
+            dyn.IsController = true;
+            dyn.inputType = InputUtil.InputType.Controller;
+            dyn.SyncWithPlayerGazeTick = true;
+            dyn.FallbackControllerType = controllerType;
+            dyn.idSource = DynamicObject.IdSourceType.GeneratedID;
+        }
+
         /// <summary>
         /// Checks if left controller is valid and properly setup in Scene Setup window
         /// </summary>
@@ -1129,6 +1665,187 @@ namespace Cognitive3D
         internal static bool IsRightControllerValid()
         {
             return rightController ? true : false;
+        }
+#endregion
+
+#region Cognitive3DPrefabUtility
+
+        private const string packagePrefabPath = "Packages/com.cognitive3d.c3d-sdk/Runtime/Resources/Cognitive3D_Manager.prefab";
+        private const string projectPrefabPath = "Assets/Resources/Cognitive3D_Manager.prefab";
+
+        /// <summary>
+        /// Returns the prefab that should be used by the project,
+        /// preferring the copy in Assets/Resources. 
+        /// If the copy doesn't exist, it is created from the package prefab.
+        /// </summary>
+        public static GameObject GetCognitive3DManagerPrefab()
+        {
+            GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(projectPrefabPath);
+            if (prefab != null) return prefab;
+
+            CreatePrefabCopy();
+            prefab = AssetDatabase.LoadAssetAtPath<GameObject>(projectPrefabPath);
+            if (prefab != null) return prefab;
+
+            // Fallback to package prefab if something went wrong
+            return AssetDatabase.LoadAssetAtPath<GameObject>(packagePrefabPath);
+        }
+        
+        /// <summary>
+        /// Creates a copy of the Cognitive3D Manager prefab from the package into Assets/Resources.
+        /// Does nothing if the prefab already exists in Assets/Resources.
+        /// </summary>
+        public static void CreatePrefabCopy()
+        {
+            if (File.Exists(projectPrefabPath))
+            {
+                return;
+            }
+
+            // Load from package
+            GameObject packagePrefab = AssetDatabase.LoadAssetAtPath<GameObject>(packagePrefabPath);
+            if (packagePrefab == null)
+            {
+                Debug.LogError("Could not find Cognitive3D Manager prefab in package.");
+                return;
+            }
+
+            // Ensure Resources folder exists
+            if (!Directory.Exists("Assets/Resources"))
+            {
+                Directory.CreateDirectory("Assets/Resources");
+            }
+
+            // Copy prefab into Assets
+            AssetDatabase.CopyAsset(packagePrefabPath, projectPrefabPath);
+            AssetDatabase.SaveAssets();
+
+            Util.logDebug("Created Cognitive3D Manager prefab copy in Assets/Resources.");
+        }
+
+        /// <summary>
+        /// Checks if a Cognitive3D Manager prefab exists in the current scene.
+        /// </summary>
+        public static bool IsManagerPrefabInScene()
+        {
+            var currentScene = UnityEditor.SceneManagement.EditorSceneManager.GetActiveScene();
+            var currentSettings = Cognitive3D_Preferences.FindSceneByPath(currentScene.path);
+
+            if (currentSettings != null)
+            {
+                foreach (var root in currentScene.GetRootGameObjects())
+                {
+                    var manager = root.GetComponentInChildren<Cognitive3D_Manager>();
+                    if (manager != null)
+                    {
+                        return true; // Found a Cognitive3D_Manager in the scene
+                    }
+                }
+            }
+
+            return false; // No manager found
+        }
+
+        /// <summary>
+        /// Checks if the Cognitive3D Manager in the current scene is using the old prefab from the package.
+        /// </summary>
+        public static bool IsUsingOldManagerPrefab()
+        {
+            var currentScene = UnityEditor.SceneManagement.EditorSceneManager.GetActiveScene();
+            var currentSettings = Cognitive3D_Preferences.FindSceneByPath(currentScene.path);
+            if (currentSettings != null)
+            {
+                foreach (var root in currentScene.GetRootGameObjects())
+                {
+                    var oldManager = root.GetComponentInChildren<Cognitive3D_Manager>();
+                    if (oldManager != null)
+                    {
+                        GameObject sourcePrefab = PrefabUtility.GetCorrespondingObjectFromSource(oldManager.gameObject) as GameObject;
+                        string prefabPath = sourcePrefab != null ? AssetDatabase.GetAssetPath(sourcePrefab) : "";
+
+                        if (prefabPath == packagePrefabPath)
+                        {
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Starts the update process to replace old prefab instances in tracked scenes.
+        /// </summary>
+        public static void PrefabUpdater()
+        {
+            EditorApplication.update += RunUpdateCheck;
+        }
+
+        /// <summary>
+        /// Iterates through all tracked scenes, replaces any old package prefab instances
+        /// with the project prefab, and adds a manager if none exists.
+        /// </summary>
+        static void RunUpdateCheck()
+        {
+            EditorApplication.update -= RunUpdateCheck;
+
+            var scenes = Cognitive3D_Preferences.Instance.sceneSettings;
+            foreach (var scene in scenes)
+            {
+                string path = scene.ScenePath;
+                if (!System.IO.File.Exists(path))
+                {
+                    Util.logWarning($"Scene path not found: {path}");
+                    continue;
+                }
+
+                var _scene = EditorSceneManager.OpenScene(path, OpenSceneMode.Single);
+
+                bool modified = false;
+                bool foundManager = false;
+
+                foreach (var root in _scene.GetRootGameObjects())
+                {
+                    var oldManager = root.GetComponentInChildren<Cognitive3D_Manager>();
+                    if (oldManager != null)
+                    {
+                        foundManager = true;
+                        // Get prefab source path
+                        GameObject sourcePrefab = PrefabUtility.GetCorrespondingObjectFromSource(oldManager.gameObject) as GameObject;
+                        string prefabPath = sourcePrefab != null ? AssetDatabase.GetAssetPath(sourcePrefab) : "";
+
+                        // Only replace if it's from the old package path
+                        if (prefabPath == packagePrefabPath)
+                        {
+                            var newPrefab = PrefabUtility.InstantiatePrefab(GetCognitive3DManagerPrefab(), _scene) as GameObject;
+                            if (newPrefab != null)
+                            {
+                                newPrefab.name = "Cognitive3D_Manager";
+                                UnityEngine.Object.DestroyImmediate(oldManager.gameObject);
+                                modified = true;
+                            }
+                        }
+                    }
+                }
+
+                // If no manager exists, add one
+                if (!foundManager)
+                {
+                    var newPrefab = PrefabUtility.InstantiatePrefab(GetCognitive3DManagerPrefab(), _scene) as GameObject;
+                    if (newPrefab != null)
+                    {
+                        newPrefab.name = "Cognitive3D_Manager";
+                        modified = true;
+                    }
+                }
+
+                if (modified)
+                {
+                    EditorSceneManager.MarkSceneDirty(_scene);
+                    EditorSceneManager.SaveScene(_scene);
+                    Util.logDebug($"Saved updated scene: {path}");
+                }
+            }
         }
 #endregion
 
@@ -1158,6 +1875,66 @@ namespace Cognitive3D
             GetPackageResponseAction.Invoke(GetPackageListRequest.Result);
         }
 
+        #endregion
+
+        #region Assembly Definition
+        /// <summary>
+        /// Checks if 'allowUnsafeCode' is enabled in the Cognitive3D.asmdef file.
+        /// Logs an error if the asmdef file cannot be found.
+        /// </summary>
+        internal static bool IsUnsafeCodeEnabled()
+        {
+            string path = "Packages/com.cognitive3d.c3d-sdk/Runtime/Cognitive3D.asmdef";
+
+            if (!File.Exists(path))
+            {
+                Util.LogOnce($"ASMDEF not found at {path}", LogType.Error);
+                return false;
+            }
+
+            string json = File.ReadAllText(path);
+
+            // Check if allowUnsafeCode is explicitly set to true
+            return json.Contains("\"allowUnsafeCode\": true");
+        }
+
+        /// <summary>
+        /// Enables 'allowUnsafeCode' in the Cognitive3D.asmdef file by either updating its value
+        /// or inserting the property if it does not already exist. 
+        /// Triggers AssetDatabase refresh after modification. 
+        /// Logs an error if the asmdef file cannot be found.
+        /// </summary>
+        internal static void EnableUnsafeCode()
+        {
+            string path = "Packages/com.cognitive3d.c3d-sdk/Runtime/Cognitive3D.asmdef";
+
+            if (!File.Exists(path))
+            {
+                Util.LogOnce($"ASMDEF not found at {path}", LogType.Error);
+                return;
+            }
+
+            string json = File.ReadAllText(path);
+
+            // Use regex to replace or insert the allowUnsafeCode field
+            if (json.Contains("\"allowUnsafeCode\""))
+            {
+                json = System.Text.RegularExpressions.Regex.Replace(json, "\"allowUnsafeCode\"\\s*:\\s*(false|true)", "\"allowUnsafeCode\": true");
+            }
+            else
+            {
+                // insert before the final closing }
+                int insertIndex = json.LastIndexOf('}');
+                if (insertIndex > 0)
+                {
+                    // Add a comma before inserting if not already at the end of an object
+                    json = json.Insert(insertIndex, ",\n  \"allowUnsafeCode\": true\n");
+                }
+            }
+
+            File.WriteAllText(path, json);
+            AssetDatabase.Refresh();
+        }
         #endregion
 
         #region SDK Updates
@@ -2030,6 +2807,13 @@ namespace Cognitive3D
             }
         }
 
+        public static void CheckForExpiredDeveloperKey(string devKey, EditorNetwork.Response callback)
+        {
+            Dictionary<string, string> headers = new Dictionary<string, string>();
+            headers.Add("Authorization", "APIKEY:DEVELOPER " + devKey);
+            EditorNetwork.Get("https://" + EditorCore.DisplayValue(DisplayKey.GatewayURL) + "/v0/apiKeys/verify", callback, headers, true);
+        }
+
         internal static void CheckForApplicationKey(string developerKey, EditorNetwork.Response callback)
         {
             if (!string.IsNullOrEmpty(developerKey))
@@ -2042,6 +2826,12 @@ namespace Cognitive3D
             {
                 callback.Invoke(0, "Invalid Developer Key", "");
             }
+        }
+
+        internal static bool IsCurrentSceneValid()
+        {
+            var currentScene = Cognitive3D_Preferences.FindCurrentScene();
+            return !(currentScene == null || string.IsNullOrEmpty(currentScene.SceneId));
         }
 
         internal static void CheckSubscription(string developerKey, EditorNetwork.Response callback)
@@ -2073,6 +2863,13 @@ namespace Cognitive3D
         }
 
         [System.Serializable]
+        internal class ApplicationKeyResponseData
+        {
+            public string apiKey;
+            public bool valid;
+        }
+
+        [System.Serializable]
         internal class UserData
         {
             public string email;
@@ -2083,6 +2880,7 @@ namespace Cognitive3D
             public string projectName;
             public int organizationId;
             public string organizationName;
+            public long keyExpiresAt;
         }
 
         [System.Serializable]
@@ -2271,6 +3069,17 @@ namespace Cognitive3D
         {
             var worldToLocalMatrix = Matrix4x4.TRS(transform.position, transform.rotation, Vector3.one).inverse;
             return worldToLocalMatrix.MultiplyPoint3x4(position);
+        }
+    }
+
+    public static class ColorExtensions
+    {
+        public static Texture2D ToTexture(this Color color)
+        {
+            Texture2D tex = new Texture2D(1, 1);
+            tex.SetPixel(0, 0, color);
+            tex.Apply();
+            return tex;
         }
     }
 }

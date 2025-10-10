@@ -47,6 +47,9 @@ namespace Cognitive3D
         public static void Get(string url, Response callback, Dictionary<string, string> headers, bool blocking, string requestName = "Get", string requestInfo = "")
         {
             var req = UnityWebRequest.Get(url);
+            req.timeout = 10;
+            req.disposeUploadHandlerOnDispose = true;
+            req.disposeDownloadHandlerOnDispose = true;
             req.SetRequestHeader("Content-Type", "application/json");
             req.SetRequestHeader("X-HTTP-Method-Override", "GET");
             foreach (var v in headers)
@@ -67,6 +70,8 @@ namespace Cognitive3D
         {
             var bytes = System.Text.UTF8Encoding.UTF8.GetBytes(stringcontent);
             var p = UnityWebRequest.Put(url, bytes);
+            p.disposeUploadHandlerOnDispose = true;
+            p.disposeDownloadHandlerOnDispose = true;
             p.method = "POST";
             p.SetRequestHeader("Content-Type", "application/json");
             p.SetRequestHeader("X-HTTP-Method-Override", "POST");
@@ -85,6 +90,8 @@ namespace Cognitive3D
         public static void Post(string url, byte[] bytecontent, Response callback, Dictionary<string, string> headers, bool blocking, string requestName = "Post", string requestInfo = "", System.Action<float> progressCallback = null)
         {
             var p = UnityWebRequest.Put(url, bytecontent);
+            p.disposeUploadHandlerOnDispose = true;
+            p.disposeDownloadHandlerOnDispose = true;
             p.method = "POST";
             p.SetRequestHeader("X-HTTP-Method-Override", "POST");
             foreach (var v in headers)
@@ -103,6 +110,8 @@ namespace Cognitive3D
         public static void Post(string url, WWWForm formcontent, Response callback, Dictionary<string, string> headers, bool blocking, string requestName = "Post", string requestInfo = "")
         {
             var p = UnityWebRequest.Post(url, formcontent);
+            p.disposeUploadHandlerOnDispose = true;
+            p.disposeDownloadHandlerOnDispose = true;
             p.SetRequestHeader("X-HTTP-Method-Override", "POST");
             foreach (var v in headers)
             {
@@ -134,7 +143,10 @@ namespace Cognitive3D
                         EditorUtility.ClearProgressBar();
                     }
                 }
-                if (!EditorWebRequests[i].Request.isDone) { return; }
+                if (!EditorWebRequests[i].Request.isDone) 
+                {
+                    return;
+                }
                 if (EditorWebRequests[i].IsBlocking)
                     EditorUtility.ClearProgressBar();
 
@@ -151,6 +163,10 @@ namespace Cognitive3D
                 }
                 finally //if there is an error in try, still remove request
                 {
+                    if (EditorWebRequests[i].IsBlocking)
+                    {
+                        EditorUtility.ClearProgressBar();
+                    }
                     EditorWebRequests.RemoveAt(i);
                 }
             }
@@ -159,15 +175,12 @@ namespace Cognitive3D
         static void EditorQueueUpdate()
         {
             if (ActiveQueuedWebRequest == null && EditorWebRequestsQueue.Count == 0) { EditorUtility.ClearProgressBar(); EditorApplication.update -= EditorQueueUpdate; return; }
-
             if (ActiveQueuedWebRequest == null)
             {
                 ActiveQueuedWebRequest = EditorWebRequestsQueue.Dequeue();
                 ActiveQueuedWebRequest.Request.SendWebRequest();
             }
-
             EditorUtility.DisplayProgressBar(ActiveQueuedWebRequest.RequestName, ActiveQueuedWebRequest.RequestInfo, ActiveQueuedWebRequest.Request.uploadProgress);
-
             if (ActiveQueuedWebRequest.Request.isDone)
             {
                 EditorUtility.ClearProgressBar();
@@ -179,6 +192,9 @@ namespace Cognitive3D
                 {
                     ActiveQueuedWebRequest.Response.Invoke(responseCode, ActiveQueuedWebRequest.Request.error, ActiveQueuedWebRequest.Request.downloadHandler.text);
                 }
+
+                // ready for next request
+                ActiveQueuedWebRequest.Request.Dispose();
                 ActiveQueuedWebRequest = null;
             }
         }
