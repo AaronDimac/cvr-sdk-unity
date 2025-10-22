@@ -79,7 +79,8 @@ namespace Cognitive3D
         {
             Canvas = 0,
             TMPro = 1,
-            SpriteRenderer = 2
+            SpriteRenderer = 2,
+            UIImage = 3
         };
 
         #region Export Scene
@@ -574,6 +575,7 @@ namespace Cognitive3D
             Terrain[] Terrains = UnityEngine.Object.FindObjectsByType<Terrain>(FindObjectsSortMode.None);
             Canvas[] Canvases = UnityEngine.Object.FindObjectsByType<Canvas>(FindObjectsSortMode.None);
             SpriteRenderer[] spriteRenderers= UnityEngine.Object.FindObjectsByType<SpriteRenderer>(FindObjectsSortMode.None);
+            UnityEngine.UI.Image[] uiImages = UnityEngine.Object.FindObjectsByType<UnityEngine.UI.Image>(FindObjectsSortMode.None);
             List<MeshFilter> ProceduralMeshFilters = new List<MeshFilter>();
             CustomRenderExporter[] CustomRenders = UnityEngine.Object.FindObjectsByType<CustomRenderExporter>(FindObjectsSortMode.None);
 #if C3D_TMPRO
@@ -587,6 +589,7 @@ namespace Cognitive3D
                 Terrains = rootDynamic.GetComponentsInChildren<Terrain>();
                 Canvases = rootDynamic.GetComponentsInChildren<Canvas>();
                 spriteRenderers = rootDynamic.GetComponentsInChildren<SpriteRenderer>();
+                uiImages = rootDynamic.GetComponentsInChildren<UnityEngine.UI.Image>();
                 foreach (var mf in rootDynamic.GetComponentsInChildren<MeshFilter>())
                 {
                     if (mf.sharedMesh != null && string.IsNullOrEmpty(UnityEditor.AssetDatabase.GetAssetPath(mf.sharedMesh)))
@@ -611,7 +614,7 @@ namespace Cognitive3D
             }
 
             //count custom render and terrain separately - much heavier
-            int numberOfSmallTasks = CountValidSmallTasks(SkinnedMeshes, ProceduralMeshFilters, Canvases, spriteRenderers);
+            int numberOfSmallTasks = CountValidSmallTasks(SkinnedMeshes, ProceduralMeshFilters, Canvases, spriteRenderers, uiImages);
             float progressPerSmallTask = 0.1f / numberOfSmallTasks;
 
             int numberOfLargeTasks = CountValidLargeTasks(CustomRenders, Terrains);
@@ -861,6 +864,34 @@ namespace Cognitive3D
 
                 BakeCanvasGameObject(v.gameObject, meshes);
             }
+
+            currentTask = 0;
+            foreach (var v in uiImages)
+            {
+                if (!v.enabled) { continue; }
+                if (!v.gameObject.activeInHierarchy) { continue; }
+
+                // Only process UI Images that have a DynamicObject component directly on them
+                var dynamicOnImage = v.GetComponent<DynamicObject>();
+                if (dynamicOnImage == null) { continue; }
+
+                currentProgress += progressPerSmallTask;
+                currentTask++;
+                EditorUtility.DisplayProgressBar("Export GLTF", "Bake UI Images " + currentTask + "/" + uiImages.Length, currentProgress);
+
+                if (rootDynamic == null && v.GetComponentInParent<DynamicObject>() != null && v.GetComponentInParent<DynamicObject>() != dynamicOnImage)
+                {
+                    //UI Image as child of dynamic when exporting scene
+                    continue;
+                }
+                else if (rootDynamic != null && dynamicOnImage != rootDynamic)
+                {
+                    //exporting dynamic, found UI Image in some other dynamic
+                    continue;
+                }
+
+                BakeQuadGameObject(v.gameObject, meshes, ExportQuadType.UIImage, false);
+            }
         }
 
         private static GameObject BakeCanvasGameObject(GameObject v, List<BakeableMesh> meshes)
@@ -935,6 +966,23 @@ namespace Cognitive3D
                     bm.tempGo.transform.position += (bm.tempGo.transform.up) * (width - height) / 2;
                 }
             }
+            else if (type == ExportQuadType.UIImage)
+            {
+                var rt = v.GetComponent<RectTransform>();
+                if (rt != null)
+                {
+                    // Get world space dimensions accounting for canvas scale
+                    // rt.rect gives us local canvas space, we need to multiply by lossyScale to get world space
+                    width = rt.rect.width * rt.lossyScale.x;
+                    height = rt.rect.height * rt.lossyScale.y;
+
+                    // For UI Images, use the RectTransform's position accounting for anchors
+                    bm.tempGo.transform.position = rt.position;
+
+                    // Note: Don't adjust position based on width/height difference for UI Images
+                    // The rect transform position already handles this correctly
+                }
+            }
             else if (type == ExportQuadType.TMPro)
             {
                 MeshRenderer mr = v.GetComponent<MeshRenderer>();
@@ -960,6 +1008,38 @@ namespace Cognitive3D
                 screenshot = TextureBake(v.transform, type, sr.bounds.extents.x*2, sr.bounds.extents.y*2);
                 screenshot.name = AssetDatabase.GetAssetPath(sr.sprite).GetHashCode().ToString();
             }
+            else if (type == ExportQuadType.UIImage)
+            {
+                UnityEngine.UI.Image img = v.GetComponent<UnityEngine.UI.Image>();
+                screenshot = null;
+
+                if (img != null && img.sprite != null)
+                {
+                    // Try to use the sprite texture directly if available
+                    screenshot = GetReadableTexture(img.sprite.texture);
+                    if (screenshot != null)
+                    {
+                        screenshot.name = AssetDatabase.GetAssetPath(img.sprite).GetHashCode().ToString();
+                    }
+                }
+
+                // If we couldn't get the sprite texture, try material texture
+                if (screenshot == null && img != null && img.material != null && img.material.mainTexture != null)
+                {
+                    screenshot = GetReadableTexture(img.material.mainTexture as Texture2D);
+                    if (screenshot != null)
+                    {
+                        screenshot.name = v.gameObject.GetInstanceID().ToString();
+                    }
+                }
+
+                // Fallback to rendering if we still don't have a texture
+                if (screenshot == null)
+                {
+                    screenshot = TextureBakeUIImage(v.transform, width, height);
+                    screenshot.name = v.gameObject.GetInstanceID().ToString();
+                }
+            }
             else //text mesh pro. canvas should be handled in a different function
             {
                 screenshot = TextureBake(v.transform, type, width, height);
@@ -972,11 +1052,27 @@ namespace Cognitive3D
             //write simple quad
             if (dyn)
             {
-                mesh = GenerateQuadMesh(v.gameObject.name + type.ToString(), Mathf.Max(width, height) / v.transform.lossyScale.x, Mathf.Max(width, height) / v.transform.lossyScale.y);
+                // For UI Images, use actual width/height instead of max to preserve aspect ratio
+                if (type == ExportQuadType.UIImage)
+                {
+                    mesh = GenerateQuadMesh(v.gameObject.name + type.ToString(), width / v.transform.lossyScale.x, height / v.transform.lossyScale.y);
+                }
+                else
+                {
+                    mesh = GenerateQuadMesh(v.gameObject.name + type.ToString(), Mathf.Max(width, height) / v.transform.lossyScale.x, Mathf.Max(width, height) / v.transform.lossyScale.y);
+                }
             }
             else
             {
-                mesh = GenerateQuadMesh(v.gameObject.name + type.ToString(), Mathf.Max(width, height), Mathf.Max(width, height));
+                // For UI Images, use actual width/height instead of max to preserve aspect ratio
+                if (type == ExportQuadType.UIImage)
+                {
+                    mesh = GenerateQuadMesh(v.gameObject.name + type.ToString(), width, height);
+                }
+                else
+                {
+                    mesh = GenerateQuadMesh(v.gameObject.name + type.ToString(), Mathf.Max(width, height), Mathf.Max(width, height));
+                }
             }
             bm.meshFilter.sharedMesh = mesh;
             meshes.Add(bm);
@@ -988,7 +1084,7 @@ namespace Cognitive3D
             return bm.tempGo;
         }
 
-        private static int CountValidSmallTasks(SkinnedMeshRenderer[] skinnedMeshes, List<MeshFilter> proceduralMeshFilters, Canvas[] canvases, SpriteRenderer[] spriteRenderers)
+        private static int CountValidSmallTasks(SkinnedMeshRenderer[] skinnedMeshes, List<MeshFilter> proceduralMeshFilters, Canvas[] canvases, SpriteRenderer[] spriteRenderers, UnityEngine.UI.Image[] uiImages)
         {
             int number = 0;
 
@@ -1023,6 +1119,17 @@ namespace Cognitive3D
             {
                 if (!v.enabled) { continue; }
                 number++;
+            }
+
+            foreach (var v in uiImages)
+            {
+                if (!v.enabled) { continue; }
+                if (!v.gameObject.activeInHierarchy) { continue; }
+                // Only count UI Images that have a DynamicObject component directly on them
+                if (v.GetComponent<DynamicObject>() != null)
+                {
+                    number++;
+                }
             }
             return number;
         }
@@ -1422,6 +1529,88 @@ namespace Cognitive3D
         }
 
         /// <summary>
+        /// Gets a readable copy of a texture, handling read/write permissions
+        /// </summary>
+        private static Texture2D GetReadableTexture(Texture2D source)
+        {
+            if (source == null) return null;
+
+            try
+            {
+                // Try to read the texture directly
+                Texture2D readable = new Texture2D(source.width, source.height, source.format, false);
+                Graphics.CopyTexture(source, readable);
+                return readable;
+            }
+            catch
+            {
+                // If that fails, try using RenderTexture
+                try
+                {
+                    RenderTexture tmp = RenderTexture.GetTemporary(source.width, source.height, 0, RenderTextureFormat.ARGB32);
+                    Graphics.Blit(source, tmp);
+                    RenderTexture previous = RenderTexture.active;
+                    RenderTexture.active = tmp;
+
+                    Texture2D readable = new Texture2D(source.width, source.height, TextureFormat.RGBA32, false);
+                    readable.ReadPixels(new Rect(0, 0, tmp.width, tmp.height), 0, 0);
+                    readable.Apply();
+
+                    RenderTexture.active = previous;
+                    RenderTexture.ReleaseTemporary(tmp);
+                    return readable;
+                }
+                catch
+                {
+                    return null;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Bakes a UI Image by rendering it with a temporary Canvas
+        /// </summary>
+        private static Texture2D TextureBakeUIImage(Transform target, float width, float height, int resolution = 512)
+        {
+            UnityEngine.UI.Image img = target.GetComponent<UnityEngine.UI.Image>();
+            if (img == null) return new Texture2D(resolution, resolution);
+
+            // Check if the UI Image already has a parent canvas
+            Canvas parentCanvas = target.GetComponentInParent<Canvas>();
+            bool hadCanvas = parentCanvas != null;
+            Canvas tempCanvas = null;
+
+            // If no parent canvas, create a temporary one
+            if (!hadCanvas)
+            {
+                GameObject canvasGo = new GameObject("Temp_Canvas_For_UIImage");
+                canvasGo.transform.position = target.position;
+                canvasGo.transform.rotation = target.rotation;
+
+                tempCanvas = canvasGo.AddComponent<Canvas>();
+                tempCanvas.renderMode = RenderMode.WorldSpace;
+
+                RectTransform canvasRect = canvasGo.GetComponent<RectTransform>();
+                canvasRect.sizeDelta = new Vector2(width, height);
+
+                // Temporarily parent the UI Image to this canvas
+                Transform originalParent = target.parent;
+                target.SetParent(canvasGo.transform, true);
+            }
+
+            // Render using the canvas baking method
+            Texture2D result = TextureBakeCanvas(hadCanvas ? parentCanvas.transform : tempCanvas.transform, width, height, resolution);
+
+            // Clean up temporary canvas if we created one
+            if (tempCanvas != null)
+            {
+                UnityEngine.Object.DestroyImmediate(tempCanvas.gameObject);
+            }
+
+            return result;
+        }
+
+        /// <summary>
         /// returns texture2d baked from canvas target
         /// </summary>
         private static Texture2D TextureBake(Transform target, ExportQuadType type, float width, float height, int resolution = 512)
@@ -1433,7 +1622,7 @@ namespace Cognitive3D
             cameraGo.transform.rotation = target.rotation;
             cameraGo.transform.position = target.position - target.forward * 0.05f;
 
-            if (type == ExportQuadType.Canvas) // use rect bounds for canvas
+            if (type == ExportQuadType.Canvas || type == ExportQuadType.UIImage) // use rect bounds for canvas and UI Images
             {
                 if (Mathf.Approximately(width, height))
                 {
@@ -1685,15 +1874,26 @@ namespace Cognitive3D
                 //if (dynamicObject == null) { return false; }
                 if (dynamicObject == null) { continue; }
 
+                // Handle UI Image components - bake to quad mesh
+                bool isUIImage = dynamicObject.GetComponent<UnityEngine.UI.Image>() != null;
+                if (isUIImage)
+                {
+                    temporaryDynamic = BakeQuadGameObject(dynamicObject.gameObject, temporaryDynamicMeshes, ExportQuadType.UIImage, true).GetComponent<DynamicObject>();
+                    temporaryDynamic.MeshName = dynamicObject.MeshName;
+                }
+
 #if C3D_TMPRO
-                if (dynamicObject.GetComponent<TextMeshPro>() != null)
+                bool isTMPro = dynamicObject.GetComponent<TextMeshPro>() != null;
+                if (isTMPro)
                 {
                     temporaryDynamic = BakeQuadGameObject(dynamicObject.gameObject, temporaryDynamicMeshes, ExportQuadType.TMPro, true).GetComponent<DynamicObject>();
                     temporaryDynamic.MeshName = dynamicObject.MeshName;
                 }
+#else
+                bool isTMPro = false;
 #endif
-                //skip exporting common meshes
-                if (!dynamicObject.UseCustomMesh) { continue; }
+                //skip exporting common meshes (but always export UI Images and TMPro since they're baked)
+                if (!dynamicObject.UseCustomMesh && !isUIImage && !isTMPro) { continue; }
                 //skip empty mesh names
                 if (string.IsNullOrEmpty(dynamicObject.MeshName)) { Debug.LogError(dynamicObject.gameObject.name + " Skipping export because of null/empty mesh name", dynamicObject.gameObject); continue; }
                 GameObject prefabInScene = null;
