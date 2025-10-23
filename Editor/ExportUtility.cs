@@ -1538,7 +1538,7 @@ namespace Cognitive3D
             try
             {
                 // Try to read the texture directly
-                Texture2D readable = new Texture2D(source.width, source.height, source.format, false);
+                Texture2D readable = new Texture2D(source.width, source.height, source.format, source.mipmapCount > 1);
                 Graphics.CopyTexture(source, readable);
                 return readable;
             }
