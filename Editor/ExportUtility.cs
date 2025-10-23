@@ -80,7 +80,8 @@ namespace Cognitive3D
             Canvas = 0,
             TMPro = 1,
             SpriteRenderer = 2,
-            UIImage = 3
+            UIImage = 3,
+            TMProUI = 4
         };
 
         #region Export Scene
@@ -580,6 +581,7 @@ namespace Cognitive3D
             CustomRenderExporter[] CustomRenders = UnityEngine.Object.FindObjectsByType<CustomRenderExporter>(FindObjectsSortMode.None);
 #if C3D_TMPRO
             TextMeshPro[] TextMeshPros = UnityEngine.Object.FindObjectsByType<TextMeshPro>(FindObjectsSortMode.None);
+            TMPro.TextMeshProUGUI[] TextMeshProUGUIs = UnityEngine.Object.FindObjectsByType<TMPro.TextMeshProUGUI>(FindObjectsSortMode.None);
 #endif
             deleteCustomRenders = new List<GameObject>();
 
@@ -599,6 +601,7 @@ namespace Cognitive3D
                 }
 #if C3D_TMPRO
                 TextMeshPros = rootDynamic.GetComponentsInChildren<TextMeshPro>();
+                TextMeshProUGUIs = rootDynamic.GetComponentsInChildren<TMPro.TextMeshProUGUI>();
 #endif
             }
             else
@@ -817,6 +820,14 @@ namespace Cognitive3D
                     BakeQuadGameObject(v.gameObject, meshes, ExportQuadType.TMPro, false);
                 }
             }
+
+            foreach (var v in TextMeshProUGUIs)
+            {
+                if (v.GetComponent<DynamicObject>() ==  null) // Dynamic Objects are handled separately in `ExportDynamicObects()`
+                {
+                    BakeQuadGameObject(v.gameObject, meshes, ExportQuadType.TMProUI, false);
+                }
+            }
 #endif
             currentTask = 0;
             foreach (var v in spriteRenderers)
@@ -935,7 +946,7 @@ namespace Cognitive3D
         {
             BakeableMesh bm = new BakeableMesh();
             bm.tempGo = new GameObject(v.gameObject.name);
-            if (type != ExportQuadType.TMPro)
+            if (type != ExportQuadType.TMPro && type != ExportQuadType.TMProUI)
             {
                 bm.tempGo.transform.parent = v.transform;
             }
@@ -990,6 +1001,17 @@ namespace Cognitive3D
                 height = mr.bounds.size.y;
                 bm.tempGo.transform.position = mr.bounds.center;
             }
+            else if (type == ExportQuadType.TMProUI)
+            {
+                var rt = v.GetComponent<RectTransform>();
+                if (rt != null)
+                {
+                    // Get world space dimensions accounting for canvas scale
+                    width = rt.rect.width * rt.lossyScale.x;
+                    height = rt.rect.height * rt.lossyScale.y;
+                    bm.tempGo.transform.position = rt.position;
+                }
+            }
             else if (type == ExportQuadType.SpriteRenderer)
             {
                 SpriteRenderer sr = v.GetComponent<SpriteRenderer>();
@@ -1013,7 +1035,18 @@ namespace Cognitive3D
                 UnityEngine.UI.Image img = v.GetComponent<UnityEngine.UI.Image>();
                 screenshot = null;
 
-                if (img != null && img.sprite != null)
+                // Check if we need to render the image due to special image types
+                bool needsRendering = false;
+                if (img != null)
+                {
+                    // Sliced, Tiled, and Filled images need to be rendered to capture their appearance correctly
+                    needsRendering = img.type == UnityEngine.UI.Image.Type.Sliced ||
+                                   img.type == UnityEngine.UI.Image.Type.Tiled ||
+                                   img.type == UnityEngine.UI.Image.Type.Filled;
+                }
+
+                // Only use sprite texture directly for Simple image type
+                if (!needsRendering && img != null && img.sprite != null && img.type == UnityEngine.UI.Image.Type.Simple)
                 {
                     // Try to use the sprite texture directly if available
                     screenshot = GetReadableTexture(img.sprite.texture);
@@ -1023,8 +1056,8 @@ namespace Cognitive3D
                     }
                 }
 
-                // If we couldn't get the sprite texture, try material texture
-                if (screenshot == null && img != null && img.material != null && img.material.mainTexture != null)
+                // If we couldn't get the sprite texture, try material texture (only for Simple type)
+                if (screenshot == null && !needsRendering && img != null && img.material != null && img.material.mainTexture != null)
                 {
                     screenshot = GetReadableTexture(img.material.mainTexture as Texture2D);
                     if (screenshot != null)
@@ -1033,14 +1066,19 @@ namespace Cognitive3D
                     }
                 }
 
-                // Fallback to rendering if we still don't have a texture
+                // Render the image if needed (Sliced, Tiled, Filled) or if texture extraction failed
                 if (screenshot == null)
                 {
                     screenshot = TextureBakeUIImage(v.transform, width, height);
                     screenshot.name = v.gameObject.GetInstanceID().ToString();
                 }
             }
-            else //text mesh pro. canvas should be handled in a different function
+            else if (type == ExportQuadType.TMProUI) //TextMeshProUGUI uses canvas rendering
+            {
+                screenshot = TextureBakeTMProUI(v.transform, width, height);
+                screenshot.name = v.gameObject.GetInstanceID().ToString();
+            }
+            else //text mesh pro (world space). canvas should be handled in a different function
             {
                 screenshot = TextureBake(v.transform, type, width, height);
                 screenshot.name = v.gameObject.GetInstanceID().ToString();
@@ -1052,8 +1090,8 @@ namespace Cognitive3D
             //write simple quad
             if (dyn)
             {
-                // For UI Images, use actual width/height instead of max to preserve aspect ratio
-                if (type == ExportQuadType.UIImage)
+                // For UI Images and TMProUI, use actual width/height instead of max to preserve aspect ratio
+                if (type == ExportQuadType.UIImage || type == ExportQuadType.TMProUI)
                 {
                     mesh = GenerateQuadMesh(v.gameObject.name + type.ToString(), width / v.transform.lossyScale.x, height / v.transform.lossyScale.y);
                 }
@@ -1064,8 +1102,8 @@ namespace Cognitive3D
             }
             else
             {
-                // For UI Images, use actual width/height instead of max to preserve aspect ratio
-                if (type == ExportQuadType.UIImage)
+                // For UI Images and TMProUI, use actual width/height instead of max to preserve aspect ratio
+                if (type == ExportQuadType.UIImage || type == ExportQuadType.TMProUI)
                 {
                     mesh = GenerateQuadMesh(v.gameObject.name + type.ToString(), width, height);
                 }
@@ -1568,46 +1606,382 @@ namespace Cognitive3D
         }
 
         /// <summary>
-        /// Bakes a UI Image by rendering it with a temporary Canvas
+        /// Bakes a UI Image by rendering it with a camera focused on the element
         /// </summary>
         private static Texture2D TextureBakeUIImage(Transform target, float width, float height, int resolution = 512)
         {
             UnityEngine.UI.Image img = target.GetComponent<UnityEngine.UI.Image>();
             if (img == null) return new Texture2D(resolution, resolution);
 
-            // Check if the UI Image already has a parent canvas
+            // Get or ensure parent canvas exists and is in WorldSpace
             Canvas parentCanvas = target.GetComponentInParent<Canvas>();
+            RenderMode originalRenderMode = RenderMode.ScreenSpaceOverlay;
             bool hadCanvas = parentCanvas != null;
-            Canvas tempCanvas = null;
+            bool changedRenderMode = false;
 
-            // If no parent canvas, create a temporary one
             if (!hadCanvas)
             {
-                GameObject canvasGo = new GameObject("Temp_Canvas_For_UIImage");
-                canvasGo.transform.position = target.position;
-                canvasGo.transform.rotation = target.rotation;
-
-                tempCanvas = canvasGo.AddComponent<Canvas>();
-                tempCanvas.renderMode = RenderMode.WorldSpace;
-
-                RectTransform canvasRect = canvasGo.GetComponent<RectTransform>();
-                canvasRect.sizeDelta = new Vector2(width, height);
-
-                // Temporarily parent the UI Image to this canvas
-                Transform originalParent = target.parent;
-                target.SetParent(canvasGo.transform, true);
+                Debug.LogWarning("UI Image has no parent Canvas, cannot bake texture for: " + target.name);
+                return new Texture2D(resolution, resolution);
             }
 
-            // Render using the canvas baking method
-            Texture2D result = TextureBakeCanvas(hadCanvas ? parentCanvas.transform : tempCanvas.transform, width, height, resolution);
-
-            // Clean up temporary canvas if we created one
-            if (tempCanvas != null)
+            // Temporarily change canvas to WorldSpace if needed
+            if (parentCanvas.renderMode != RenderMode.WorldSpace)
             {
-                UnityEngine.Object.DestroyImmediate(tempCanvas.gameObject);
+                originalRenderMode = parentCanvas.renderMode;
+                parentCanvas.renderMode = RenderMode.WorldSpace;
+                changedRenderMode = true;
             }
 
-            return result;
+            GameObject cameraGo = new GameObject("Temp_Camera " + target.gameObject.name);
+            Camera cam = cameraGo.AddComponent<Camera>();
+
+            // For UI elements, the camera needs to look at the element from a distance
+            // UI elements face away from the canvas (towards the camera), so we position camera in the opposite direction
+            Vector3 cameraOffset = parentCanvas.transform.forward * 2f;
+
+            cameraGo.transform.position = target.position + cameraOffset;
+            cameraGo.transform.rotation = Quaternion.LookRotation(-cameraOffset, parentCanvas.transform.up);
+
+            // Adjust camera position for non-square aspect ratios
+            if (Mathf.Approximately(width, height))
+            {
+                //centered
+            }
+            else if (height > width) //tall
+            {
+                cameraGo.transform.position += (cameraGo.transform.right) * (height - width) / 2;
+            }
+            else //wide
+            {
+                cameraGo.transform.position += (cameraGo.transform.up) * (width - height) / 2;
+            }
+
+            cam.nearClipPlane = 1f;
+            cam.farClipPlane = 4f;
+            cam.orthographic = true;
+            cam.orthographicSize = Mathf.Max(width, height) / 2;
+            cam.clearFlags = CameraClearFlags.Color;
+            cam.backgroundColor = Color.clear;
+
+            //create render texture and assign to camera
+            RenderTexture renderTexture = RenderTexture.GetTemporary(resolution, resolution, 16);
+            RenderTexture.active = renderTexture;
+            cam.targetTexture = renderTexture;
+
+            // Get all canvas children for disabling non-target objects
+            List<Transform> children = new List<Transform>();
+            EditorCore.RecursivelyGetChildren(children, parentCanvas.transform);
+
+            // Don't change layers for UI elements - they don't render properly when layers change
+            // Instead, just use culling mask for the current canvas layer
+            cam.cullingMask = 1 << parentCanvas.gameObject.layer;
+
+            // Disable all canvas children except our target and its children
+            List<GameObject> disabledObjects = new List<GameObject>();
+            List<UnityEngine.UI.Image> disabledImages = new List<UnityEngine.UI.Image>();
+            List<UnityEngine.UI.RawImage> disabledRawImages = new List<UnityEngine.UI.RawImage>();
+
+            //disable objects not part of our target
+            try
+            {
+                foreach (var v in children)
+                {
+                    // Disable all canvas children that are not our target or its children
+                    if (v != target && !v.IsChildOf(target) && v != parentCanvas.transform)
+                    {
+                        if (v.gameObject.activeSelf)
+                        {
+                            v.gameObject.SetActive(false);
+                            disabledObjects.Add(v.gameObject);
+                        }
+                    }
+                }
+
+                // Also disable any UI Images or RawImages on parent objects (like panels) to ensure transparent background
+                // Check all parents of the target up to the canvas
+                Transform currentParent = target.parent;
+                while (currentParent != null && currentParent != parentCanvas.transform)
+                {
+                    var parentImg = currentParent.GetComponent<UnityEngine.UI.Image>();
+                    if (parentImg != null && parentImg.enabled)
+                    {
+                        parentImg.enabled = false;
+                        disabledImages.Add(parentImg);
+                    }
+
+                    var rawImg = currentParent.GetComponent<UnityEngine.UI.RawImage>();
+                    if (rawImg != null && rawImg.enabled)
+                    {
+                        rawImg.enabled = false;
+                        disabledRawImages.Add(rawImg);
+                    }
+
+                    currentParent = currentParent.parent;
+                }
+
+                // Also check canvas itself
+                var canvasImg = parentCanvas.GetComponent<UnityEngine.UI.Image>();
+                if (canvasImg != null && canvasImg.enabled)
+                {
+                    canvasImg.enabled = false;
+                    disabledImages.Add(canvasImg);
+                }
+
+                var canvasRawImg = parentCanvas.GetComponent<UnityEngine.UI.RawImage>();
+                if (canvasRawImg != null && canvasRawImg.enabled)
+                {
+                    canvasRawImg.enabled = false;
+                    disabledRawImages.Add(canvasRawImg);
+                }
+
+                //render to texture
+                cam.Render();
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogException(e);
+            }
+
+            // Re-enable disabled objects
+            foreach (var obj in disabledObjects)
+            {
+                obj.SetActive(true);
+            }
+
+            // Re-enable disabled images
+            foreach (var disabledImg in disabledImages)
+            {
+                disabledImg.enabled = true;
+            }
+
+            foreach (var rawImg in disabledRawImages)
+            {
+                rawImg.enabled = true;
+            }
+
+            // Restore original canvas render mode
+            if (changedRenderMode)
+            {
+                parentCanvas.renderMode = originalRenderMode;
+            }
+
+            //write rendertexture to png
+            Texture2D tex = new Texture2D(resolution, resolution);
+            RenderTexture.active = renderTexture;
+            tex.ReadPixels(new Rect(0, 0, resolution, resolution), 0, 0);
+            tex.Apply();
+
+            // Flip texture horizontally
+            Color[] pixels = tex.GetPixels();
+            Color[] flippedPixels = new Color[pixels.Length];
+            for (int y = 0; y < resolution; y++)
+            {
+                for (int x = 0; x < resolution; x++)
+                {
+                    flippedPixels[x + y * resolution] = pixels[(resolution - 1 - x) + y * resolution];
+                }
+            }
+            tex.SetPixels(flippedPixels);
+            tex.Apply();
+
+            UnityEngine.Object.DestroyImmediate(cameraGo);
+            RenderTexture.ReleaseTemporary(renderTexture);
+
+            return tex;
+        }
+
+        /// <summary>
+        /// Bakes a TextMeshProUGUI by rendering it with a camera focused on the element
+        /// </summary>
+        public static Texture2D TextureBakeTMProUI(Transform target, float width, float height, int resolution = 512)
+        {
+#if C3D_TMPRO
+            var tmpUI = target.GetComponent<TMPro.TextMeshProUGUI>();
+            if (tmpUI == null) return new Texture2D(resolution, resolution);
+
+            // Get or ensure parent canvas exists and is in WorldSpace
+            Canvas parentCanvas = target.GetComponentInParent<Canvas>();
+            RenderMode originalRenderMode = RenderMode.ScreenSpaceOverlay;
+            bool hadCanvas = parentCanvas != null;
+            bool changedRenderMode = false;
+
+            if (!hadCanvas)
+            {
+                Debug.LogWarning("TextMeshProUGUI has no parent Canvas, cannot bake texture for: " + target.name);
+                return new Texture2D(resolution, resolution);
+            }
+
+            // Temporarily change canvas to WorldSpace if needed
+            if (parentCanvas.renderMode != RenderMode.WorldSpace)
+            {
+                originalRenderMode = parentCanvas.renderMode;
+                parentCanvas.renderMode = RenderMode.WorldSpace;
+                changedRenderMode = true;
+            }
+
+            GameObject cameraGo = new GameObject("Temp_Camera " + target.gameObject.name);
+            Camera cam = cameraGo.AddComponent<Camera>();
+
+            // For UI elements, the camera needs to look AT the element from a distance
+            // UI elements face away from the canvas (towards the camera), so we position camera in the opposite direction
+            Vector3 cameraOffset = parentCanvas.transform.forward * 2f;
+
+            cameraGo.transform.position = target.position + cameraOffset;
+            cameraGo.transform.rotation = Quaternion.LookRotation(-cameraOffset, parentCanvas.transform.up);
+
+            // Adjust camera position for non-square aspect ratios
+            if (Mathf.Approximately(width, height))
+            {
+                //centered
+            }
+            else if (height > width) //tall
+            {
+                cameraGo.transform.position += (cameraGo.transform.right) * (height - width) / 2;
+            }
+            else //wide
+            {
+                cameraGo.transform.position += (cameraGo.transform.up) * (width - height) / 2;
+            }
+
+            cam.nearClipPlane = 1f;
+            cam.farClipPlane = 4f;
+            cam.orthographic = true;
+            cam.orthographicSize = Mathf.Max(width, height) / 2;
+            cam.clearFlags = CameraClearFlags.Color;
+            cam.backgroundColor = Color.clear;
+
+            //create render texture and assign to camera
+            RenderTexture renderTexture = RenderTexture.GetTemporary(resolution, resolution, 16);
+            RenderTexture.active = renderTexture;
+            cam.targetTexture = renderTexture;
+
+            // Get all canvas children for disabling non-target objects
+            List<Transform> children = new List<Transform>();
+            EditorCore.RecursivelyGetChildren(children, parentCanvas.transform);
+
+            // Don't change layers for UI elements - they don't render properly when layers change
+            // Instead, just use culling mask for the current canvas layer
+            cam.cullingMask = 1 << parentCanvas.gameObject.layer;
+
+            // Disable all canvas children except our target and its children
+            List<GameObject> disabledObjects = new List<GameObject>();
+            List<UnityEngine.UI.Image> disabledImages = new List<UnityEngine.UI.Image>();
+            List<UnityEngine.UI.RawImage> disabledRawImages = new List<UnityEngine.UI.RawImage>();
+
+            //disable objects not part of our target
+            try
+            {
+                foreach (var v in children)
+                {
+                    // Disable all canvas children that are not our target or its children
+                    if (v != target && !v.IsChildOf(target) && v != parentCanvas.transform)
+                    {
+                        if (v.gameObject.activeSelf)
+                        {
+                            v.gameObject.SetActive(false);
+                            disabledObjects.Add(v.gameObject);
+                        }
+                    }
+                }
+
+                // Also disable any UI Images or RawImages on parent objects (like panels) to ensure transparent background
+                // Check all parents of the target up to the canvas
+                Transform currentParent = target.parent;
+                while (currentParent != null && currentParent != parentCanvas.transform)
+                {
+                    var img = currentParent.GetComponent<UnityEngine.UI.Image>();
+                    if (img != null && img.enabled)
+                    {
+                        img.enabled = false;
+                        disabledImages.Add(img);
+                    }
+
+                    var rawImg = currentParent.GetComponent<UnityEngine.UI.RawImage>();
+                    if (rawImg != null && rawImg.enabled)
+                    {
+                        rawImg.enabled = false;
+                        disabledRawImages.Add(rawImg);
+                    }
+
+                    currentParent = currentParent.parent;
+                }
+
+                // Also check canvas itself
+                var canvasImg = parentCanvas.GetComponent<UnityEngine.UI.Image>();
+                if (canvasImg != null && canvasImg.enabled)
+                {
+                    canvasImg.enabled = false;
+                    disabledImages.Add(canvasImg);
+                }
+
+                var canvasRawImg = parentCanvas.GetComponent<UnityEngine.UI.RawImage>();
+                if (canvasRawImg != null && canvasRawImg.enabled)
+                {
+                    canvasRawImg.enabled = false;
+                    disabledRawImages.Add(canvasRawImg);
+                }
+
+                //render to texture
+                cam.Render();
+            }
+            catch (System.Exception e)
+            {
+                Debug.LogException(e);
+            }
+
+            // Re-enable disabled objects
+            foreach (var obj in disabledObjects)
+            {
+                obj.SetActive(true);
+            }
+
+            // Re-enable disabled images
+            foreach (var img in disabledImages)
+            {
+                img.enabled = true;
+            }
+
+            foreach (var rawImg in disabledRawImages)
+            {
+                rawImg.enabled = true;
+            }
+
+            // Restore original canvas render mode
+            if (changedRenderMode)
+            {
+                parentCanvas.renderMode = originalRenderMode;
+            }
+
+            //write rendertexture to png
+            Texture2D tex = new Texture2D(resolution, resolution);
+            RenderTexture.active = renderTexture;
+            tex.ReadPixels(new Rect(0, 0, resolution, resolution), 0, 0);
+            tex.Apply();
+
+            // Flip texture horizontally
+            Color[] pixels = tex.GetPixels();
+            Color[] flippedPixels = new Color[pixels.Length];
+            for (int y = 0; y < resolution; y++)
+            {
+                for (int x = 0; x < resolution; x++)
+                {
+                    flippedPixels[x + y * resolution] = pixels[(resolution - 1 - x) + y * resolution];
+                }
+            }
+            tex.SetPixels(flippedPixels);
+            tex.Apply();
+
+            RenderTexture.active = null;
+
+            //delete temporary camera and release render texture
+            UnityEngine.Object.DestroyImmediate(cameraGo);
+            RenderTexture.ReleaseTemporary(renderTexture);
+
+            return tex;
+#else
+            return new Texture2D(resolution, resolution);
+#endif
         }
 
         /// <summary>
@@ -1622,7 +1996,7 @@ namespace Cognitive3D
             cameraGo.transform.rotation = target.rotation;
             cameraGo.transform.position = target.position - target.forward * 0.05f;
 
-            if (type == ExportQuadType.Canvas || type == ExportQuadType.UIImage) // use rect bounds for canvas and UI Images
+            if (type == ExportQuadType.Canvas || type == ExportQuadType.UIImage || type == ExportQuadType.TMProUI) // use rect bounds for canvas and UI Images
             {
                 if (Mathf.Approximately(width, height))
                 {
@@ -1889,11 +2263,19 @@ namespace Cognitive3D
                     temporaryDynamic = BakeQuadGameObject(dynamicObject.gameObject, temporaryDynamicMeshes, ExportQuadType.TMPro, true).GetComponent<DynamicObject>();
                     temporaryDynamic.MeshName = dynamicObject.MeshName;
                 }
+
+                bool isTMProUI = dynamicObject.GetComponent<TMPro.TextMeshProUGUI>() != null;
+                if (isTMProUI)
+                {
+                    temporaryDynamic = BakeQuadGameObject(dynamicObject.gameObject, temporaryDynamicMeshes, ExportQuadType.TMProUI, true).GetComponent<DynamicObject>();
+                    temporaryDynamic.MeshName = dynamicObject.MeshName;
+                }
 #else
                 bool isTMPro = false;
+                bool isTMProUI = false;
 #endif
-                //skip exporting common meshes (but always export UI Images and TMPro since they're baked)
-                if (!dynamicObject.UseCustomMesh && !isUIImage && !isTMPro) { continue; }
+                //skip exporting common meshes (but always export UI Images, TMPro, and TMProUI since they're baked)
+                if (!dynamicObject.UseCustomMesh && !isUIImage && !isTMPro && !isTMProUI) { continue; }
                 //skip empty mesh names
                 if (string.IsNullOrEmpty(dynamicObject.MeshName)) { Debug.LogError(dynamicObject.gameObject.name + " Skipping export because of null/empty mesh name", dynamicObject.gameObject); continue; }
                 GameObject prefabInScene = null;

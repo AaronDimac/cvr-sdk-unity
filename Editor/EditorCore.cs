@@ -2659,6 +2659,26 @@ namespace Cognitive3D
                 }
             }
 
+#if C3D_TMPRO
+            // Special handling for TextMeshProUGUI - render using canvas baking
+            var tmpUI = target.GetComponent<TMPro.TextMeshProUGUI>();
+            if (tmpUI != null)
+            {
+                RectTransform rectTransform = target.GetComponent<RectTransform>();
+                if (rectTransform != null)
+                {
+                    float width = rectTransform.rect.width * rectTransform.lossyScale.x;
+                    float height = rectTransform.rect.height * rectTransform.lossyScale.y;
+                    Texture2D thumbnail = ExportUtility.TextureBakeTMProUI(target.transform, width, height, 512);
+                    if (thumbnail != null)
+                    {
+                        File.WriteAllBytes("Cognitive3D_SceneExplorerExport" + Path.DirectorySeparatorChar + "Dynamic" + Path.DirectorySeparatorChar + dynamic.MeshName + Path.DirectorySeparatorChar + "cvr_object_thumbnail.png", thumbnail.EncodeToPNG());
+                        return;
+                    }
+                }
+            }
+#endif
+
             //choose layer
             int layer = FindUnusedLayer();
             if (layer == -1) { Debug.LogWarning("couldn't find layer, don't set layers"); }
