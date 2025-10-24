@@ -79,9 +79,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   DrawDebugLines: 0
   enableCanvasGaze: 0
-  enableUIImageDynamicGaze: 1
   canvasCacheBehaviour: 0
-  canvasRefreshBehaviour: 0
+  canvasRefreshBehaviour: 1
   targetCanvases: []
 --- !u!114 &921151381915925953
 MonoBehaviour:

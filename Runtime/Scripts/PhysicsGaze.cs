@@ -8,9 +8,25 @@ using Cognitive3D;
 
 namespace Cognitive3D
 {
+    /// <summary>
+    /// Result of raycasting to UI elements (Canvas or UI Image DynamicObjects)
+    /// </summary>
+    public struct UIRaycastResult
+    {
+        public bool didHit;
+        public float distance;
+        public RectTransform rectTransform;
+        public DynamicObject dynamicObject; // null for regular canvases, populated for UI Image Dynamics
+        public Vector3 worldPosition;
+        public Vector3 localPosition;
+        public bool isUIImageDynamic; // true if it's a UI Image Dynamic, false if it's a canvas
+    }
+
     [AddComponentMenu("Cognitive3D/Internal/Physics Gaze")]
     public class PhysicsGaze : GazeBase
     {
+        public static PhysicsGaze Instance;
+
         public delegate void onGazeTick();
         /// <summary>
         /// Called on a 0.1 second interval
@@ -27,12 +43,6 @@ namespace Cognitive3D
         public bool enableCanvasGaze;
 
         /// <summary>
-        /// Enables recording gaze on UI Image dynamic objects without requiring colliders
-        /// </summary>
-        [Tooltip("Enables recording gaze on UI Image dynamic objects without requiring colliders")]
-        public bool enableUIImageDynamicGaze = true;
-
-        /// <summary>
         /// Describes how canvases are cached
         /// FindObjectsAlways searches the scene every tick. Most expensive, but very flexible when spawning canvas prefabs
         /// ListOfCanvases searches through all canvases in 'targetCanvases'. Spawned canvases will have to be added manually
@@ -40,9 +50,9 @@ namespace Cognitive3D
         /// </summary>
         public enum CanvasCacheBehaviour
         {
-            FindObjectsAlways,
+            FindEachSceneLoad,
             ListOfCanvases,
-            FindEachSceneLoad
+            FindObjectsAlways
         }
         [Tooltip("Describes how canvases are cached. FindObjectsAlways gets canvases in the scene each tick, ListOfCanvases only calculates hits on specific canvases, FindEachSceneLoad finds canvases in the scene once on each scene load")]
         public CanvasCacheBehaviour canvasCacheBehaviour;
@@ -69,6 +79,7 @@ namespace Cognitive3D
         public override void Initialize()
         {
             base.Initialize();
+            if (Instance == null) Instance = this;
             if (GameplayReferences.HMD == null) { Cognitive3D.Util.logWarning("HMD is null! Physics Gaze needs a camera to function"); }
             StartCoroutine(Tick());
             Cognitive3D_Manager.OnPreSessionEnd += OnEndSessionEvent;
@@ -80,21 +91,14 @@ namespace Cognitive3D
                 RefreshCanvasTransforms(canvases);
             }
 
-            if (enableUIImageDynamicGaze)
-            {
-                RefreshUIImageDynamics();
-            }
+            RefreshUIImageDynamics();
         }
 
         private void Cognitive3D_Manager_OnLevelLoaded(UnityEngine.SceneManagement.Scene scene, UnityEngine.SceneManagement.LoadSceneMode mode, bool newSceneId)
         {
             var canvases = FindObjectsOfType<Canvas>();
             RefreshCanvasTransforms(canvases);
-
-            if (enableUIImageDynamicGaze)
-            {
-                RefreshUIImageDynamics();
-            }
+            RefreshUIImageDynamics();
         }
 
         IEnumerator Tick()
@@ -116,62 +120,27 @@ namespace Cognitive3D
 
                 Ray ray = GazeHelper.GetCurrentWorldGazeRay();
 
-                //do this once here, so we don't need to iterate over canvases twice (once for world, once for dynamics)
-                float canvasDistance = 0;
-                RectTransform canvasRectHit = null;
-                Vector3 canvasHitWorldPosition = Vector3.zero;
-                bool didHitCanvas = false;
-                DynamicObject canvasDynamic = null;
-
-                if (enableCanvasGaze)
-                {
-                    didHitCanvas = RaycastToCanvas(ray.origin, ray.direction, out canvasDistance, out canvasRectHit, out canvasHitWorldPosition);
-                    if (didHitCanvas)
-                    {
-                        canvasDynamic = canvasRectHit.GetComponent<DynamicObject>();
-                    }
-                }
-
-                // Check for UI Image DynamicObject hits
-                float uiImageDistance = 0;
-                DynamicObject uiImageDynamic = null;
-                Vector3 uiImageWorldPos = Vector3.zero;
-                Vector3 uiImageLocalPos = Vector3.zero;
-                bool didHitUIImage = false;
-
-                if (enableUIImageDynamicGaze)
-                {
-                    didHitUIImage = RaycastToUIImageDynamics(ray.origin, ray.direction, out uiImageDistance, out uiImageDynamic, out uiImageWorldPos, out uiImageLocalPos);
-                }
+                // Unified raycast to all UI elements (Canvas and UI Image DynamicObjects)
+                UIRaycastResult uiHit = RaycastToUIElements(ray.origin, ray.direction);
 
                 if (Cognitive3D_Preferences.Instance.EnableGaze == true && GameplayReferences.HMDCameraComponent && DynamicRaycast(ray.origin, ray.direction, GameplayReferences.HMDCameraComponent.farClipPlane, 0.05f, out var hitDistance, out var hitDynamic, out var hitWorld, out var hitLocal, out var hitcoord)) //hit dynamic
                 {
-                    // Determine which hit is closest: canvas, UI Image dynamic, or regular dynamic
-                    bool canvasIsCloser = didHitCanvas && hitDistance > canvasDistance;
-                    bool uiImageIsCloser = didHitUIImage && hitDistance > uiImageDistance;
-
-                    // Priority: closest UI Image dynamic > closest canvas > regular dynamic
-                    if (uiImageIsCloser && (!canvasIsCloser || uiImageDistance < canvasDistance))
+                    // Determine which hit is closest: UI element or regular dynamic
+                    if (uiHit.didHit && uiHit.distance < hitDistance)
                     {
-                        // UI Image DynamicObject is closest
-                        GazeCore.RecordGazePoint(Util.Timestamp(Time.frameCount), uiImageDynamic.GetId(), uiImageLocalPos, ray.origin, GameplayReferences.HMD.rotation);
-                    }
-                    else if (canvasIsCloser)
-                    {
-                        //hit a dynamic, but also hit a canvas nearer than this dynamic object
-
-                        if (canvasDynamic != null) //dynamic canvas
+                        // UI element is closer than the dynamic object
+                        if (uiHit.isUIImageDynamic)
                         {
-                            var canvasLocal = canvasRectHit.InverseTransformPoint(canvasHitWorldPosition);
-                            GazeCore.RecordGazePoint(Util.Timestamp(Time.frameCount), canvasDynamic.GetId(), canvasLocal, ray.origin, GameplayReferences.HMD.rotation);
+                            GazeHelper.RecordUIImageGaze(uiHit.dynamicObject, uiHit.localPosition, uiHit.worldPosition, ray);
                         }
-                        else //world canvas that is closer
+                        else
                         {
-                            GazeCore.RecordGazePoint(Util.Timestamp(Time.frameCount), canvasHitWorldPosition, GameplayReferences.HMD.position, GameplayReferences.HMD.rotation);
+                            GazeHelper.RecordCanvasGaze(uiHit.dynamicObject, uiHit.rectTransform, uiHit.worldPosition, ray);
                         }
                     }
                     else
                     {
+                        // Regular dynamic is closest
                         string ObjectId = hitDynamic.GetId();
                         var mediacomponent = hitDynamic.GetComponent<MediaComponent>();
                         if (mediacomponent != null)
@@ -195,30 +164,22 @@ namespace Cognitive3D
                 }
                 else if (Cognitive3D_Preferences.Instance.EnableGaze == true && GameplayReferences.HMDCameraComponent && Physics.Raycast(ray, out var hit, GameplayReferences.HMDCameraComponent.farClipPlane, Cognitive3D_Preferences.Instance.GazeLayerMask, Cognitive3D_Preferences.Instance.TriggerInteraction))
                 {
-                    // Determine which hit is closest: canvas, UI Image dynamic, or world hit
-                    bool canvasIsCloser = didHitCanvas && hit.distance > canvasDistance;
-                    bool uiImageIsCloser = didHitUIImage && hit.distance > uiImageDistance;
-
-                    // Priority: closest UI Image dynamic > closest canvas > world hit
-                    if (uiImageIsCloser && (!canvasIsCloser || uiImageDistance < canvasDistance))
+                    // Determine which hit is closest: UI element or world hit
+                    if (uiHit.didHit && uiHit.distance < hit.distance)
                     {
-                        // UI Image DynamicObject is closest
-                        GazeCore.RecordGazePoint(Util.Timestamp(Time.frameCount), uiImageDynamic.GetId(), uiImageLocalPos, ray.origin, GameplayReferences.HMD.rotation);
-                    }
-                    else if (canvasIsCloser)
-                    {
-                        if (canvasDynamic != null) //dynamic canvas
+                        // UI element is closer than the world hit
+                        if (uiHit.isUIImageDynamic)
                         {
-                            var canvasLocal = canvasRectHit.InverseTransformPoint(canvasHitWorldPosition);
-                            GazeCore.RecordGazePoint(Util.Timestamp(Time.frameCount), canvasDynamic.GetId(), canvasLocal, ray.origin, GameplayReferences.HMD.rotation);
+                            GazeHelper.RecordUIImageGaze(uiHit.dynamicObject, uiHit.localPosition, uiHit.worldPosition, ray);
                         }
-                        else //world canvas that is closer
+                        else
                         {
-                            GazeCore.RecordGazePoint(Util.Timestamp(Time.frameCount), canvasHitWorldPosition, GameplayReferences.HMD.position, GameplayReferences.HMD.rotation);
+                            GazeHelper.RecordCanvasGaze(uiHit.dynamicObject, uiHit.rectTransform, uiHit.worldPosition, ray);
                         }
                     }
                     else
                     {
+                        // World hit is closest
                         Vector3 pos = GameplayReferences.HMD.position;
                         Vector3 gazepoint = hit.point;
                         Quaternion rot = GameplayReferences.HMD.rotation;
@@ -235,27 +196,22 @@ namespace Cognitive3D
                 }
                 else if (GameplayReferences.HMD) //hit sky / farclip / gaze disabled. record HMD position and rotation
                 {
-                    // Priority: closest UI Image dynamic > closest canvas > sky
-                    if (didHitUIImage && (!didHitCanvas || uiImageDistance < canvasDistance))
+                    // Check if we hit any UI element, otherwise record sky hit
+                    if (uiHit.didHit)
                     {
-                        // UI Image DynamicObject is closest
-                        GazeCore.RecordGazePoint(Util.Timestamp(Time.frameCount), uiImageDynamic.GetId(), uiImageLocalPos, ray.origin, GameplayReferences.HMD.rotation);
-                    }
-                    else if (didHitCanvas)
-                    {
-                        if (canvasDynamic != null) //dynamic canvas
+                        // UI element hit (no other colliders hit)
+                        if (uiHit.isUIImageDynamic)
                         {
-                            var canvasLocal = canvasRectHit.InverseTransformPoint(canvasHitWorldPosition);
-                            GazeCore.RecordGazePoint(Util.Timestamp(Time.frameCount), canvasDynamic.GetId(), canvasLocal, ray.origin, GameplayReferences.HMD.rotation);
+                            GazeHelper.RecordUIImageGaze(uiHit.dynamicObject, uiHit.localPosition, uiHit.worldPosition, ray);
                         }
-                        else //world canvas that is closer
+                        else
                         {
-                            GazeCore.RecordGazePoint(Util.Timestamp(Time.frameCount), canvasHitWorldPosition, GameplayReferences.HMD.position, GameplayReferences.HMD.rotation);
+                            GazeHelper.RecordCanvasGaze(uiHit.dynamicObject, uiHit.rectTransform, uiHit.worldPosition, ray);
                         }
                     }
                     else
                     {
-
+                        // Sky hit
                         Vector3 pos = GameplayReferences.HMD.position;
                         Quaternion rot = GameplayReferences.HMD.rotation;
                         Vector3 displayPosition = GameplayReferences.HMD.forward * GameplayReferences.HMDCameraComponent.farClipPlane;
@@ -267,7 +223,6 @@ namespace Cognitive3D
 
                         //active session view
                         AddGazeToDisplay(displayPosition);
-
                     }
                 }
             }
@@ -339,86 +294,145 @@ namespace Cognitive3D
             cachedCanvasRectTransforms = tempRectTransforms.ToArray();
         }
 
-        bool RaycastToCanvas(Vector3 position, Vector3 forward, out float distance, out RectTransform hit, out Vector3 worldPosition)
+        /// <summary>
+        /// Unified method to raycast to all UI elements (both Canvas and UI Image DynamicObjects)
+        /// Returns the closest hit of any type
+        /// </summary>
+        UIRaycastResult RaycastToUIElements(Vector3 position, Vector3 forward)
         {
-            //add canvases to the cache list from different behaviours
-            if (canvasCacheBehaviour == CanvasCacheBehaviour.ListOfCanvases || canvasCacheBehaviour == CanvasCacheBehaviour.FindEachSceneLoad)
+            UIRaycastResult result = new UIRaycastResult();
+            result.didHit = false;
+            result.distance = 99999;
+
+            // Check Canvas hits if enabled
+            if (enableCanvasGaze)
             {
-                //check for null transforms in the list, indicating a change
-                if (targetCanvases.Count != cachedCanvasRectTransforms.Length)
+                // Add canvases to the cache list from different behaviours
+                if (canvasCacheBehaviour == CanvasCacheBehaviour.ListOfCanvases || canvasCacheBehaviour == CanvasCacheBehaviour.FindEachSceneLoad)
                 {
-                    //remove null canvas from list then update cache
-                    if (canvasRefreshBehaviour == CanvasRefreshBehaviour.TrimList)
+                    // Check for null transforms in the list, indicating a change
+                    if (targetCanvases.Count != cachedCanvasRectTransforms.Length)
                     {
-                        //remove null canvases from overrideTargetCanvases list
-                        for (int i = targetCanvases.Count - 1; i >= 0; i--)
+                        // Remove null canvas from list then update cache
+                        if (canvasRefreshBehaviour == CanvasRefreshBehaviour.TrimList)
                         {
-                            if (targetCanvases[i] == null)
+                            // Remove null canvases from overrideTargetCanvases list
+                            for (int i = targetCanvases.Count - 1; i >= 0; i--)
                             {
-                                targetCanvases.RemoveAt(i);
+                                if (targetCanvases[i] == null)
+                                {
+                                    targetCanvases.RemoveAt(i);
+                                }
                             }
+                            RefreshCanvasTransforms(targetCanvases);
                         }
-                        RefreshCanvasTransforms(targetCanvases);
+                        else if (canvasRefreshBehaviour == CanvasRefreshBehaviour.FindObjects)
+                        {
+                            // Find objects in the scene
+                            var canvases = FindObjectsOfType<Canvas>();
+                            targetCanvases.Clear();
+                            targetCanvases.AddRange(canvases);
+                            RefreshCanvasTransforms(canvases);
+                        }
                     }
-                    else if (canvasRefreshBehaviour == CanvasRefreshBehaviour.FindObjects)
+                }
+                else if (canvasCacheBehaviour == CanvasCacheBehaviour.FindObjectsAlways)
+                {
+                    // Find all canvases and update cache of rect transforms if different
+                    var canvases = FindObjectsOfType<Canvas>();
+                    if (canvases.Length != cachedCanvasRectTransforms.Length)
                     {
-                        //find objects in the scene scene
-                        var canvases = FindObjectsOfType<Canvas>();
                         targetCanvases.Clear();
                         targetCanvases.AddRange(canvases);
                         RefreshCanvasTransforms(canvases);
                     }
                 }
-            }
-            else if (canvasCacheBehaviour == CanvasCacheBehaviour.FindObjectsAlways)
-            {
-                //find all canvases and update cache of rect transforms if different
-                var canvases = FindObjectsOfType<Canvas>();
-                if (canvases.Length != cachedCanvasRectTransforms.Length)
+
+                // Check raycast hits on each canvas
+                for (int i = 0; i < cachedCanvasRectTransforms.Length; i++)
                 {
-                    targetCanvases.Clear();
-                    targetCanvases.AddRange(canvases);
-                    RefreshCanvasTransforms(canvases);
+                    if (targetCanvases[i].enabled == false || targetCanvases[i].gameObject.activeInHierarchy == false) { continue; }
+
+                    float tempDistance;
+                    bool didHitCanvas = CheckCanvasHit(position, forward, cachedCanvasRectTransforms[i], out tempDistance);
+                    if (didHitCanvas && tempDistance < result.distance)
+                    {
+                        result.distance = tempDistance;
+                        result.rectTransform = cachedCanvasRectTransforms[i];
+                        result.worldPosition = position + forward * tempDistance;
+                        result.localPosition = result.rectTransform.InverseTransformPoint(result.worldPosition);
+                        result.dynamicObject = result.rectTransform.GetComponent<DynamicObject>();
+                        result.isUIImageDynamic = false;
+                        result.didHit = true;
+                    }
                 }
             }
 
-            //check raycast hits on each canvas, finding the closest one
-            RectTransform hitCanvasRect = null;
-            float hitDistance = 99999;
-            for (int i = 0; i < cachedCanvasRectTransforms.Length; i++)
+            // Check UI Image DynamicObject hits if enabled
+            if (uiImageDynamics.Count > 0)
             {
-                if (targetCanvases[i].enabled == false || targetCanvases[i].gameObject.activeInHierarchy == false) { continue; }
-
-                float tempDistance;
-                bool didHitCanvas = CheckCanvasHit(position, forward, cachedCanvasRectTransforms[i], out tempDistance);
-                if (didHitCanvas && tempDistance < hitDistance)
+                for (int i = 0; i < uiImageDynamics.Count; i++)
                 {
-                    hitDistance = tempDistance;
-                    hitCanvasRect = cachedCanvasRectTransforms[i];
+                    if (i >= uiImageRectTransforms.Count) { break; }
+                    if (uiImageDynamics[i] == null || uiImageRectTransforms[i] == null) { continue; }
+                    if (!uiImageDynamics[i].gameObject.activeInHierarchy) { continue; }
+
+                    float tempDistance;
+                    bool didHit = CheckCanvasHit(position, forward, uiImageRectTransforms[i], out tempDistance);
+                    if (didHit && tempDistance < result.distance)
+                    {
+                        result.distance = tempDistance;
+                        result.rectTransform = uiImageRectTransforms[i];
+                        result.dynamicObject = uiImageDynamics[i];
+                        result.worldPosition = position + forward * tempDistance;
+                        result.localPosition = result.rectTransform.InverseTransformPoint(result.worldPosition);
+                        result.isUIImageDynamic = true;
+                        result.didHit = true;
+                    }
                 }
             }
 
-            //return hit info
-            if (hitCanvasRect != null)
+            // Draw debug line if we hit something
+            if (result.didHit && DrawDebugLines)
             {
-                if (DrawDebugLines)
-                {
-                    Debug.DrawLine(position, position + forward * hitDistance, Color.green);
-                }
-                worldPosition = position + forward * hitDistance;
-                hit = hitCanvasRect;
-                distance = hitDistance;
-                return true;
+                Debug.DrawLine(position, result.worldPosition, Color.green);
             }
 
-            worldPosition = Vector3.zero;
-            hit = null;
-            distance = 0;
-            return false;
+            return result;
+        }
+
+
+        /// <summary>
+        /// Register a UI Image DynamicObject for gaze tracking (called from DynamicObject.OnEnable)
+        /// </summary>
+        public static void RegisterUIImageDynamic(DynamicObject dynamicObject, RectTransform rectTransform)
+        {
+            if (Instance == null) { return; }
+
+            if (!Instance.uiImageDynamics.Contains(dynamicObject))
+            {
+                Instance.uiImageDynamics.Add(dynamicObject);
+                Instance.uiImageRectTransforms.Add(rectTransform);
+            }
         }
 
         /// <summary>
-        /// Refresh the list of UI Image DynamicObjects in the scene
+        /// Unregister a UI Image DynamicObject from gaze tracking (called from DynamicObject.OnDestroy)
+        /// </summary>
+        public static void UnregisterUIImageDynamic(DynamicObject dynamicObject)
+        {
+            if (Instance == null || Instance.uiImageDynamics.Count <= 0) { return; }
+
+            int index = Instance.uiImageDynamics.IndexOf(dynamicObject);
+            if (index >= 0)
+            {
+                Instance.uiImageDynamics.RemoveAt(index);
+                Instance.uiImageRectTransforms.RemoveAt(index);
+            }
+        }
+
+        /// <summary>
+        /// Refresh the list of UI Image DynamicObjects in the scene (used on initialization only)
         /// </summary>
         void RefreshUIImageDynamics()
         {
@@ -441,54 +455,12 @@ namespace Cognitive3D
             }
         }
 
-        /// <summary>
-        /// Raycast to UI Image DynamicObjects
-        /// </summary>
-        bool RaycastToUIImageDynamics(Vector3 position, Vector3 forward, out float distance, out DynamicObject hitDynamic, out Vector3 worldPosition, out Vector3 localPosition)
-        {
-            float hitDistance = 99999;
-            DynamicObject closestDynamic = null;
-            RectTransform closestRect = null;
-            Vector3 closestWorldPos = Vector3.zero;
-            Vector3 closestLocalPos = Vector3.zero;
-
-            // Check each UI Image DynamicObject
-            for (int i = 0; i < uiImageDynamics.Count; i++)
-            {
-                if (uiImageDynamics[i] == null || !uiImageDynamics[i].gameObject.activeInHierarchy) { continue; }
-
-                float tempDistance;
-                bool didHit = CheckCanvasHit(position, forward, uiImageRectTransforms[i], out tempDistance);
-                if (didHit && tempDistance < hitDistance)
-                {
-                    hitDistance = tempDistance;
-                    closestDynamic = uiImageDynamics[i];
-                    closestRect = uiImageRectTransforms[i];
-                    closestWorldPos = position + forward * tempDistance;
-                    closestLocalPos = closestRect.InverseTransformPoint(closestWorldPos);
-                }
-            }
-
-            if (closestDynamic != null)
-            {
-                distance = hitDistance;
-                hitDynamic = closestDynamic;
-                worldPosition = closestWorldPos;
-                localPosition = closestLocalPos;
-                return true;
-            }
-
-            distance = 0;
-            hitDynamic = null;
-            worldPosition = Vector3.zero;
-            localPosition = Vector3.zero;
-            return false;
-        }
-
         bool CheckCanvasHit(Vector3 pos, Vector3 forward, RectTransform rt, out float hitDistance)
         {
-            var halfsize0 = rt.sizeDelta[0] / 2;
-            var halfsize1 = rt.sizeDelta[1] / 2;
+            // Use rect.width and rect.height instead of sizeDelta to handle UI elements with stretched anchors
+            // sizeDelta returns (0,0) for fully stretched UI Images/Canvases, but rect gives the actual calculated size
+            var halfsize0 = rt.rect.width / 2;
+            var halfsize1 = rt.rect.height / 2;
 
             Vector3 bottomLeft = new Vector3(-halfsize0, -halfsize1, 0);
             Vector3 bottomRight = new Vector3(halfsize0, -halfsize1, 0);
