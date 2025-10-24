@@ -2669,7 +2669,7 @@ namespace Cognitive3D
                 {
                     float width = rectTransform.rect.width * rectTransform.lossyScale.x;
                     float height = rectTransform.rect.height * rectTransform.lossyScale.y;
-                    Texture2D thumbnail = ExportUtility.TextureBakeTMProUI(target.transform, width, height, 512);
+                    Texture2D thumbnail = ExportUtility.TextureBakeCanvasUIElement(target.transform, width, height, 512);
                     if (thumbnail != null)
                     {
                         File.WriteAllBytes("Cognitive3D_SceneExplorerExport" + Path.DirectorySeparatorChar + "Dynamic" + Path.DirectorySeparatorChar + dynamic.MeshName + Path.DirectorySeparatorChar + "cvr_object_thumbnail.png", thumbnail.EncodeToPNG());
