@@ -199,6 +199,17 @@ namespace Cognitive3D
                 Cognitive3D.DynamicManager.RegisterDynamicObject(Data);
             }
 
+            // Register UI Image DynamicObjects for gaze tracking without colliders
+            var uiImage = GetComponent<UnityEngine.UI.Image>();
+            if (uiImage != null)
+            {
+                var rectTransform = GetComponent<RectTransform>();
+                if (rectTransform != null)
+                {
+                    PhysicsGaze.RegisterUIImageDynamic(this, rectTransform);
+                }
+            }
+
             hasInitialized = true;
         }
 
@@ -395,6 +406,13 @@ namespace Cognitive3D
             GameplayReferences.OnControllerValidityChange -= DelayEnable;
 
             PhysicsGaze.OnGazeTick -= SyncWithGazeTick;
+
+            // Unregister UI Image DynamicObjects from gaze tracking
+            var uiImage = GetComponent<UnityEngine.UI.Image>();
+            if (uiImage != null)
+            {
+                PhysicsGaze.UnregisterUIImageDynamic(this);
+            }
 
             if (DynamicManager.IsDataActive(GetId()))
             {
