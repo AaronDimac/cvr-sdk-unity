@@ -199,14 +199,20 @@ namespace Cognitive3D
                 Cognitive3D.DynamicManager.RegisterDynamicObject(Data);
             }
 
-            // Register UI Image DynamicObjects for gaze tracking without colliders
-            var uiImage = GetComponent<UnityEngine.UI.Image>();
-            if (uiImage != null)
+            // Register UI DynamicObjects for gaze tracking without colliders
+            var rectTransform = GetComponent<RectTransform>();
+            if (rectTransform != null && PhysicsGaze.Instance != null)
             {
-                var rectTransform = GetComponent<RectTransform>();
-                if (rectTransform != null)
+                var uiImage = GetComponent<UnityEngine.UI.Image>();
+                if (uiImage != null)
                 {
-                    PhysicsGaze.RegisterUIImageDynamic(this, rectTransform);
+                    PhysicsGaze.RegisterUIDynamic(this, rectTransform, PhysicsGaze.Instance.uiImageDynamics, PhysicsGaze.Instance.uiImageRectTransforms);
+                }
+
+                var canvas = GetComponent<UnityEngine.Canvas>();
+                if (canvas != null)
+                {
+                    PhysicsGaze.RegisterUIDynamic(this, rectTransform, PhysicsGaze.Instance.canvasDynamics, PhysicsGaze.Instance.canvasDynamicRectTransforms);
                 }
             }
 
@@ -394,6 +400,21 @@ namespace Cognitive3D
 
             PhysicsGaze.OnGazeTick -= SyncWithGazeTick;
 
+            // Unregister UI DynamicObjects from gaze tracking
+            if (PhysicsGaze.Instance != null)
+            {
+                var uiImage = GetComponent<UnityEngine.UI.Image>();
+                if (uiImage != null)
+                {
+                    PhysicsGaze.UnregisterUIDynamic(this, PhysicsGaze.Instance.uiImageDynamics, PhysicsGaze.Instance.uiImageRectTransforms);
+                }
+                var canvas = GetComponent<UnityEngine.Canvas>();
+                if (canvas != null)
+                {
+                    PhysicsGaze.UnregisterUIDynamic(this, PhysicsGaze.Instance.canvasDynamics, PhysicsGaze.Instance.canvasDynamicRectTransforms);
+                }
+            }
+
             DynamicManager.SetTransform(DataId, transform);
 
             Cognitive3D.DynamicManager.RemoveDynamicObject(DataId);
@@ -407,11 +428,19 @@ namespace Cognitive3D
 
             PhysicsGaze.OnGazeTick -= SyncWithGazeTick;
 
-            // Unregister UI Image DynamicObjects from gaze tracking
-            var uiImage = GetComponent<UnityEngine.UI.Image>();
-            if (uiImage != null)
+            // Unregister UI DynamicObjects from gaze tracking
+            if (PhysicsGaze.Instance != null)
             {
-                PhysicsGaze.UnregisterUIImageDynamic(this);
+                var uiImage = GetComponent<UnityEngine.UI.Image>();
+                if (uiImage != null)
+                {
+                    PhysicsGaze.UnregisterUIDynamic(this, PhysicsGaze.Instance.uiImageDynamics, PhysicsGaze.Instance.uiImageRectTransforms);
+                }
+                var canvas = GetComponent<UnityEngine.Canvas>();
+                if (canvas != null)
+                {
+                    PhysicsGaze.UnregisterUIDynamic(this, PhysicsGaze.Instance.canvasDynamics, PhysicsGaze.Instance.canvasDynamicRectTransforms);
+                }
             }
 
             if (DynamicManager.IsDataActive(GetId()))

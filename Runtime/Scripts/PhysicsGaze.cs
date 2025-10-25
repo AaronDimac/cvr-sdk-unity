@@ -25,7 +25,18 @@ namespace Cognitive3D
     [AddComponentMenu("Cognitive3D/Internal/Physics Gaze")]
     public class PhysicsGaze : GazeBase
     {
-        public static PhysicsGaze Instance;
+        private static PhysicsGaze instance;
+        public static PhysicsGaze Instance
+        {
+            get
+            {
+                if (instance == null)
+                {
+                    instance = FindFirstObjectByType<PhysicsGaze>();
+                }
+                return instance;
+            }
+        }
 
         public delegate void onGazeTick();
         /// <summary>
@@ -34,7 +45,7 @@ namespace Cognitive3D
         public static event onGazeTick OnGazeTick;
         private static void InvokeGazeTickEvent() { if (OnGazeTick != null) { OnGazeTick(); } }
 
-        public bool DrawDebugLines = false;
+        public bool DrawDebugLines;
 
         /// <summary>
         /// Enables recording gaze on active canvas rects without requiring colliders
@@ -73,13 +84,17 @@ namespace Cognitive3D
         public List<Canvas> targetCanvases;
         RectTransform[] cachedCanvasRectTransforms = new RectTransform[0];
 
-        List<DynamicObject> uiImageDynamics = new List<DynamicObject>();
-        List<RectTransform> uiImageRectTransforms = new List<RectTransform>();
+        internal List<DynamicObject> uiImageDynamics = new List<DynamicObject>();
+        internal List<RectTransform> uiImageRectTransforms = new List<RectTransform>();
+
+        // Cache for Canvas DynamicObjects (always tracked regardless of enableCanvasGaze)
+        internal List<DynamicObject> canvasDynamics = new List<DynamicObject>();
+        internal List<RectTransform> canvasDynamicRectTransforms = new List<RectTransform>();
 
         public override void Initialize()
         {
             base.Initialize();
-            if (Instance == null) Instance = this;
+            if (instance == null) instance = this;
             if (GameplayReferences.HMD == null) { Cognitive3D.Util.logWarning("HMD is null! Physics Gaze needs a camera to function"); }
             StartCoroutine(Tick());
             Cognitive3D_Manager.OnPreSessionEnd += OnEndSessionEvent;
@@ -91,14 +106,14 @@ namespace Cognitive3D
                 RefreshCanvasTransforms(canvases);
             }
 
-            RefreshUIImageDynamics();
+            RefreshUIDynamics();
         }
 
         private void Cognitive3D_Manager_OnLevelLoaded(UnityEngine.SceneManagement.Scene scene, UnityEngine.SceneManagement.LoadSceneMode mode, bool newSceneId)
         {
             var canvases = FindObjectsOfType<Canvas>();
             RefreshCanvasTransforms(canvases);
-            RefreshUIImageDynamics();
+            RefreshUIDynamics();
         }
 
         IEnumerator Tick()
@@ -304,7 +319,7 @@ namespace Cognitive3D
             result.didHit = false;
             result.distance = 99999;
 
-            // Check Canvas hits if enabled
+            // Check Canvas hits (always check if enableCanvasGaze is true, or if there are canvases with DynamicObject components)
             if (enableCanvasGaze)
             {
                 // Add canvases to the cache list from different behaviours
@@ -367,6 +382,30 @@ namespace Cognitive3D
                     }
                 }
             }
+            else
+            {
+                // Even if enableCanvasGaze is false, we still need to check canvases with DynamicObject components
+                // This ensures that Canvas DynamicObjects are always tracked for gaze
+                for (int i = 0; i < canvasDynamics.Count; i++)
+                {
+                    if (i >= canvasDynamicRectTransforms.Count) { break; }
+                    if (canvasDynamics[i] == null || canvasDynamicRectTransforms[i] == null) { continue; }
+                    if (!canvasDynamics[i].gameObject.activeInHierarchy) { continue; }
+
+                    float tempDistance;
+                    bool didHitCanvas = CheckCanvasHit(position, forward, canvasDynamicRectTransforms[i], out tempDistance);
+                    if (didHitCanvas && tempDistance < result.distance)
+                    {
+                        result.distance = tempDistance;
+                        result.rectTransform = canvasDynamicRectTransforms[i];
+                        result.worldPosition = position + forward * tempDistance;
+                        result.localPosition = result.rectTransform.InverseTransformPoint(result.worldPosition);
+                        result.dynamicObject = canvasDynamics[i];
+                        result.isUIImageDynamic = false;
+                        result.didHit = true;
+                    }
+                }
+            }
 
             // Check UI Image DynamicObject hits if enabled
             if (uiImageDynamics.Count > 0)
@@ -405,52 +444,62 @@ namespace Cognitive3D
         /// <summary>
         /// Register a UI Image DynamicObject for gaze tracking (called from DynamicObject.OnEnable)
         /// </summary>
-        public static void RegisterUIImageDynamic(DynamicObject dynamicObject, RectTransform rectTransform)
+        public static void RegisterUIDynamic(DynamicObject dynamicObject, RectTransform rectTransform, List<DynamicObject> dynamics, List<RectTransform> rectTransforms)
         {
-            if (Instance == null) { return; }
+            if (rectTransform == null || dynamicObject == null) { return; }
 
-            if (!Instance.uiImageDynamics.Contains(dynamicObject))
+            if (!dynamics.Contains(dynamicObject))
             {
-                Instance.uiImageDynamics.Add(dynamicObject);
-                Instance.uiImageRectTransforms.Add(rectTransform);
+                dynamics.Add(dynamicObject);
+                rectTransforms.Add(rectTransform);
             }
         }
-
+        
         /// <summary>
         /// Unregister a UI Image DynamicObject from gaze tracking (called from DynamicObject.OnDestroy)
         /// </summary>
-        public static void UnregisterUIImageDynamic(DynamicObject dynamicObject)
+        public static void UnregisterUIDynamic(DynamicObject dynamicObject, List<DynamicObject> dynamics, List<RectTransform> rectTransforms)
         {
-            if (Instance == null || Instance.uiImageDynamics.Count <= 0) { return; }
+            if (dynamics.Count <= 0) { return; }
 
-            int index = Instance.uiImageDynamics.IndexOf(dynamicObject);
+            int index = dynamics.IndexOf(dynamicObject);
             if (index >= 0)
             {
-                Instance.uiImageDynamics.RemoveAt(index);
-                Instance.uiImageRectTransforms.RemoveAt(index);
+                dynamics.RemoveAt(index);
+                rectTransforms.RemoveAt(index);
             }
         }
 
         /// <summary>
-        /// Refresh the list of UI Image DynamicObjects in the scene (used on initialization only)
+        /// Refresh the list of UI DynamicObjects (UI Images and Canvases) in the scene
         /// </summary>
-        void RefreshUIImageDynamics()
+        void RefreshUIDynamics()
         {
             uiImageDynamics.Clear();
             uiImageRectTransforms.Clear();
+            canvasDynamics.Clear();
+            canvasDynamicRectTransforms.Clear();
 
             var allDynamics = FindObjectsOfType<DynamicObject>();
             foreach (var dynamic in allDynamics)
             {
+                var rectTransform = dynamic.GetComponent<RectTransform>();
+                if (rectTransform == null) { continue; }
+
+                // Check if it's a UI Image DynamicObject
                 var uiImage = dynamic.GetComponent<UnityEngine.UI.Image>();
                 if (uiImage != null)
                 {
-                    var rectTransform = dynamic.GetComponent<RectTransform>();
-                    if (rectTransform != null)
-                    {
-                        uiImageDynamics.Add(dynamic);
-                        uiImageRectTransforms.Add(rectTransform);
-                    }
+                    uiImageDynamics.Add(dynamic);
+                    uiImageRectTransforms.Add(rectTransform);
+                }
+
+                // Check if it's a Canvas DynamicObject (always tracked regardless of enableCanvasGaze)
+                var canvas = dynamic.GetComponent<Canvas>();
+                if (canvas != null)
+                {
+                    canvasDynamics.Add(dynamic);
+                    canvasDynamicRectTransforms.Add(rectTransform);
                 }
             }
         }
