@@ -495,6 +495,7 @@ namespace Cognitive3D
             {
                 errorMessage.text = errorText;
             }
+            if (errorMessage == null || errorMessage.gameObject == null) return;
             errorMessage.gameObject.SetActive(display);
         }
 
