@@ -562,6 +562,12 @@ namespace Cognitive3D
         {
             float num = Vector3.Dot(forward, normal);
             float num2 = 0f - Vector3.Dot(pos, normal) - distance;
+            // Prevent division by zero when the ray is parallel to the plane
+            if (Mathf.Abs(num) < 1e-6f)
+            {
+                enter = 0f;
+                return false;
+            }
             enter = num2 / num;
             return enter > 0f;
         }
