@@ -2612,8 +2612,9 @@ namespace Cognitive3D
                 RenderTexture.ReleaseTemporary(tmp);
                 return readable;
             }
-            catch
+            catch (Exception ex)
             {
+                Debug.LogWarning("Exception in GetReadableTextureThumbnail: " + ex);
                 return null;
             }
         }

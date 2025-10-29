@@ -84,12 +84,12 @@ namespace Cognitive3D
         public List<Canvas> targetCanvases;
         RectTransform[] cachedCanvasRectTransforms = new RectTransform[0];
 
-        internal List<DynamicObject> uiImageDynamics = new List<DynamicObject>();
-        internal List<RectTransform> uiImageRectTransforms = new List<RectTransform>();
+        internal readonly List<DynamicObject> uiImageDynamics = new List<DynamicObject>();
+        internal readonly List<RectTransform> uiImageRectTransforms = new List<RectTransform>();
 
         // Cache for Canvas DynamicObjects (always tracked regardless of enableCanvasGaze)
-        internal List<DynamicObject> canvasDynamics = new List<DynamicObject>();
-        internal List<RectTransform> canvasDynamicRectTransforms = new List<RectTransform>();
+        internal readonly List<DynamicObject> canvasDynamics = new List<DynamicObject>();
+        internal readonly List<RectTransform> canvasDynamicRectTransforms = new List<RectTransform>();
 
         public override void Initialize()
         {
