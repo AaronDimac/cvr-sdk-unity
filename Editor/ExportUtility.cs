@@ -815,7 +815,7 @@ namespace Cognitive3D
 #if C3D_TMPRO
             foreach (var v in TextMeshPros)
             {
-                if (v.GetComponent<DynamicObject>() ==  null) // Dynamic Objects are handled separately in `ExportDynamicObects()`
+                if (v.GetComponent<DynamicObject>() ==  null) // Dynamic Objects are handled separately in `ExportDynamicObjects()`
                 {
                     BakeQuadGameObject(v.gameObject, meshes, ExportQuadType.TMPro, false);
                 }
@@ -823,7 +823,7 @@ namespace Cognitive3D
 
             foreach (var v in TextMeshProUGUIs)
             {
-                if (v.GetComponent<DynamicObject>() ==  null) // Dynamic Objects are handled separately in `ExportDynamicObects()`
+                if (v.GetComponent<DynamicObject>() ==  null) // Dynamic Objects are handled separately in `ExportDynamicObjects()`
                 {
                     BakeQuadGameObject(v.gameObject, meshes, ExportQuadType.TMProUI, false);
                 }
@@ -1091,26 +1091,16 @@ namespace Cognitive3D
             if (dyn)
             {
                 // For UI Images and TMProUI, use actual width/height instead of max to preserve aspect ratio
-                if (type == ExportQuadType.UIImage || type == ExportQuadType.TMProUI)
-                {
-                    mesh = GenerateQuadMesh(v.gameObject.name + type.ToString(), width / v.transform.lossyScale.x, height / v.transform.lossyScale.y);
-                }
-                else
-                {
-                    mesh = GenerateQuadMesh(v.gameObject.name + type.ToString(), Mathf.Max(width, height) / v.transform.lossyScale.x, Mathf.Max(width, height) / v.transform.lossyScale.y);
-                }
+                mesh = type == ExportQuadType.UIImage || type == ExportQuadType.TMProUI ?
+                GenerateQuadMesh(v.gameObject.name + type.ToString(), width / v.transform.lossyScale.x, height / v.transform.lossyScale.y) :
+                GenerateQuadMesh(v.gameObject.name + type.ToString(), Mathf.Max(width, height) / v.transform.lossyScale.x, Mathf.Max(width, height) / v.transform.lossyScale.y);
             }
             else
             {
                 // For UI Images and TMProUI, use actual width/height instead of max to preserve aspect ratio
-                if (type == ExportQuadType.UIImage || type == ExportQuadType.TMProUI)
-                {
-                    mesh = GenerateQuadMesh(v.gameObject.name + type.ToString(), width, height);
-                }
-                else
-                {
-                    mesh = GenerateQuadMesh(v.gameObject.name + type.ToString(), Mathf.Max(width, height), Mathf.Max(width, height));
-                }
+                mesh = type == ExportQuadType.UIImage || type == ExportQuadType.TMProUI ?
+                GenerateQuadMesh(v.gameObject.name + type.ToString(), width, height) : 
+                GenerateQuadMesh(v.gameObject.name + type.ToString(), Mathf.Max(width, height), Mathf.Max(width, height));
             }
             bm.meshFilter.sharedMesh = mesh;
             meshes.Add(bm);
@@ -1705,16 +1695,13 @@ namespace Cognitive3D
             //disable objects not part of our target
             try
             {
-                foreach (var v in children)
+                foreach (var v in children.Where(v => v != target && !v.IsChildOf(target) && v != parentCanvas.transform))
                 {
                     // Disable all canvas children that are not our target or its children
-                    if (v != target && !v.IsChildOf(target) && v != parentCanvas.transform)
+                    if (v.gameObject.activeSelf)
                     {
-                        if (v.gameObject.activeSelf)
-                        {
-                            v.gameObject.SetActive(false);
-                            disabledObjects.Add(v.gameObject);
-                        }
+                        v.gameObject.SetActive(false);
+                        disabledObjects.Add(v.gameObject);
                     }
                 }
 

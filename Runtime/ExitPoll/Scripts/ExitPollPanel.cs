@@ -491,11 +491,11 @@ namespace Cognitive3D
 
         public void DisplayError(bool display, string errorText)
         {
+            if (errorMessage == null || errorMessage.gameObject == null) return;
             if (!string.IsNullOrEmpty(errorText))
             {
                 errorMessage.text = errorText;
             }
-            if (errorMessage == null || errorMessage.gameObject == null) return;
             errorMessage.gameObject.SetActive(display);
         }
 
