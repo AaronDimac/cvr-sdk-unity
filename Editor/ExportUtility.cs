@@ -2368,6 +2368,7 @@ namespace Cognitive3D
             {
                 DynamicUploadTotal = dynamicObjectForms.Count;
                 DynamicUploadSuccess = 0;
+                DynamicUploadCancelled = false;
                 EditorApplication.update += UpdateUploadDynamics;
             }
             return true;
@@ -2394,6 +2395,7 @@ namespace Cognitive3D
 
         static int DynamicUploadTotal;
         static int DynamicUploadSuccess;
+        static bool DynamicUploadCancelled;
 
         static UnityWebRequest dynamicUploadWWW;
         /// <summary>
@@ -2423,13 +2425,17 @@ namespace Cognitive3D
                 }
             }
 
-            if (EditorUtility.DisplayCancelableProgressBar("Upload Dynamic Object", currentDynamicUploadName, dynamicUploadWWW.uploadProgress))
+            DynamicUploadCancelled =
+                EditorUtility.DisplayCancelableProgressBar("Upload Dynamic Object",
+                    currentDynamicUploadName, dynamicUploadWWW.uploadProgress);
+            
+            if (DynamicUploadCancelled)
             {
+                DynamicUploadCancelled = true;
                 Debug.Log("Cancelled upload of dynamic object: " + currentDynamicUploadName);
                 dynamicUploadWWW.Abort();
                 EditorUtility.ClearProgressBar();
             }
-      
 
             if (!dynamicUploadWWW.isDone) { return; }
             if (!string.IsNullOrEmpty(dynamicUploadWWW.error))
