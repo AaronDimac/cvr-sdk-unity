@@ -2425,9 +2425,9 @@ namespace Cognitive3D
                 }
             }
 
-            DynamicUploadCancelled =
-                EditorUtility.DisplayCancelableProgressBar("Upload Dynamic Object",
-                    currentDynamicUploadName, dynamicUploadWWW.uploadProgress);
+            if (EditorUtility.DisplayCancelableProgressBar("Upload Dynamic Object",
+                    currentDynamicUploadName, dynamicUploadWWW.uploadProgress)) 
+                DynamicUploadCancelled = true;
             
             if (DynamicUploadCancelled)
             {
