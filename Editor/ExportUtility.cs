@@ -2431,7 +2431,6 @@ namespace Cognitive3D
             
             if (DynamicUploadCancelled)
             {
-                DynamicUploadCancelled = true;
                 Debug.Log("Cancelled upload of dynamic object: " + currentDynamicUploadName);
                 dynamicUploadWWW.Abort();
                 EditorUtility.ClearProgressBar();
