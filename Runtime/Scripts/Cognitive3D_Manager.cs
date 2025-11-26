@@ -226,6 +226,12 @@ namespace Cognitive3D
                 Util.logWarning("The scene has not been uploaded to the dashboard. The user activity will not be captured.");
             }
 
+            // Record the start time for the initial scene
+            if (!string.IsNullOrEmpty(scene.path) && !SceneStartTimeDict.ContainsKey(scene.path))
+            {
+                SceneStartTimeDict.Add(scene.path, Time.time);
+            }
+
             // TODO: support for additive scenes? According to doc, it'll be somehow considered single mode
             InvokeLevelLoadedEvent(scene, UnityEngine.SceneManagement.LoadSceneMode.Single, true);
 
