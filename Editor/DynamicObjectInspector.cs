@@ -241,11 +241,11 @@ namespace Cognitive3D
                 if (GUILayout.Button("Upload Mesh", "ButtonRight", GUILayout.Height(30)))
                 {
                     List<GameObject> uploadList = new List<GameObject>(Selection.gameObjects);
-                    bool uploadConfirmed = ExportUtility.UploadSelectedDynamicObjectMeshes(uploadList, true);
-                    if (uploadConfirmed)
+                    System.Action uploadMeshesOnManifest = delegate
                     {
-                        UploadCustomIdForAggregation();
-                    }
+                        ExportUtility.UploadSelectedDynamicObjectMeshes(uploadList, true);
+                    };
+                    UploadCustomIdForAggregation(uploadMeshesOnManifest);
                 }
                 EditorGUI.EndDisabledGroup();
 
@@ -318,7 +318,7 @@ namespace Cognitive3D
             serializedObject.ApplyModifiedProperties();
         }
 
-        void UploadCustomIdForAggregation()
+        void UploadCustomIdForAggregation(System.Action uploadMeshesOnManifest)
         {
             var dyn = target as DynamicObject;
             if (dyn.idSource == DynamicObject.IdSourceType.CustomID)
@@ -331,7 +331,7 @@ namespace Cognitive3D
                         new float[3] { dyn.transform.lossyScale.x, dyn.transform.lossyScale.y, dyn.transform.lossyScale.z },
                         new float[3] { dyn.transform.position.x, dyn.transform.position.y, dyn.transform.position.z },
                         new float[4] { dyn.transform.rotation.x, dyn.transform.rotation.y, dyn.transform.rotation.z, dyn.transform.rotation.w }));
-                    EditorCore.UploadManifest(manifest, null);
+                    EditorCore.UploadManifest(manifest, uploadMeshesOnManifest);
                 });
             }
             else if (dyn.IdPool != null)
@@ -347,7 +347,7 @@ namespace Cognitive3D
                             new float[3] { dyn.transform.position.x, dyn.transform.position.y, dyn.transform.position.z },
                             new float[4] { dyn.transform.rotation.x, dyn.transform.rotation.y, dyn.transform.rotation.z, dyn.transform.rotation.w }));
                     }
-                    EditorCore.UploadManifest(manifest, null);
+                    EditorCore.UploadManifest(manifest, uploadMeshesOnManifest);
                 });
             }
         }
