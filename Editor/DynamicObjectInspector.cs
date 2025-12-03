@@ -361,9 +361,9 @@ namespace Cognitive3D
         AggregationManifest.AggregationManifestEntry CreateManifestEntry(DynamicObject dyn, string id)
         {
             var transform = dyn.transform;
-            var scale = new float[3] { transform.lossyScale.x, transform.lossyScale.y, transform.lossyScale.z };
-            var position = new float[3] { transform.position.x, transform.position.y, transform.position.z };
-            var rotation = new float[4] { transform.rotation.x, transform.rotation.y, transform.rotation.z, transform.rotation.w };
+            var scale = new float[] { transform.lossyScale.x, transform.lossyScale.y, transform.lossyScale.z };
+            var position = new float[] { transform.position.x, transform.position.y, transform.position.z };
+            var rotation = new float[] { transform.rotation.x, transform.rotation.y, transform.rotation.z, transform.rotation.w };
 
             return new AggregationManifest.AggregationManifestEntry(
                 dyn.gameObject.name,
