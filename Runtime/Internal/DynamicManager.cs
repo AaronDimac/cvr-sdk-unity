@@ -519,7 +519,7 @@ namespace Cognitive3D
             }
             
             Util.logError($"No DynamicData found for type {type.ToString()} and isRight {isRight.ToString()}");
-            return new DynamicData(); // Return null if no matching dynamic data is found
+            return new DynamicData(); // Return empty DynamicData if no matching dynamic data is found
         }
 
         internal static void UpdateDynamicInputEnabledState(InputUtil.InputType currentTrackedDevice)
