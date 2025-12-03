@@ -518,7 +518,7 @@ namespace Cognitive3D
                 }
             }
             
-            Util.logError($"No DynamicData found for type {type.ToString()} and isRight " + isRight.ToString());
+            Util.logError($"No DynamicData found for type {type.ToString()} and isRight {isRight.ToString()}");
             return new DynamicData(); // Return null if no matching dynamic data is found
         }
 
