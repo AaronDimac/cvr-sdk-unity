@@ -2433,7 +2433,12 @@ namespace Cognitive3D
             {
                 Debug.Log("Cancelled upload of dynamic object: " + currentDynamicUploadName);
                 dynamicUploadWWW.Abort();
+                dynamicUploadWWW.Dispose();
+                dynamicUploadWWW = null;      // Reset to null
+                dynamicObjectForms.Clear();   // Clear remaining queued uploads
+                EditorApplication.update -= UpdateUploadDynamics;
                 EditorUtility.ClearProgressBar();
+                return;
             }
 
             if (!dynamicUploadWWW.isDone) { return; }
